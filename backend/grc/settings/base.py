@@ -23,12 +23,12 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "django_celery_results",
     # Local apps
-    "apps.risks",
-    "apps.compliance",
-    "apps.controls",
-    "apps.audits",
-    "apps.frameworks",
-    "apps.reports",
+    "apps.risks.apps.RisksConfig",
+    "apps.compliance.apps.ComplianceConfig",
+    "apps.controls.apps.ControlsConfig",
+    "apps.audits.apps.AuditsConfig",
+    "apps.frameworks.apps.FrameworksConfig",
+    "apps.reports.apps.ReportsConfig",
 ]
 
 MIDDLEWARE = [
