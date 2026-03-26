@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "django_celery_results",
     # Local apps
+    "apps.accounts.apps.AccountsConfig",
     "apps.risks.apps.RisksConfig",
     "apps.compliance.apps.ComplianceConfig",
     "apps.controls.apps.ControlsConfig",
@@ -92,6 +93,8 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "accounts.GRCUser"
 
 # Django REST Framework
 REST_FRAMEWORK = {
