@@ -1,722 +1,1007 @@
 # 詳細設計仕様書（Detailed Design Specification）
 
+## 建設業 統合リスク＆コンプライアンス管理システム（Construction-GRC-System）
+
 | 項目 | 内容 |
 |------|------|
-| 文書番号 | DES-DET-001 |
-| バージョン | 1.0.0 |
-| 作成日 | 2026-03-26 |
-| 最終更新日 | 2026-03-26 |
-| 作成者 | 開発チーム |
-| 承認者 | - |
-| ステータス | ドラフト |
+| **文書番号** | DES-GRC-002 |
+| **バージョン** | 1.0.0 |
+| **作成日** | 2026-03-26 |
+| **最終更新日** | 2026-03-26 |
+| **作成者** | みらい建設工業 IT部門 |
+| **承認者** | 情報セキュリティ管理責任者（CISO） |
+| **対象リポジトリ** | Kensan196948G/Construction-GRC-System |
+| **準拠規格** | ISO27001:2022 / NIST CSF 2.0 / 建設業法 / 品確法 / 労安法 |
+| **技術スタック** | Django+DRF / Vue.js 3+Vuetify 3 / PostgreSQL / Redis / Celery |
 
 ---
 
-## 1. 目的
+## 改訂履歴
 
-本文書は、Construction-GRC-Systemの各Djangoアプリケーションにおけるモデル、ビュー、シリアライザ、サービス層の詳細設計を定義する。
-
----
-
-## 2. 共通基盤設計
-
-### 2.1 BaseModel（共通基底モデル）
-
-| フィールド名 | 型 | 説明 |
-|-------------|-----|------|
-| id | UUIDField | 主キー（UUID v4自動生成） |
-| created_at | DateTimeField | レコード作成日時（auto_now_add） |
-| updated_at | DateTimeField | レコード更新日時（auto_now） |
-| created_by | ForeignKey(User) | 作成者 |
-| updated_by | ForeignKey(User) | 最終更新者 |
-| is_active | BooleanField | 論理削除フラグ（default=True） |
-
-### 2.2 共通Mixin
-
-| Mixin名 | 用途 | 適用先 |
-|----------|------|--------|
-| AuditMixin | 操作ログ自動記録 | 全ViewSet |
-| SoftDeleteMixin | 論理削除対応 | 全Model Manager |
-| TenantMixin | テナント分離（将来拡張） | 全Model |
-| CacheInvalidationMixin | キャッシュ無効化 | 更新系ViewSet |
-
-### 2.3 共通パーミッションクラス
-
-| クラス名 | 説明 | 適用条件 |
-|----------|------|----------|
-| IsAuthenticated | 認証済みユーザーのみ | 全エンドポイント |
-| IsAdminUser | システム管理者 | 管理系エンドポイント |
-| IsRiskManager | リスク管理者権限 | リスク管理CRUD |
-| IsAuditor | 監査人権限 | 監査管理CRUD |
-| IsComplianceOfficer | コンプライアンス責任者 | コンプライアンスCRUD |
-| IsReadOnly | 閲覧のみ | Viewerロール |
+| バージョン | 日付 | 変更内容 | 変更者 |
+|-----------|------|---------|--------|
+| 1.0.0 | 2026-03-26 | 初版作成 | IT部門 |
 
 ---
 
-## 3. accountsアプリ（ユーザー・認証管理）
+## 目次
+
+1. [設計方針](#1-設計方針)
+2. [accounts アプリ（ユーザー認証・認可）](#2-accounts-アプリユーザー認証認可)
+3. [risks アプリ（リスク管理）](#3-risks-アプリリスク管理)
+4. [compliance アプリ（コンプライアンス管理）](#4-compliance-アプリコンプライアンス管理)
+5. [controls アプリ（統制管理）](#5-controls-アプリ統制管理)
+6. [audits アプリ（監査管理）](#6-audits-アプリ監査管理)
+7. [reports アプリ（レポート管理）](#7-reports-アプリレポート管理)
+8. [frameworks アプリ（フレームワーク管理）](#8-frameworks-アプリフレームワーク管理)
+9. [common アプリ（共通機能）](#9-common-アプリ共通機能)
+10. [Celeryタスク設計](#10-celeryタスク設計)
+
+---
+
+## 1. 設計方針
+
+### 1.1 コーディング規約
+
+| 項目 | 規約 |
+|------|------|
+| Python | PEP 8準拠、Black フォーマッタ使用 |
+| Django | Fat Models, Thin Views パターンにサービス層を追加 |
+| DRF | ViewSet + Serializer + Service パターン |
+| 命名規則 | snake_case（Python）、camelCase（JavaScript） |
+| ドキュメント | docstring（Google Style） |
+
+### 1.2 共通基底クラス
+
+```python
+# apps/common/models.py
+class BaseModel(models.Model):
+    """全モデルの共通基底クラス"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL,
+        null=True, related_name='+'
+    )
+    updated_by = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL,
+        null=True, related_name='+'
+    )
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+```
+
+---
+
+## 2. accounts アプリ（ユーザー認証・認可）
+
+### 2.1 モデル設計
+
+```python
+class User(AbstractBaseUser, PermissionsMixin):
+    """カスタムユーザーモデル"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=150, unique=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    department = models.CharField(max_length=100)
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    login_failure_count = models.IntegerField(default=0)
+    locked_at = models.DateTimeField(null=True, blank=True)
+    last_login_ip = models.GenericIPAddressField(null=True)
+    password_changed_at = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+ROLE_CHOICES = [
+    ('admin', 'GRC管理者'),
+    ('risk_owner', 'リスクオーナー'),
+    ('compliance_officer', 'コンプライアンス担当'),
+    ('auditor', '内部監査員'),
+    ('executive', '経営層'),
+    ('user', '一般部門担当'),
+]
+```
+
+### 2.2 シリアライザ設計
+
+```python
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'first_name', 'last_name',
+                  'department', 'role', 'is_active', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+class TokenRefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+```
+
+### 2.3 ビュー設計
+
+| エンドポイント | メソッド | ビュークラス | 説明 |
+|--------------|---------|------------|------|
+| /api/v1/auth/login/ | POST | LoginView | ログイン |
+| /api/v1/auth/logout/ | POST | LogoutView | ログアウト |
+| /api/v1/auth/refresh/ | POST | TokenRefreshView | トークンリフレッシュ |
+| /api/v1/auth/me/ | GET | CurrentUserView | ログインユーザー情報取得 |
+| /api/v1/auth/password/change/ | POST | PasswordChangeView | パスワード変更 |
+| /api/v1/users/ | GET, POST | UserViewSet | ユーザー一覧・作成 |
+| /api/v1/users/{id}/ | GET, PUT, DELETE | UserViewSet | ユーザー詳細・更新・削除 |
+
+### 2.4 サービス層設計
+
+```python
+class AuthService:
+    @staticmethod
+    def authenticate(email: str, password: str) -> tuple[User, dict]:
+        """ユーザー認証を実行しJWTトークンを返す"""
+        # 1. ユーザー検索
+        # 2. アカウントロック確認
+        # 3. パスワード検証
+        # 4. ログイン失敗カウント管理
+        # 5. JWTトークン生成
+        # 6. 監査ログ記録
+        pass
+
+    @staticmethod
+    def lock_account(user: User) -> None:
+        """アカウントをロックする"""
+        pass
+
+class UserService:
+    @staticmethod
+    def create_user(data: dict, created_by: User) -> User:
+        """ユーザーを作成する"""
+        pass
+
+    @staticmethod
+    def deactivate_user(user_id: UUID, deactivated_by: User) -> User:
+        """ユーザーを無効化する（論理削除）"""
+        pass
+```
+
+---
+
+## 3. risks アプリ（リスク管理）
 
 ### 3.1 モデル設計
 
-#### Userモデル
+```python
+class Risk(BaseModel):
+    """リスクモデル"""
+    risk_id = models.CharField(max_length=20, unique=True)  # RSK-YYYY-NNNN
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    category = models.CharField(max_length=50, choices=RISK_CATEGORY_CHOICES)
+    sub_category = models.CharField(max_length=50, blank=True)
+    owner = models.ForeignKey('accounts.User', on_delete=models.PROTECT,
+                              related_name='owned_risks')
+    department = models.CharField(max_length=100)
+    project = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=30, choices=RISK_STATUS_CHOICES,
+                              default='identified')
+    inherent_likelihood = models.IntegerField(validators=[MinValueValidator(1),
+                                                          MaxValueValidator(5)],
+                                              null=True)
+    inherent_impact = models.IntegerField(validators=[MinValueValidator(1),
+                                                      MaxValueValidator(5)],
+                                          null=True)
+    inherent_score = models.IntegerField(null=True)
+    inherent_level = models.CharField(max_length=20, blank=True)
+    residual_likelihood = models.IntegerField(null=True)
+    residual_impact = models.IntegerField(null=True)
+    residual_score = models.IntegerField(null=True)
+    residual_level = models.CharField(max_length=20, blank=True)
+    controls = models.ManyToManyField('controls.Control', blank=True,
+                                      related_name='risks')
+    frameworks = models.ManyToManyField('frameworks.FrameworkControl',
+                                        blank=True, related_name='risks')
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | ユーザーID |
-| email | EmailField | UNIQUE, NOT NULL | メールアドレス（ログインID） |
-| password | CharField | NOT NULL | ハッシュ化パスワード |
-| first_name | CharField(50) | NOT NULL | 名 |
-| last_name | CharField(50) | NOT NULL | 姓 |
-| department | CharField(100) | NULL可 | 所属部門 |
-| position | CharField(100) | NULL可 | 役職 |
-| phone | CharField(20) | NULL可 | 電話番号 |
-| role | ForeignKey(Role) | NOT NULL | ロール |
-| is_active | BooleanField | default=True | アカウント有効フラグ |
-| last_login | DateTimeField | NULL可 | 最終ログイン日時 |
-| password_changed_at | DateTimeField | NULL可 | パスワード変更日時 |
-| failed_login_count | IntegerField | default=0 | ログイン失敗回数 |
-| locked_until | DateTimeField | NULL可 | アカウントロック解除日時 |
+RISK_CATEGORY_CHOICES = [
+    ('information_security', '情報セキュリティ'),
+    ('occupational_safety', '労働安全'),
+    ('environmental', '環境'),
+    ('legal', '法令'),
+    ('quality', '品質'),
+    ('financial', '財務'),
+]
 
-#### Roleモデル
+RISK_STATUS_CHOICES = [
+    ('identified', '識別済み'),
+    ('assessing', '評価中'),
+    ('treating', '対応中'),
+    ('monitoring', 'モニタリング中'),
+    ('accepted', '受容済み'),
+    ('closed', 'クローズ'),
+]
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | ロールID |
-| name | CharField(50) | UNIQUE | ロール名 |
-| code | CharField(30) | UNIQUE | ロールコード |
-| description | TextField | NULL可 | ロール説明 |
-| permissions | ManyToManyField(Permission) | - | 紐づく権限 |
+class RiskEvaluation(BaseModel):
+    """リスク評価履歴"""
+    risk = models.ForeignKey(Risk, on_delete=models.CASCADE,
+                             related_name='evaluations')
+    evaluation_date = models.DateField()
+    likelihood = models.IntegerField(validators=[MinValueValidator(1),
+                                                 MaxValueValidator(5)])
+    impact_financial = models.IntegerField(validators=[MinValueValidator(1),
+                                                       MaxValueValidator(5)])
+    impact_operational = models.IntegerField(validators=[MinValueValidator(1),
+                                                         MaxValueValidator(5)])
+    impact_legal = models.IntegerField(validators=[MinValueValidator(1),
+                                                    MaxValueValidator(5)])
+    impact_safety = models.IntegerField(validators=[MinValueValidator(1),
+                                                     MaxValueValidator(5)])
+    impact_reputation = models.IntegerField(validators=[MinValueValidator(1),
+                                                         MaxValueValidator(5)])
+    max_impact = models.IntegerField()  # 自動計算
+    inherent_score = models.IntegerField()  # 自動計算
+    control_effectiveness = models.CharField(max_length=20,
+                                             choices=CONTROL_EFFECTIVENESS_CHOICES)
+    residual_score = models.IntegerField()  # 自動計算
+    comments = models.TextField(blank=True)
+    evaluator = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
 
-#### 定義済みロール
+class RiskTreatmentPlan(BaseModel):
+    """リスク対応計画"""
+    risk = models.ForeignKey(Risk, on_delete=models.CASCADE,
+                             related_name='treatment_plans')
+    strategy = models.CharField(max_length=20, choices=STRATEGY_CHOICES)
+    description = models.TextField()
+    assigned_to = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
+    due_date = models.DateField()
+    target_residual_level = models.CharField(max_length=20)
+    budget = models.DecimalField(max_digits=12, decimal_places=0, null=True)
+    status = models.CharField(max_length=20, default='planned')
+    progress_percentage = models.IntegerField(default=0)
 
-| ロールコード | ロール名 | 説明 |
-|-------------|---------|------|
-| SYSTEM_ADMIN | システム管理者 | 全機能へのフルアクセス |
-| RISK_MANAGER | リスク管理者 | リスク管理機能の完全操作 |
-| COMPLIANCE_OFFICER | コンプライアンス責任者 | コンプライアンス管理の完全操作 |
-| AUDITOR | 監査人 | 監査機能の完全操作 |
-| MANAGER | マネージャー | 承認権限を持つ閲覧・編集 |
-| VIEWER | 閲覧者 | 全機能の閲覧のみ |
+STRATEGY_CHOICES = [
+    ('avoid', '回避'),
+    ('mitigate', '軽減'),
+    ('transfer', '移転'),
+    ('accept', '受容'),
+]
+```
 
-### 3.2 ビュー設計
+### 3.2 シリアライザ設計
 
-| ViewSet/View | エンドポイント | メソッド | 説明 |
-|-------------|---------------|---------|------|
-| AuthLoginView | /api/v1/auth/login | POST | ログイン（JWT発行） |
-| AuthLogoutView | /api/v1/auth/logout | POST | ログアウト（トークン無効化） |
-| AuthRefreshView | /api/v1/auth/refresh | POST | トークンリフレッシュ |
-| AuthPasswordChangeView | /api/v1/auth/password/change | POST | パスワード変更 |
-| AuthPasswordResetView | /api/v1/auth/password/reset | POST | パスワードリセット要求 |
-| UserViewSet | /api/v1/users | GET, POST | ユーザー一覧・作成 |
-| UserViewSet | /api/v1/users/{id} | GET, PUT, PATCH, DELETE | ユーザー詳細・更新・削除 |
-| UserMeView | /api/v1/users/me | GET, PATCH | 自身のプロフィール |
-| RoleViewSet | /api/v1/roles | GET, POST | ロール一覧・作成 |
+```python
+class RiskListSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
+    class Meta:
+        model = Risk
+        fields = ['id', 'risk_id', 'title', 'category', 'owner_name',
+                  'inherent_level', 'residual_level', 'status', 'created_at']
 
-### 3.3 シリアライザ設計
+class RiskDetailSerializer(serializers.ModelSerializer):
+    evaluations = RiskEvaluationSerializer(many=True, read_only=True)
+    treatment_plans = RiskTreatmentPlanSerializer(many=True, read_only=True)
+    controls = ControlSummarySerializer(many=True, read_only=True)
+    class Meta:
+        model = Risk
+        fields = '__all__'
 
-#### LoginSerializer
+class RiskCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Risk
+        fields = ['title', 'description', 'category', 'sub_category',
+                  'owner', 'department', 'project', 'inherent_likelihood',
+                  'inherent_impact']
 
-| フィールド | 型 | バリデーション |
-|-----------|-----|---------------|
-| email | EmailField | required, 形式チェック |
-| password | CharField | required, min_length=8 |
+class RiskEvaluationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RiskEvaluation
+        fields = '__all__'
+        read_only_fields = ['max_impact', 'inherent_score', 'residual_score']
+```
 
-#### UserSerializer
+### 3.3 ビュー設計
 
-| フィールド | 型 | 読取/書込 | バリデーション |
-|-----------|-----|----------|---------------|
-| id | UUIDField | 読取専用 | - |
-| email | EmailField | 読書 | unique, required |
-| first_name | CharField | 読書 | required, max=50 |
-| last_name | CharField | 読書 | required, max=50 |
-| department | CharField | 読書 | optional |
-| position | CharField | 読書 | optional |
-| phone | CharField | 読書 | optional, 電話番号形式 |
-| role | RoleSerializer(nested) | 読取 | - |
-| role_id | UUIDField | 書込 | required, 存在チェック |
-| is_active | BooleanField | 読書 | - |
-| last_login | DateTimeField | 読取専用 | - |
-| created_at | DateTimeField | 読取専用 | - |
+```python
+class RiskViewSet(ModelViewSet):
+    """リスク管理 ViewSet"""
+    queryset = Risk.objects.active()
+    permission_classes = [IsAuthenticated, RiskPermission]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = RiskFilter
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'inherent_score', 'residual_score']
 
-### 3.4 サービス設計
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RiskListSerializer
+        elif self.action == 'create':
+            return RiskCreateSerializer
+        return RiskDetailSerializer
 
-#### AuthService
+    def perform_create(self, serializer):
+        risk = RiskService.create_risk(
+            data=serializer.validated_data,
+            user=self.request.user
+        )
+        serializer.instance = risk
 
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| authenticate | email, password | TokenPair / None | 認証処理、ログイン失敗カウント管理 |
-| logout | refresh_token | bool | トークンブラックリスト追加 |
-| refresh_token | refresh_token | AccessToken | アクセストークン再発行 |
-| change_password | user, old_pw, new_pw | bool | パスワード変更（履歴チェック含む） |
-| reset_password_request | email | bool | パスワードリセットメール送信 |
-| check_account_lock | user | bool | アカウントロック状態確認 |
+class RiskHeatmapView(APIView):
+    """リスクヒートマップ API"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = RiskSelector.get_heatmap_data(
+            filters=request.query_params
+        )
+        return Response(data)
+```
+
+### 3.4 サービス層設計
+
+```python
+class RiskService:
+    @staticmethod
+    def create_risk(data: dict, user: User) -> Risk:
+        """リスクを作成する"""
+        # 1. リスクID自動採番（RSK-YYYY-NNNN）
+        # 2. リスクスコア計算（likelihood x impact）
+        # 3. リスクレベル判定
+        # 4. DB保存
+        # 5. 通知タスクをキュー投入
+        # 6. 監査ログ記録
+        pass
+
+    @staticmethod
+    def evaluate_risk(risk_id: UUID, data: dict, user: User) -> RiskEvaluation:
+        """リスク評価を実施する"""
+        # 1. max_impact = max(financial, operational, legal, safety, reputation)
+        # 2. inherent_score = likelihood x max_impact
+        # 3. inherent_level = レベル判定マトリクス参照
+        # 4. residual_score = 統制有効性に基づく残留リスク計算
+        # 5. 評価履歴保存
+        # 6. Riskモデルのスコア・レベル更新
+        # 7. 高リスク時のアラート送信
+        pass
+
+    @staticmethod
+    def calculate_risk_level(score: int) -> str:
+        """リスクスコアからリスクレベルを判定"""
+        if score >= 20: return 'critical'    # 極高
+        elif score >= 15: return 'high'      # 高
+        elif score >= 10: return 'medium'    # 中
+        elif score >= 5: return 'low'        # 低
+        else: return 'very_low'              # 極低
+
+class RiskSelector:
+    @staticmethod
+    def get_heatmap_data(filters: dict) -> dict:
+        """ヒートマップデータを取得する"""
+        # 5x5マトリクスの各セルに含まれるリスク件数を集計
+        pass
+```
 
 ---
 
-## 4. risksアプリ（リスク管理）
+## 4. compliance アプリ（コンプライアンス管理）
 
 ### 4.1 モデル設計
 
-#### RiskCategoryモデル
+```python
+class ComplianceRequirement(BaseModel):
+    """コンプライアンス要件"""
+    requirement_id = models.CharField(max_length=20, unique=True)  # CMP-YYYY-NNNN
+    framework = models.ForeignKey('frameworks.Framework', on_delete=models.PROTECT)
+    framework_control = models.ForeignKey('frameworks.FrameworkControl',
+                                          on_delete=models.SET_NULL, null=True)
+    title = models.CharField(max_length=300)
+    description = models.TextField()
+    legal_reference = models.CharField(max_length=200, blank=True)
+    scope = models.CharField(max_length=50, choices=SCOPE_CHOICES)
+    responsible_department = models.CharField(max_length=100)
+    responsible_person = models.ForeignKey('accounts.User',
+                                           on_delete=models.PROTECT)
+    compliance_status = models.CharField(max_length=30,
+                                         choices=COMPLIANCE_STATUS_CHOICES,
+                                         default='not_assessed')
+    due_date = models.DateField(null=True, blank=True)
+    controls = models.ManyToManyField('controls.Control', blank=True)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | カテゴリID |
-| name | CharField(100) | UNIQUE | カテゴリ名 |
-| code | CharField(20) | UNIQUE | カテゴリコード |
-| description | TextField | NULL可 | カテゴリ説明 |
-| parent | ForeignKey(self) | NULL可 | 親カテゴリ（階層構造） |
-| sort_order | IntegerField | default=0 | 表示順 |
+COMPLIANCE_STATUS_CHOICES = [
+    ('compliant', '準拠'),
+    ('partially_compliant', '一部準拠'),
+    ('non_compliant', '非準拠'),
+    ('not_applicable', '適用外'),
+    ('not_assessed', '未評価'),
+    ('reassessment_required', '要再評価'),
+]
 
-#### Riskモデル
+class ComplianceAssessment(BaseModel):
+    """準拠状況評価履歴"""
+    requirement = models.ForeignKey(ComplianceRequirement,
+                                    on_delete=models.CASCADE,
+                                    related_name='assessments')
+    assessment_date = models.DateField()
+    status = models.CharField(max_length=30, choices=COMPLIANCE_STATUS_CHOICES)
+    comments = models.TextField(blank=True)
+    assessor = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | リスクID |
-| risk_code | CharField(20) | UNIQUE | リスクコード（自動採番: RSK-YYYYMM-NNN） |
-| title | CharField(200) | NOT NULL | リスクタイトル |
-| description | TextField | NOT NULL | リスク詳細説明 |
-| category | ForeignKey(RiskCategory) | NOT NULL | リスクカテゴリ |
-| owner | ForeignKey(User) | NOT NULL | リスクオーナー |
-| status | CharField(20) | NOT NULL | ステータス（下表参照） |
-| likelihood | IntegerField | 1-5 | 発生可能性（1:極低〜5:極高） |
-| impact | IntegerField | 1-5 | 影響度（1:極低〜5:極高） |
-| risk_score | IntegerField | 自動計算 | リスクスコア（likelihood × impact） |
-| risk_level | CharField(20) | 自動判定 | リスクレベル |
-| inherent_likelihood | IntegerField | 1-5 | 固有リスク発生可能性 |
-| inherent_impact | IntegerField | 1-5 | 固有リスク影響度 |
-| residual_likelihood | IntegerField | 1-5, NULL可 | 残余リスク発生可能性 |
-| residual_impact | IntegerField | 1-5, NULL可 | 残余リスク影響度 |
-| treatment_plan | TextField | NULL可 | リスク対応計画 |
-| due_date | DateField | NULL可 | 対応期限 |
-| identified_date | DateField | NOT NULL | リスク識別日 |
-| review_date | DateField | NULL可 | 次回レビュー日 |
-| controls | ManyToManyField(Control) | - | 関連する統制 |
-| tags | JSONField | default=[] | タグ（JSONArray） |
+class GapAnalysis(BaseModel):
+    """ギャップ分析"""
+    title = models.CharField(max_length=200)
+    framework = models.ForeignKey('frameworks.Framework', on_delete=models.PROTECT)
+    analysis_date = models.DateField()
+    total_requirements = models.IntegerField()
+    compliant_count = models.IntegerField()
+    partially_compliant_count = models.IntegerField()
+    non_compliant_count = models.IntegerField()
+    compliance_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    status = models.CharField(max_length=20, default='draft')
 
-#### リスクステータス遷移
+class GapItem(BaseModel):
+    """ギャップ項目"""
+    gap_analysis = models.ForeignKey(GapAnalysis, on_delete=models.CASCADE,
+                                     related_name='items')
+    requirement = models.ForeignKey(ComplianceRequirement,
+                                    on_delete=models.CASCADE)
+    current_status = models.CharField(max_length=30)
+    target_status = models.CharField(max_length=30, default='compliant')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
+    remediation_plan = models.TextField(blank=True)
 
-| ステータス | コード | 遷移先 |
-|-----------|--------|--------|
-| 識別済み | IDENTIFIED | ANALYZING, CLOSED |
-| 分析中 | ANALYZING | TREATING, ACCEPTED, CLOSED |
-| 対応中 | TREATING | MONITORING, CLOSED |
-| 監視中 | MONITORING | TREATING, ACCEPTED, CLOSED |
-| 受容済み | ACCEPTED | MONITORING, CLOSED |
-| クローズ | CLOSED | IDENTIFIED（再オープン） |
+class ImprovementPlan(BaseModel):
+    """改善計画"""
+    gap_item = models.ForeignKey(GapItem, on_delete=models.CASCADE,
+                                 related_name='improvement_plans')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    assigned_to = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
+    due_date = models.DateField()
+    budget = models.DecimalField(max_digits=12, decimal_places=0, null=True)
+    status = models.CharField(max_length=20, default='planned')
+    progress_percentage = models.IntegerField(default=0)
 
-#### リスクレベル判定マトリクス
+class LegalUpdate(BaseModel):
+    """法令改正追跡"""
+    law_name = models.CharField(max_length=200)
+    update_description = models.TextField()
+    effective_date = models.DateField()
+    impact_scope = models.TextField()
+    affected_requirements = models.ManyToManyField(ComplianceRequirement,
+                                                    blank=True)
+    response_status = models.CharField(max_length=20, default='pending')
+```
 
-| スコア範囲 | リスクレベル | 色 |
-|-----------|------------|-----|
-| 1 - 4 | LOW（低） | 緑 (#4CAF50) |
-| 5 - 9 | MEDIUM（中） | 黄 (#FF9800) |
-| 10 - 16 | HIGH（高） | 橙 (#FF5722) |
-| 17 - 25 | CRITICAL（極高） | 赤 (#F44336) |
+### 4.2 サービス層設計
 
-### 4.2 ビュー設計
+```python
+class ComplianceService:
+    @staticmethod
+    def assess_requirement(requirement_id: UUID, data: dict, user: User):
+        """準拠状況を評価する"""
+        # 1. 評価履歴の保存
+        # 2. 要件ステータスの更新
+        # 3. 準拠率の再計算（Redisキャッシュ更新）
+        # 4. 非準拠時の改善計画候補登録
+        pass
 
-| ViewSet | エンドポイント | メソッド | パーミッション | 説明 |
-|---------|---------------|---------|--------------|------|
-| RiskViewSet | /api/v1/risks | GET | 全認証ユーザー | リスク一覧取得 |
-| RiskViewSet | /api/v1/risks | POST | RiskManager以上 | リスク新規登録 |
-| RiskViewSet | /api/v1/risks/{id} | GET | 全認証ユーザー | リスク詳細取得 |
-| RiskViewSet | /api/v1/risks/{id} | PUT/PATCH | RiskManager以上 | リスク更新 |
-| RiskViewSet | /api/v1/risks/{id} | DELETE | Admin | リスク削除（論理） |
-| RiskViewSet | /api/v1/risks/{id}/assessments | GET, POST | RiskManager以上 | リスク評価履歴 |
-| RiskViewSet | /api/v1/risks/matrix | GET | 全認証ユーザー | リスクマトリクス取得 |
-| RiskViewSet | /api/v1/risks/statistics | GET | 全認証ユーザー | リスク統計情報 |
-| RiskCategoryViewSet | /api/v1/risks/categories | GET, POST | Admin | カテゴリ管理 |
+    @staticmethod
+    def calculate_compliance_rate(framework_id: UUID) -> Decimal:
+        """フレームワーク別の準拠率を計算する"""
+        # 準拠率 = 準拠件数 / (全件数 - 適用外件数) * 100
+        pass
 
-### 4.3 シリアライザ設計
+    @staticmethod
+    def perform_gap_analysis(framework_id: UUID, user: User) -> GapAnalysis:
+        """ギャップ分析を実施する"""
+        # 1. 全要件の現在ステータスを取得
+        # 2. 非準拠・一部準拠の項目を抽出
+        # 3. ギャップ分析レコード作成
+        # 4. 各ギャップ項目の優先度算出
+        pass
 
-#### RiskListSerializer（一覧用・軽量）
-
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| id | UUID | リスクID |
-| risk_code | String | リスクコード |
-| title | String | タイトル |
-| category_name | String | カテゴリ名（read_only） |
-| owner_name | String | オーナー名（read_only） |
-| status | String | ステータス |
-| risk_score | Integer | リスクスコア |
-| risk_level | String | リスクレベル |
-| due_date | Date | 対応期限 |
-| updated_at | DateTime | 最終更新日時 |
-
-#### RiskDetailSerializer（詳細用）
-
-RiskListSerializerの全フィールドに加え以下を含む:
-
-| 追加フィールド | 型 | 説明 |
-|-------------|-----|------|
-| description | String | 詳細説明 |
-| likelihood | Integer | 発生可能性 |
-| impact | Integer | 影響度 |
-| inherent_likelihood | Integer | 固有リスク発生可能性 |
-| inherent_impact | Integer | 固有リスク影響度 |
-| residual_likelihood | Integer | 残余リスク発生可能性 |
-| residual_impact | Integer | 残余リスク影響度 |
-| treatment_plan | String | リスク対応計画 |
-| identified_date | Date | リスク識別日 |
-| review_date | Date | 次回レビュー日 |
-| controls | ControlSummarySerializer[] | 関連統制一覧 |
-| tags | String[] | タグ |
-| created_by | UserSummarySerializer | 作成者 |
-| created_at | DateTime | 作成日時 |
-
-### 4.4 サービス設計
-
-#### RiskService
-
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| create_risk | validated_data, user | Risk | リスク作成、コード自動採番 |
-| update_risk | risk, validated_data, user | Risk | リスク更新、監査ログ記録 |
-| calculate_risk_score | likelihood, impact | (score, level) | リスクスコア・レベル計算 |
-| get_risk_matrix | filters | dict | リスクマトリクスデータ生成 |
-| get_statistics | filters | dict | リスク統計情報集計 |
-| transition_status | risk, new_status, user | Risk | ステータス遷移（バリデーション付き） |
-| bulk_reassess | risk_ids, user | list[Risk] | 一括再評価 |
-| check_overdue_risks | - | QuerySet | 期限超過リスク取得 |
-
-### 4.5 フィルタ設計
-
-| フィルタパラメータ | 型 | フィルタ方法 | 説明 |
-|------------------|-----|-------------|------|
-| status | String | exact | ステータスで絞り込み |
-| risk_level | String | exact | リスクレベルで絞り込み |
-| category | UUID | exact | カテゴリIDで絞り込み |
-| owner | UUID | exact | オーナーIDで絞り込み |
-| risk_score_min | Integer | gte | 最低リスクスコア |
-| risk_score_max | Integer | lte | 最高リスクスコア |
-| due_date_from | Date | gte | 対応期限開始日 |
-| due_date_to | Date | lte | 対応期限終了日 |
-| search | String | icontains (title, description) | 全文検索 |
-| ordering | String | order_by | ソート（risk_score, due_date, created_at） |
+class LegalUpdateService:
+    @staticmethod
+    def register_update(data: dict, user: User) -> LegalUpdate:
+        """法令改正を登録し影響分析を実施する"""
+        # 1. 改正情報の登録
+        # 2. 影響を受ける要件の自動抽出
+        # 3. 影響要件のステータスを「要再評価」に更新
+        # 4. 関連者への通知
+        pass
+```
 
 ---
 
-## 5. controlsアプリ（ISO 27001統制管理）
+## 5. controls アプリ（統制管理）
 
 ### 5.1 モデル設計
 
-#### ControlCategoryモデル
+```python
+class Control(BaseModel):
+    """統制項目"""
+    control_id = models.CharField(max_length=20, unique=True)  # CTL-FW-NNNN
+    title = models.CharField(max_length=300)
+    description = models.TextField()
+    control_type = models.CharField(max_length=20, choices=CONTROL_TYPE_CHOICES)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+    owner = models.ForeignKey('accounts.User', on_delete=models.PROTECT,
+                              related_name='owned_controls')
+    framework = models.ForeignKey('frameworks.Framework',
+                                  on_delete=models.PROTECT, null=True)
+    framework_control = models.ForeignKey('frameworks.FrameworkControl',
+                                          on_delete=models.SET_NULL, null=True)
+    test_procedure = models.TextField(blank=True)
+    effectiveness = models.CharField(max_length=20,
+                                     choices=EFFECTIVENESS_CHOICES,
+                                     default='not_assessed')
+    last_test_date = models.DateField(null=True)
+    next_test_date = models.DateField(null=True)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | カテゴリID |
-| annex_ref | CharField(10) | UNIQUE | ISO 27001 Annex A参照番号（例: A.5） |
-| name | CharField(200) | NOT NULL | カテゴリ名 |
-| description | TextField | NULL可 | 説明 |
+CONTROL_TYPE_CHOICES = [
+    ('preventive', '予防的'),
+    ('detective', '発見的'),
+    ('corrective', '是正的'),
+]
 
-#### Controlモデル（ISO 27001統制）
+FREQUENCY_CHOICES = [
+    ('daily', '日次'),
+    ('weekly', '週次'),
+    ('monthly', '月次'),
+    ('quarterly', '四半期'),
+    ('annually', '年次'),
+    ('ad_hoc', '随時'),
+]
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | 統制ID |
-| control_code | CharField(20) | UNIQUE | 統制コード（例: CTL-A5-001） |
-| annex_ref | CharField(20) | NOT NULL | ISO 27001 Annex A参照番号 |
-| title | CharField(200) | NOT NULL | 統制タイトル |
-| description | TextField | NOT NULL | 統制詳細説明 |
-| category | ForeignKey(ControlCategory) | NOT NULL | カテゴリ |
-| control_type | CharField(20) | NOT NULL | 統制種別 |
-| implementation_status | CharField(20) | NOT NULL | 実装状態 |
-| effectiveness | CharField(20) | NULL可 | 有効性評価 |
-| owner | ForeignKey(User) | NOT NULL | 統制オーナー |
-| implementation_date | DateField | NULL可 | 実装日 |
-| review_date | DateField | NULL可 | 次回レビュー日 |
-| evidence_required | BooleanField | default=True | エビデンス必要フラグ |
-| risks | ManyToManyField(Risk) | - | 対応するリスク |
-| compliance_requirements | ManyToManyField(ComplianceRequirement) | - | 対応するコンプライアンス要件 |
+class ControlTest(BaseModel):
+    """統制テスト結果"""
+    control = models.ForeignKey(Control, on_delete=models.CASCADE,
+                                related_name='tests')
+    test_date = models.DateField()
+    tester = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
+    result = models.CharField(max_length=20, choices=TEST_RESULT_CHOICES)
+    comments = models.TextField(blank=True)
+    findings = models.TextField(blank=True)
 
-#### 統制種別
+TEST_RESULT_CHOICES = [
+    ('pass', '合格'),
+    ('fail', '不合格'),
+    ('partial_pass', '一部合格'),
+]
 
-| コード | 名称 | 説明 |
-|--------|------|------|
-| PREVENTIVE | 予防的統制 | リスク発生を未然に防ぐ |
-| DETECTIVE | 発見的統制 | リスクの発生を検知する |
-| CORRECTIVE | 是正的統制 | 発生した問題を是正する |
-| DETERRENT | 抑止的統制 | リスク行為を抑止する |
-| COMPENSATING | 補完的統制 | 他の統制を補完する |
+class EvidenceFile(BaseModel):
+    """エビデンスファイル"""
+    file = models.FileField(upload_to='evidence/%Y/%m/')
+    original_filename = models.CharField(max_length=255)
+    file_size = models.IntegerField()
+    mime_type = models.CharField(max_length=100)
+    sha256_hash = models.CharField(max_length=64)
+    description = models.TextField(blank=True)
+    tags = models.JSONField(default=list)
+    # ポリモーフィック関連
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
-#### 実装状態
+class CorrectiveAction(BaseModel):
+    """是正措置"""
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    root_cause = models.TextField(blank=True)
+    assigned_to = models.ForeignKey('accounts.User', on_delete=models.PROTECT,
+                                    related_name='corrective_actions')
+    due_date = models.DateField()
+    status = models.CharField(max_length=20, default='planned',
+                              choices=CA_STATUS_CHOICES)
+    # ポリモーフィック関連（統制テスト or 監査所見から生成）
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE,
+                                     null=True)
+    object_id = models.UUIDField(null=True)
+    source_object = GenericForeignKey('content_type', 'object_id')
+    completion_date = models.DateField(null=True)
+    completion_comment = models.TextField(blank=True)
+    verified_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL,
+                                    null=True, related_name='verified_cas')
+    verified_at = models.DateTimeField(null=True)
 
-| コード | 名称 | 説明 |
-|--------|------|------|
-| NOT_IMPLEMENTED | 未実装 | 統制が実装されていない |
-| PARTIALLY_IMPLEMENTED | 一部実装 | 部分的に実装済み |
-| FULLY_IMPLEMENTED | 完全実装 | 完全に実装済み |
-| NOT_APPLICABLE | 適用外 | 当該統制は適用対象外 |
+CA_STATUS_CHOICES = [
+    ('planned', '計画中'),
+    ('in_progress', '実施中'),
+    ('pending_review', '完了確認待ち'),
+    ('completed', '完了'),
+    ('overdue', '期限超過'),
+    ('rejected', '差戻し'),
+]
+```
 
-#### 有効性評価
+### 5.2 サービス層設計
 
-| コード | 名称 | スコア |
-|--------|------|--------|
-| EFFECTIVE | 有効 | 3 |
-| PARTIALLY_EFFECTIVE | 一部有効 | 2 |
-| INEFFECTIVE | 無効 | 1 |
-| NOT_EVALUATED | 未評価 | 0 |
+```python
+class ControlService:
+    @staticmethod
+    def create_control(data: dict, user: User) -> Control:
+        """統制項目を作成する"""
+        # 1. 統制ID自動採番
+        # 2. 次回テスト日の自動計算
+        # 3. DB保存
+        pass
 
-#### ControlEvidenceモデル
+    @staticmethod
+    def record_test_result(control_id: UUID, data: dict, user: User):
+        """統制テスト結果を記録する"""
+        # 1. テスト結果保存
+        # 2. 統制有効性ステータス更新
+        # 3. 不合格時: 是正措置タスク自動生成
+        # 4. 次回テスト日の更新
+        pass
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | エビデンスID |
-| control | ForeignKey(Control) | NOT NULL | 対象統制 |
-| title | CharField(200) | NOT NULL | エビデンスタイトル |
-| description | TextField | NULL可 | エビデンス説明 |
-| file | FileField | NULL可 | 添付ファイル |
-| evidence_type | CharField(20) | NOT NULL | エビデンス種別 |
-| collected_date | DateField | NOT NULL | 収集日 |
-| collected_by | ForeignKey(User) | NOT NULL | 収集者 |
-| valid_until | DateField | NULL可 | 有効期限 |
+class EvidenceService:
+    @staticmethod
+    def upload_evidence(file, metadata: dict, user: User) -> EvidenceFile:
+        """エビデンスをアップロードする"""
+        # 1. ファイル形式・サイズバリデーション
+        # 2. SHA-256ハッシュ計算
+        # 3. ストレージへの保存
+        # 4. メタデータの記録
+        # 5. 監査ログ記録
+        pass
 
-### 5.2 ビュー設計
+class CorrectiveActionService:
+    @staticmethod
+    def submit_completion(ca_id: UUID, data: dict, user: User):
+        """是正措置の完了申請を処理する"""
+        # 1. 完了報告の保存
+        # 2. ステータスを「完了確認待ち」に更新
+        # 3. 確認者（コンプライアンス担当）に通知
+        pass
 
-| ViewSet | エンドポイント | メソッド | 説明 |
-|---------|---------------|---------|------|
-| ControlViewSet | /api/v1/controls | GET | 統制一覧取得 |
-| ControlViewSet | /api/v1/controls | POST | 統制新規登録 |
-| ControlViewSet | /api/v1/controls/{id} | GET, PUT, PATCH, DELETE | 統制詳細・更新・削除 |
-| ControlViewSet | /api/v1/controls/{id}/evidences | GET, POST | エビデンス管理 |
-| ControlViewSet | /api/v1/controls/{id}/effectiveness | POST | 有効性評価実施 |
-| ControlViewSet | /api/v1/controls/statistics | GET | 統制統計情報 |
-| ControlCategoryViewSet | /api/v1/controls/categories | GET | カテゴリ一覧（Annex A構造） |
-
-### 5.3 サービス設計
-
-#### ControlService
-
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| create_control | validated_data, user | Control | 統制作成 |
-| evaluate_effectiveness | control, evaluation_data, user | Control | 有効性評価実施・記録 |
-| get_implementation_summary | filters | dict | 実装状態サマリー取得 |
-| get_annex_a_mapping | - | dict | Annex A マッピング一覧 |
-| check_evidence_expiry | - | QuerySet | エビデンス期限切れチェック |
-| calculate_coverage | - | dict | 統制カバレッジ率計算 |
+    @staticmethod
+    def verify_completion(ca_id: UUID, approved: bool, user: User):
+        """是正措置の完了を確認する"""
+        # 1. 承認時: ステータスを「完了」に更新、再テストをスケジュール
+        # 2. 却下時: ステータスを「差戻し」、担当者に通知
+        pass
+```
 
 ---
 
-## 6. complianceアプリ（コンプライアンス管理）
+## 6. audits アプリ（監査管理）
 
 ### 6.1 モデル設計
 
-#### ComplianceFrameworkモデル
+```python
+class Audit(BaseModel):
+    """監査"""
+    audit_id = models.CharField(max_length=20, unique=True)  # AUD-YYYY-NNNN
+    title = models.CharField(max_length=200)
+    audit_type = models.CharField(max_length=20, choices=AUDIT_TYPE_CHOICES)
+    scope = models.TextField()
+    target_department = models.CharField(max_length=100)
+    framework = models.ForeignKey('frameworks.Framework',
+                                  on_delete=models.PROTECT, null=True)
+    lead_auditor = models.ForeignKey('accounts.User', on_delete=models.PROTECT,
+                                     related_name='led_audits')
+    team_members = models.ManyToManyField('accounts.User',
+                                          related_name='audit_participations')
+    planned_start_date = models.DateField()
+    planned_end_date = models.DateField()
+    actual_start_date = models.DateField(null=True)
+    actual_end_date = models.DateField(null=True)
+    status = models.CharField(max_length=20, choices=AUDIT_STATUS_CHOICES,
+                              default='draft')
+    approved_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL,
+                                    null=True, related_name='approved_audits')
+    approved_at = models.DateTimeField(null=True)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | フレームワークID |
-| name | CharField(200) | UNIQUE | フレームワーク名（例: ISO 27001:2022） |
-| code | CharField(20) | UNIQUE | コード |
-| version | CharField(20) | NOT NULL | バージョン |
-| description | TextField | NULL可 | 説明 |
-| effective_date | DateField | NULL可 | 適用開始日 |
+AUDIT_STATUS_CHOICES = [
+    ('draft', '下書き'),
+    ('pending_approval', '承認待ち'),
+    ('approved', '承認済み'),
+    ('in_progress', '実施中'),
+    ('suspended', '中断中'),
+    ('completed', '実施完了'),
+    ('reported', '報告済み'),
+    ('rejected', '差戻し'),
+]
 
-#### ComplianceRequirementモデル
+class AuditChecklist(BaseModel):
+    """監査チェックリスト項目"""
+    audit = models.ForeignKey(Audit, on_delete=models.CASCADE,
+                              related_name='checklist_items')
+    control = models.ForeignKey('controls.Control', on_delete=models.PROTECT)
+    sequence = models.IntegerField()
+    result = models.CharField(max_length=20, choices=CHECKLIST_RESULT_CHOICES,
+                              null=True)
+    notes = models.TextField(blank=True)
+    auditor = models.ForeignKey('accounts.User', on_delete=models.SET_NULL,
+                                null=True)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | 要件ID |
-| requirement_code | CharField(30) | UNIQUE | 要件コード（自動採番） |
-| framework | ForeignKey(ComplianceFramework) | NOT NULL | フレームワーク |
-| clause_ref | CharField(30) | NOT NULL | 条項参照番号 |
-| title | CharField(200) | NOT NULL | 要件タイトル |
-| description | TextField | NOT NULL | 要件詳細 |
-| priority | CharField(20) | NOT NULL | 優先度（HIGH/MEDIUM/LOW） |
-| status | CharField(20) | NOT NULL | 準拠状態 |
-| owner | ForeignKey(User) | NOT NULL | 要件オーナー |
-| due_date | DateField | NULL可 | 対応期限 |
-| evidence_description | TextField | NULL可 | 必要なエビデンスの説明 |
-| controls | ManyToManyField(Control) | - | 対応する統制 |
-| gap_description | TextField | NULL可 | ギャップ詳細（非準拠時） |
-| remediation_plan | TextField | NULL可 | 改善計画 |
+class AuditFinding(BaseModel):
+    """監査所見"""
+    finding_id = models.CharField(max_length=20, unique=True)  # FND-YYYY-NNNN
+    audit = models.ForeignKey(Audit, on_delete=models.CASCADE,
+                              related_name='findings')
+    finding_type = models.CharField(max_length=30,
+                                    choices=FINDING_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    reference_control = models.ForeignKey('controls.Control',
+                                          on_delete=models.SET_NULL, null=True)
+    impact_scope = models.CharField(max_length=200)
+    risk_level = models.CharField(max_length=20, blank=True)
+    is_recurrence = models.BooleanField(default=False)
+    previous_finding = models.ForeignKey('self', on_delete=models.SET_NULL,
+                                         null=True, blank=True)
+    status = models.CharField(max_length=20, default='open')
 
-#### 準拠状態
+FINDING_TYPE_CHOICES = [
+    ('major_nc', '重大不適合'),
+    ('minor_nc', '軽微不適合'),
+    ('observation', '観察事項'),
+    ('recommendation', '推奨事項'),
+    ('opportunity', '改善機会'),
+]
 
-| コード | 名称 | 説明 |
-|--------|------|------|
-| COMPLIANT | 準拠 | 要件を満たしている |
-| PARTIALLY_COMPLIANT | 一部準拠 | 部分的に要件を満たしている |
-| NON_COMPLIANT | 非準拠 | 要件を満たしていない |
-| NOT_ASSESSED | 未評価 | まだ評価されていない |
-| NOT_APPLICABLE | 適用外 | 当該要件は適用対象外 |
+class CorrectiveActionRequest(BaseModel):
+    """是正勧告（CAR）"""
+    finding = models.ForeignKey(AuditFinding, on_delete=models.CASCADE,
+                                related_name='corrective_action_requests')
+    description = models.TextField()
+    due_date = models.DateField()
+    responsible_person = models.ForeignKey('accounts.User',
+                                           on_delete=models.PROTECT)
+    status = models.CharField(max_length=20, default='issued')
+    follow_up_date = models.DateField(null=True)
+    follow_up_result = models.CharField(max_length=20, null=True)
+```
 
-### 6.2 ビュー設計
+### 6.2 サービス層設計
 
-| ViewSet | エンドポイント | メソッド | 説明 |
-|---------|---------------|---------|------|
-| ComplianceRequirementViewSet | /api/v1/compliance | GET | 要件一覧取得 |
-| ComplianceRequirementViewSet | /api/v1/compliance | POST | 要件新規登録 |
-| ComplianceRequirementViewSet | /api/v1/compliance/{id} | GET, PUT, PATCH, DELETE | 要件詳細・更新・削除 |
-| ComplianceRequirementViewSet | /api/v1/compliance/{id}/assess | POST | 準拠状態評価実施 |
-| ComplianceRequirementViewSet | /api/v1/compliance/gap-analysis | GET | ギャップ分析レポート |
-| ComplianceRequirementViewSet | /api/v1/compliance/statistics | GET | コンプライアンス統計 |
-| ComplianceFrameworkViewSet | /api/v1/compliance/frameworks | GET, POST | フレームワーク管理 |
+```python
+class AuditService:
+    @staticmethod
+    def create_audit_plan(data: dict, user: User) -> Audit:
+        """監査計画を作成する"""
+        pass
 
-### 6.3 サービス設計
+    @staticmethod
+    def generate_checklist(audit_id: UUID) -> list[AuditChecklist]:
+        """監査スコープに基づきチェックリストを自動生成する"""
+        pass
 
-#### ComplianceService
+    @staticmethod
+    def record_finding(audit_id: UUID, data: dict, user: User) -> AuditFinding:
+        """監査所見を記録する"""
+        # 1. 所見ID自動採番
+        # 2. 再発チェック（過去の類似所見検索）
+        # 3. 重大不適合時のエスカレーション通知
+        pass
 
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| assess_requirement | requirement, assessment_data, user | ComplianceRequirement | 準拠状態評価 |
-| get_compliance_rate | framework_id | dict | フレームワーク別準拠率計算 |
-| get_gap_analysis | framework_id | list[dict] | ギャップ分析結果取得 |
-| get_statistics | filters | dict | コンプライアンス統計 |
-| generate_soa | framework_id | dict | 適用宣言書（SoA）生成 |
-| check_upcoming_deadlines | days | QuerySet | 期限間近の要件取得 |
+    @staticmethod
+    def issue_car(finding_id: UUID, data: dict, user: User):
+        """是正勧告を発行する"""
+        # 1. 是正勧告書PDF生成（Celeryタスク）
+        # 2. 是正責任者への通知
+        # 3. 是正措置管理への自動登録
+        # 4. フォローアップ日程の自動計算
+        pass
+```
 
 ---
 
-## 7. auditsアプリ（監査管理）
+## 7. reports アプリ（レポート管理）
 
 ### 7.1 モデル設計
 
-#### Auditモデル
+```python
+class ReportTemplate(BaseModel):
+    """レポートテンプレート"""
+    name = models.CharField(max_length=200)
+    template_type = models.CharField(max_length=30,
+                                     choices=REPORT_TYPE_CHOICES)
+    description = models.TextField(blank=True)
+    configuration = models.JSONField(default=dict)
+    is_system = models.BooleanField(default=False)  # システム定義テンプレート
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | 監査ID |
-| audit_code | CharField(20) | UNIQUE | 監査コード（AUD-YYYY-NNN） |
-| title | CharField(200) | NOT NULL | 監査タイトル |
-| description | TextField | NULL可 | 監査概要 |
-| audit_type | CharField(20) | NOT NULL | 監査種別 |
-| status | CharField(20) | NOT NULL | 監査ステータス |
-| lead_auditor | ForeignKey(User) | NOT NULL | 主任監査員 |
-| auditors | ManyToManyField(User) | - | 監査チームメンバー |
-| scope | TextField | NOT NULL | 監査範囲 |
-| criteria | TextField | NOT NULL | 監査基準 |
-| planned_start_date | DateField | NOT NULL | 計画開始日 |
-| planned_end_date | DateField | NOT NULL | 計画終了日 |
-| actual_start_date | DateField | NULL可 | 実績開始日 |
-| actual_end_date | DateField | NULL可 | 実績終了日 |
-| conclusion | TextField | NULL可 | 監査結論 |
-| related_controls | ManyToManyField(Control) | - | 対象統制 |
+class GeneratedReport(BaseModel):
+    """生成済みレポート"""
+    template = models.ForeignKey(ReportTemplate, on_delete=models.SET_NULL,
+                                 null=True)
+    title = models.CharField(max_length=200)
+    period_start = models.DateField()
+    period_end = models.DateField()
+    data_snapshot = models.JSONField()
+    file = models.FileField(upload_to='reports/%Y/%m/', null=True)
+    status = models.CharField(max_length=20, default='generating')
+    generated_by = models.ForeignKey('accounts.User', on_delete=models.PROTECT)
 
-#### 監査種別
+class ReportSchedule(BaseModel):
+    """レポート自動生成スケジュール"""
+    template = models.ForeignKey(ReportTemplate, on_delete=models.CASCADE)
+    frequency = models.CharField(max_length=20)  # monthly/quarterly/yearly
+    cron_expression = models.CharField(max_length=100)
+    recipients = models.ManyToManyField('accounts.User')
+    is_active = models.BooleanField(default=True)
+    last_generated_at = models.DateTimeField(null=True)
 
-| コード | 名称 |
-|--------|------|
-| INTERNAL | 内部監査 |
-| EXTERNAL | 外部監査 |
-| CERTIFICATION | 認証審査 |
-| SURVEILLANCE | サーベイランス審査 |
-| SPECIAL | 特別監査 |
+class AlertRule(BaseModel):
+    """アラートルール"""
+    name = models.CharField(max_length=200)
+    trigger_type = models.CharField(max_length=50)
+    trigger_condition = models.JSONField()
+    notification_channels = models.JSONField()  # ['email', 'slack', 'dashboard']
+    recipient_roles = models.JSONField(default=list)
+    recipient_users = models.ManyToManyField('accounts.User', blank=True)
+    frequency = models.CharField(max_length=20, default='immediate')
+    is_active = models.BooleanField(default=True)
 
-#### 監査ステータス
+class AlertHistory(BaseModel):
+    """アラート発報履歴"""
+    rule = models.ForeignKey(AlertRule, on_delete=models.CASCADE)
+    triggered_at = models.DateTimeField(auto_now_add=True)
+    trigger_data = models.JSONField()
+    recipients_notified = models.JSONField()
+    status = models.CharField(max_length=20)
+```
 
-| コード | 名称 | 遷移先 |
-|--------|------|--------|
-| PLANNED | 計画済み | IN_PROGRESS, CANCELLED |
-| IN_PROGRESS | 実施中 | COMPLETED, ON_HOLD |
-| ON_HOLD | 保留中 | IN_PROGRESS, CANCELLED |
-| COMPLETED | 完了 | CLOSED |
-| CLOSED | クローズ | - |
-| CANCELLED | 中止 | - |
+### 7.2 サービス層設計
 
-#### AuditFindingモデル
+```python
+class DashboardService:
+    @staticmethod
+    def get_risk_summary(user: User, period: str) -> dict:
+        """リスク概況データを取得する"""
+        pass
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | 所見ID |
-| finding_code | CharField(20) | UNIQUE | 所見コード（FND-YYYY-NNN） |
-| audit | ForeignKey(Audit) | NOT NULL | 対象監査 |
-| title | CharField(200) | NOT NULL | 所見タイトル |
-| description | TextField | NOT NULL | 所見詳細 |
-| finding_type | CharField(20) | NOT NULL | 所見種別 |
-| severity | CharField(20) | NOT NULL | 重大度 |
-| status | CharField(20) | NOT NULL | 対応状態 |
-| related_control | ForeignKey(Control) | NULL可 | 関連統制 |
-| related_requirement | ForeignKey(ComplianceRequirement) | NULL可 | 関連コンプライアンス要件 |
-| root_cause | TextField | NULL可 | 根本原因 |
-| recommendation | TextField | NULL可 | 推奨対応 |
-| assigned_to | ForeignKey(User) | NULL可 | 対応担当者 |
-| due_date | DateField | NULL可 | 対応期限 |
-| resolution_date | DateField | NULL可 | 解決日 |
-| resolution_description | TextField | NULL可 | 解決内容 |
-| verified_by | ForeignKey(User) | NULL可 | 検証者 |
-| verified_date | DateField | NULL可 | 検証日 |
+    @staticmethod
+    def get_compliance_rate(user: User) -> dict:
+        """コンプライアンス準拠率を取得する"""
+        pass
 
-#### 所見種別
+    @staticmethod
+    def get_control_effectiveness(user: User) -> dict:
+        """統制有効性サマリーを取得する"""
+        pass
 
-| コード | 名称 | 説明 |
-|--------|------|------|
-| MAJOR_NC | 重大不適合 | 重大な規格違反 |
-| MINOR_NC | 軽微不適合 | 軽微な規格違反 |
-| OBSERVATION | 観察事項 | 改善の余地あり |
-| OPPORTUNITY | 改善の機会 | ベストプラクティスの提案 |
-| POSITIVE | 良好事例 | 優れた実践 |
+    @staticmethod
+    def get_open_findings(user: User) -> list:
+        """未対応監査所見一覧を取得する"""
+        pass
 
-### 7.2 ビュー設計
+class ReportService:
+    @staticmethod
+    def generate_report(template_id: UUID, period: dict, user: User):
+        """レポートを生成する（Celeryタスクとして実行）"""
+        pass
 
-| ViewSet | エンドポイント | メソッド | 説明 |
-|---------|---------------|---------|------|
-| AuditViewSet | /api/v1/audits | GET, POST | 監査一覧・作成 |
-| AuditViewSet | /api/v1/audits/{id} | GET, PUT, PATCH, DELETE | 監査詳細・更新・削除 |
-| AuditViewSet | /api/v1/audits/{id}/findings | GET, POST | 所見管理 |
-| AuditViewSet | /api/v1/audits/{id}/complete | POST | 監査完了処理 |
-| AuditViewSet | /api/v1/audits/statistics | GET | 監査統計 |
-| AuditFindingViewSet | /api/v1/audits/findings | GET | 所見横断一覧 |
-| AuditFindingViewSet | /api/v1/audits/findings/{id} | GET, PUT, PATCH | 所見詳細・更新 |
-| AuditFindingViewSet | /api/v1/audits/findings/{id}/resolve | POST | 所見解決処理 |
-| AuditFindingViewSet | /api/v1/audits/findings/{id}/verify | POST | 所見検証処理 |
+    @staticmethod
+    def export_data(data_source: str, filters: dict, format: str, user: User):
+        """データをエクスポートする"""
+        pass
 
-### 7.3 サービス設計
+class AlertService:
+    @staticmethod
+    def check_alert_conditions():
+        """全アラートルールの条件をチェックする（Celery定期タスク）"""
+        pass
 
-#### AuditService
-
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| create_audit | validated_data, user | Audit | 監査作成、コード自動採番 |
-| start_audit | audit, user | Audit | 監査開始処理 |
-| complete_audit | audit, conclusion, user | Audit | 監査完了処理 |
-| add_finding | audit, finding_data, user | AuditFinding | 所見追加 |
-| resolve_finding | finding, resolution_data, user | AuditFinding | 所見解決処理 |
-| verify_finding | finding, verification_data, user | AuditFinding | 所見検証処理 |
-| get_finding_statistics | filters | dict | 所見統計情報 |
-| get_overdue_findings | - | QuerySet | 期限超過所見取得 |
+    @staticmethod
+    def send_notification(rule: AlertRule, trigger_data: dict):
+        """アラート通知を送信する"""
+        pass
+```
 
 ---
 
-## 8. reportsアプリ（レポート生成）
+## 8. frameworks アプリ（フレームワーク管理）
 
 ### 8.1 モデル設計
 
-#### ReportTemplateモデル
+```python
+class Framework(BaseModel):
+    """フレームワーク"""
+    code = models.CharField(max_length=50, unique=True)  # ISO27001, NIST_CSF
+    name = models.CharField(max_length=200)
+    version = models.CharField(max_length=20)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | テンプレートID |
-| name | CharField(200) | UNIQUE | テンプレート名 |
-| code | CharField(20) | UNIQUE | テンプレートコード |
-| description | TextField | NULL可 | テンプレート説明 |
-| report_type | CharField(20) | NOT NULL | レポート種別 |
-| template_config | JSONField | NOT NULL | テンプレート設定（セクション定義等） |
+class FrameworkCategory(BaseModel):
+    """フレームワークカテゴリ（階層構造）"""
+    framework = models.ForeignKey(Framework, on_delete=models.CASCADE,
+                                  related_name='categories')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE,
+                               null=True, blank=True, related_name='children')
+    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=300)
+    description = models.TextField(blank=True)
+    sort_order = models.IntegerField(default=0)
 
-#### Reportモデル
+class FrameworkControl(BaseModel):
+    """フレームワーク管理策"""
+    framework = models.ForeignKey(Framework, on_delete=models.CASCADE,
+                                  related_name='controls')
+    category = models.ForeignKey(FrameworkCategory, on_delete=models.CASCADE,
+                                 related_name='controls')
+    code = models.CharField(max_length=50)
+    title = models.CharField(max_length=300)
+    description = models.TextField()
+    guidance = models.TextField(blank=True)
+    sort_order = models.IntegerField(default=0)
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | レポートID |
-| report_code | CharField(20) | UNIQUE | レポートコード（RPT-YYYYMM-NNN） |
-| title | CharField(200) | NOT NULL | レポートタイトル |
-| template | ForeignKey(ReportTemplate) | NULL可 | 使用テンプレート |
-| report_type | CharField(20) | NOT NULL | レポート種別 |
-| format | CharField(10) | NOT NULL | 出力形式（PDF/XLSX/CSV） |
-| status | CharField(20) | NOT NULL | 生成状態 |
-| parameters | JSONField | default={} | 生成パラメータ（期間、フィルタ等） |
-| file | FileField | NULL可 | 生成ファイル |
-| file_size | IntegerField | NULL可 | ファイルサイズ（bytes） |
-| generated_at | DateTimeField | NULL可 | 生成完了日時 |
-| generated_by | ForeignKey(User) | NOT NULL | 生成者 |
-| error_message | TextField | NULL可 | エラーメッセージ |
-
-#### レポート種別
-
-| コード | 名称 | 内容 |
-|--------|------|------|
-| RISK_SUMMARY | リスクサマリー | リスク一覧・マトリクス・統計 |
-| RISK_DETAIL | リスク詳細 | 個別リスクの詳細レポート |
-| COMPLIANCE_STATUS | コンプライアンス状況 | 準拠状況・ギャップ分析 |
-| CONTROL_EFFECTIVENESS | 統制有効性 | 統制実装状況・有効性評価 |
-| AUDIT_REPORT | 監査報告 | 監査結果・所見一覧 |
-| EXECUTIVE_DASHBOARD | エグゼクティブダッシュボード | 経営層向けサマリー |
-| SOA | 適用宣言書 | ISO 27001適用宣言書 |
-
-#### レポート生成状態
-
-| コード | 名称 |
-|--------|------|
-| PENDING | 生成待ち |
-| GENERATING | 生成中 |
-| COMPLETED | 完了 |
-| FAILED | 失敗 |
-
-### 8.2 ビュー設計
-
-| ViewSet | エンドポイント | メソッド | 説明 |
-|---------|---------------|---------|------|
-| ReportViewSet | /api/v1/reports | GET | レポート一覧取得 |
-| ReportViewSet | /api/v1/reports | POST | レポート生成リクエスト |
-| ReportViewSet | /api/v1/reports/{id} | GET | レポート詳細取得 |
-| ReportViewSet | /api/v1/reports/{id} | DELETE | レポート削除 |
-| ReportViewSet | /api/v1/reports/{id}/download | GET | レポートファイルダウンロード |
-| ReportViewSet | /api/v1/reports/{id}/regenerate | POST | レポート再生成 |
-| ReportTemplateViewSet | /api/v1/reports/templates | GET | テンプレート一覧取得 |
-
-### 8.3 サービス設計
-
-#### ReportService
-
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| request_report | template_id, params, format, user | Report | レポート生成リクエスト（Celeryタスク投入） |
-| generate_report | report_id | Report | レポート生成実行（Celery Worker内） |
-| generate_pdf | report, data | bytes | PDF生成 |
-| generate_excel | report, data | bytes | Excel生成 |
-| get_report_data | report_type, params | dict | レポートデータ収集 |
-| cleanup_old_reports | days | int | 古いレポートファイル削除 |
+class FrameworkMapping(BaseModel):
+    """フレームワーク間マッピング"""
+    source_control = models.ForeignKey(FrameworkControl,
+                                       on_delete=models.CASCADE,
+                                       related_name='mappings_from')
+    target_control = models.ForeignKey(FrameworkControl,
+                                       on_delete=models.CASCADE,
+                                       related_name='mappings_to')
+    mapping_type = models.CharField(max_length=20)  # exact/partial/related
+    notes = models.TextField(blank=True)
+```
 
 ---
 
-## 9. notificationsアプリ（通知管理）
+## 9. common アプリ（共通機能）
 
-### 9.1 モデル設計
+### 9.1 監査ログ
 
-#### Notificationモデル
+```python
+class AuditLog(models.Model):
+    """監査ログ（改ざん防止のため BaseModel を継承しない）"""
+    id = models.BigAutoField(primary_key=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL,
+                             null=True)
+    user_email = models.CharField(max_length=254)  # ユーザー削除後も保持
+    action = models.CharField(max_length=50)  # CREATE/READ/UPDATE/DELETE/LOGIN等
+    resource_type = models.CharField(max_length=100)  # モデル名
+    resource_id = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True)
+    user_agent = models.TextField(blank=True)
+    request_data = models.JSONField(null=True)  # リクエストボディ（機密除外）
+    response_status = models.IntegerField(null=True)
+    changes = models.JSONField(null=True)  # 変更前後の差分
 
-| フィールド名 | 型 | 制約 | 説明 |
-|-------------|-----|------|------|
-| id | UUIDField | PK | 通知ID |
-| recipient | ForeignKey(User) | NOT NULL | 受信者 |
-| notification_type | CharField(30) | NOT NULL | 通知種別 |
-| title | CharField(200) | NOT NULL | 通知タイトル |
-| message | TextField | NOT NULL | 通知メッセージ |
-| severity | CharField(20) | NOT NULL | 重要度（INFO/WARNING/CRITICAL） |
-| is_read | BooleanField | default=False | 既読フラグ |
-| read_at | DateTimeField | NULL可 | 既読日時 |
-| related_object_type | CharField(50) | NULL可 | 関連オブジェクトタイプ |
-| related_object_id | UUIDField | NULL可 | 関連オブジェクトID |
-| action_url | CharField(500) | NULL可 | アクションURL |
+    class Meta:
+        managed = True
+        # 削除・更新を防止するカスタムマネージャを使用
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp', 'action']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['resource_type', 'resource_id']),
+        ]
+```
 
-#### 通知種別
+### 9.2 通知サービス
 
-| コード | 名称 | トリガー |
-|--------|------|---------|
-| RISK_ASSIGNED | リスク割当通知 | リスクオーナー変更時 |
-| RISK_OVERDUE | リスク期限超過 | 対応期限を過ぎた場合 |
-| RISK_DUE_SOON | リスク期限間近 | 対応期限7日前 |
-| AUDIT_SCHEDULED | 監査予定通知 | 監査計画時 |
-| AUDIT_FINDING | 監査所見通知 | 所見登録時 |
-| FINDING_ASSIGNED | 所見割当通知 | 所見担当者割当時 |
-| FINDING_OVERDUE | 所見期限超過 | 対応期限超過時 |
-| COMPLIANCE_CHANGE | コンプライアンス変更 | 準拠状態変更時 |
-| CONTROL_REVIEW_DUE | 統制レビュー期限 | レビュー期限間近 |
-| REPORT_READY | レポート完了通知 | レポート生成完了時 |
+```python
+class NotificationService:
+    @staticmethod
+    def send_email(recipients: list[str], subject: str, body: str,
+                   attachments: list = None):
+        """メール通知を送信する"""
+        pass
 
-### 9.2 ビュー設計
+    @staticmethod
+    def send_slack(channel: str, message: str):
+        """Slack通知を送信する"""
+        pass
 
-| ViewSet | エンドポイント | メソッド | 説明 |
-|---------|---------------|---------|------|
-| NotificationViewSet | /api/v1/notifications | GET | 自分宛通知一覧取得 |
-| NotificationViewSet | /api/v1/notifications/{id}/read | POST | 既読マーク |
-| NotificationViewSet | /api/v1/notifications/read-all | POST | 全件既読マーク |
-| NotificationViewSet | /api/v1/notifications/unread-count | GET | 未読件数取得 |
-
-### 9.3 サービス設計
-
-#### NotificationService
-
-| メソッド | 引数 | 戻り値 | 説明 |
-|---------|------|--------|------|
-| send_notification | recipient, type, title, message, related_obj | Notification | 通知作成・送信 |
-| send_bulk_notification | recipients, type, title, message | list[Notification] | 一括通知送信 |
-| send_email_notification | notification | bool | メール通知送信（Celery） |
-| mark_as_read | notification, user | Notification | 既読マーク |
-| get_unread_count | user | int | 未読件数取得 |
-| process_scheduled_notifications | - | int | 定期通知処理（期限間近等） |
+    @staticmethod
+    def send_dashboard_notification(user_ids: list[UUID], message: str,
+                                    severity: str):
+        """ダッシュボード通知を送信する"""
+        pass
+```
 
 ---
 
@@ -724,31 +1009,44 @@ RiskListSerializerの全フィールドに加え以下を含む:
 
 ### 10.1 タスク一覧
 
-| タスク名 | アプリ | スケジュール | 説明 |
-|----------|--------|------------|------|
-| generate_report_task | reports | オンデマンド | レポート非同期生成 |
-| send_email_task | notifications | オンデマンド | メール送信 |
-| check_risk_deadlines | risks | 毎日 09:00 | リスク期限チェック・通知 |
-| check_audit_deadlines | audits | 毎日 09:00 | 監査期限チェック・通知 |
-| check_finding_deadlines | audits | 毎日 09:00 | 所見期限チェック・通知 |
-| check_control_reviews | controls | 毎週月曜 09:00 | 統制レビュー期限チェック |
-| recalculate_risk_scores | risks | 毎日 02:00 | リスクスコア整合性チェック |
-| cleanup_old_reports | reports | 毎週日曜 03:00 | 古いレポートファイル削除 |
-| generate_daily_digest | notifications | 毎日 08:00 | デイリーダイジェスト生成 |
+| タスク名 | スケジュール | 説明 |
+|---------|------------|------|
+| `check_risk_kri_thresholds` | 1時間ごと | KRI閾値超過チェック |
+| `check_overdue_tasks` | 日次 06:00 | 期限超過タスクの検出・通知 |
+| `generate_scheduled_report` | Celery Beat | 定期レポートの自動生成 |
+| `check_alert_conditions` | 5分ごと | アラート条件チェック |
+| `send_notification_email` | 即時（キュー） | メール通知の非同期送信 |
+| `send_notification_slack` | 即時（キュー） | Slack通知の非同期送信 |
+| `generate_report_pdf` | 即時（キュー） | レポートPDF生成 |
+| `calculate_compliance_rate` | 評価更新時 | 準拠率の再計算 |
+| `recalculate_residual_risk` | 統制評価更新時 | 残留リスクの再計算 |
+| `cleanup_expired_tokens` | 日次 03:00 | 期限切れJWTトークンの削除 |
+| `backup_audit_logs` | 日次 02:00 | 監査ログのアーカイブ |
 
-### 10.2 Celeryキュー設計
+### 10.2 タスク設計例
 
-| キュー名 | 用途 | 同時実行数 | タイムアウト |
-|---------|------|-----------|-------------|
-| default | デフォルトタスク | 4 | 300秒 |
-| high_priority | メール送信・通知 | 2 | 60秒 |
-| low_priority | レポート生成・データ処理 | 2 | 600秒 |
-| scheduled | 定期タスク | 1 | 300秒 |
-
----
-
-## 11. 改訂履歴
-
-| バージョン | 日付 | 変更内容 | 変更者 |
-|-----------|------|----------|--------|
-| 1.0.0 | 2026-03-26 | 初版作成 | 開発チーム |
+```python
+# tasks/risk_tasks.py
+@shared_task(bind=True, max_retries=3)
+def check_risk_kri_thresholds(self):
+    """KRI閾値超過をチェックしアラートを発報する"""
+    try:
+        risks = Risk.objects.filter(
+            status__in=['monitoring', 'treating'],
+            is_deleted=False
+        )
+        for risk in risks:
+            if risk.kri_value and risk.kri_threshold:
+                if risk.kri_value > risk.kri_threshold:
+                    AlertService.send_notification(
+                        rule_type='kri_threshold',
+                        trigger_data={
+                            'risk_id': str(risk.id),
+                            'risk_title': risk.title,
+                            'kri_value': risk.kri_value,
+                            'threshold': risk.kri_threshold,
+                        }
+                    )
+    except Exception as exc:
+        self.retry(exc=exc, countdown=60)
+```
