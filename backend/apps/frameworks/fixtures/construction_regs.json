@@ -1,0 +1,257 @@
+[
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000001",
+    "fields": {
+      "req_id": "KEN-001",
+      "framework": "construction_law",
+      "category": "許可要件",
+      "title": "建設業許可の取得・維持",
+      "description": "建設業法第3条に基づく建設業許可の取得および更新要件の管理",
+      "article_ref": "建設業法第3条",
+      "is_mandatory": true,
+      "frequency": "annual",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000002",
+    "fields": {
+      "req_id": "KEN-002",
+      "framework": "construction_law",
+      "category": "許可要件",
+      "title": "経営業務管理責任者の配置",
+      "description": "建設業法第7条に基づく経営業務管理責任者の設置要件",
+      "article_ref": "建設業法第7条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000003",
+    "fields": {
+      "req_id": "KEN-003",
+      "framework": "construction_law",
+      "category": "許可要件",
+      "title": "専任技術者の配置",
+      "description": "建設業法第7条・第15条に基づく営業所ごとの専任技術者配置",
+      "article_ref": "建設業法第7条・第15条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000004",
+    "fields": {
+      "req_id": "KEN-004",
+      "framework": "construction_law",
+      "category": "経営事項審査",
+      "title": "経営事項審査（経審）の受審",
+      "description": "建設業法第27条の23に基づく経営事項審査の定期受審",
+      "article_ref": "建設業法第27条の23",
+      "is_mandatory": true,
+      "frequency": "annual",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000005",
+    "fields": {
+      "req_id": "KEN-005",
+      "framework": "construction_law",
+      "category": "経営事項審査",
+      "title": "経営状況分析",
+      "description": "経営事項審査に先立つ経営状況分析の実施",
+      "article_ref": "建設業法第27条の24",
+      "is_mandatory": true,
+      "frequency": "annual",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000006",
+    "fields": {
+      "req_id": "KEN-006",
+      "framework": "construction_law",
+      "category": "請負契約",
+      "title": "請負契約書の記載事項遵守",
+      "description": "建設業法第19条に基づく15項目の必須記載事項の確保",
+      "article_ref": "建設業法第19条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000007",
+    "fields": {
+      "req_id": "KEN-007",
+      "framework": "construction_law",
+      "category": "下請契約",
+      "title": "下請代金の適正支払",
+      "description": "建設業法第24条の3に基づく下請代金の支払期限遵守（50日以内）",
+      "article_ref": "建設業法第24条の3",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000008",
+    "fields": {
+      "req_id": "KEN-008",
+      "framework": "construction_law",
+      "category": "技術者制度",
+      "title": "主任技術者・監理技術者の配置",
+      "description": "建設業法第26条に基づく工事現場への技術者配置義務",
+      "article_ref": "建設業法第26条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000010",
+    "fields": {
+      "req_id": "HIN-001",
+      "framework": "quality_law",
+      "category": "品質管理",
+      "title": "工事成績評定への対応",
+      "description": "品確法に基づく工事成績評定の管理と改善",
+      "article_ref": "品確法第14条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000011",
+    "fields": {
+      "req_id": "HIN-002",
+      "framework": "quality_law",
+      "category": "技術提案",
+      "title": "総合評価落札方式への技術提案",
+      "description": "品確法に基づく技術提案・評価制度への対応",
+      "article_ref": "品確法第15条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000012",
+    "fields": {
+      "req_id": "HIN-003",
+      "framework": "quality_law",
+      "category": "技術継承",
+      "title": "技術者の育成・確保",
+      "description": "品確法に基づく技術者の育成と技術継承の推進",
+      "article_ref": "品確法第3条",
+      "is_mandatory": true,
+      "frequency": "annual",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000020",
+    "fields": {
+      "req_id": "ROU-001",
+      "framework": "safety_law",
+      "category": "安全衛生管理体制",
+      "title": "統括安全衛生責任者の選任",
+      "description": "労安法第15条に基づく特定元方事業者の統括安全衛生責任者選任",
+      "article_ref": "労安法第15条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000021",
+    "fields": {
+      "req_id": "ROU-002",
+      "framework": "safety_law",
+      "category": "安全衛生管理体制",
+      "title": "安全衛生責任者の選任",
+      "description": "労安法第16条に基づく関係請負人の安全衛生責任者選任",
+      "article_ref": "労安法第16条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000022",
+    "fields": {
+      "req_id": "ROU-003",
+      "framework": "safety_law",
+      "category": "安全衛生計画",
+      "title": "安全衛生計画の策定・実施",
+      "description": "労安法第28条の2に基づくリスクアセスメントと安全衛生計画の策定",
+      "article_ref": "労安法第28条の2",
+      "is_mandatory": true,
+      "frequency": "annual",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000023",
+    "fields": {
+      "req_id": "ROU-004",
+      "framework": "safety_law",
+      "category": "危険作業",
+      "title": "特別教育の実施",
+      "description": "労安法第59条第3項に基づく危険有害業務従事者への特別教育",
+      "article_ref": "労安法第59条",
+      "is_mandatory": true,
+      "frequency": "ongoing",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000024",
+    "fields": {
+      "req_id": "ROU-005",
+      "framework": "safety_law",
+      "category": "健康管理",
+      "title": "定期健康診断の実施",
+      "description": "労安法第66条に基づく従業員の定期健康診断実施義務",
+      "article_ref": "労安法第66条",
+      "is_mandatory": true,
+      "frequency": "annual",
+      "compliance_status": "unknown"
+    }
+  },
+  {
+    "model": "compliance.compliancerequirement",
+    "pk": "c0000001-0001-0001-0001-000000000025",
+    "fields": {
+      "req_id": "ROU-006",
+      "framework": "safety_law",
+      "category": "安全パトロール",
+      "title": "定期安全パトロールの実施",
+      "description": "労安法第30条に基づく作業場所の巡視・安全パトロール",
+      "article_ref": "労安法第30条",
+      "is_mandatory": true,
+      "frequency": "monthly",
+      "compliance_status": "unknown"
+    }
+  }
+]
