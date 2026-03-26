@@ -1,0 +1,296 @@
+[
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-gv-oc-0000-0000-000000000001",
+    "fields": {
+      "function_id": "GV",
+      "function_name": "GOVERN",
+      "function_name_ja": "統治",
+      "category_id": "GV.OC",
+      "category_name": "Organizational Context",
+      "category_name_ja": "組織の状況",
+      "description": "組織のミッション、利害関係者の期待、法令・規制要求事項を理解し、サイバーセキュリティリスク管理の意思決定に情報を提供する。",
+      "description_en": "The circumstances — mission, stakeholder expectations, dependencies, and legal, regulatory, and contractual requirements — surrounding the organization's cybersecurity risk management decisions are understood."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-gv-rm-0000-0000-000000000002",
+    "fields": {
+      "function_id": "GV",
+      "function_name": "GOVERN",
+      "function_name_ja": "統治",
+      "category_id": "GV.RM",
+      "category_name": "Risk Management Strategy",
+      "category_name_ja": "リスク管理戦略",
+      "description": "組織のサイバーセキュリティリスク管理の優先順位、制約条件、リスク許容度、リスク選好を確立し、運用リスクの意思決定を支援するために伝達する。",
+      "description_en": "The organization's priorities, constraints, risk tolerance and appetite statements, and assumptions are established, communicated, and used to support operational risk decisions."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-gv-rr-0000-0000-000000000003",
+    "fields": {
+      "function_id": "GV",
+      "function_name": "GOVERN",
+      "function_name_ja": "統治",
+      "category_id": "GV.RR",
+      "category_name": "Roles, Responsibilities, and Authorities",
+      "category_name_ja": "役割・責任・権限",
+      "description": "サイバーセキュリティのリスク管理の役割、責任、権限を確立し、伝達する。",
+      "description_en": "Cybersecurity roles, responsibilities, and authorities to foster accountability, performance assessment, and continuous improvement are established and communicated."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-gv-po-0000-0000-000000000004",
+    "fields": {
+      "function_id": "GV",
+      "function_name": "GOVERN",
+      "function_name_ja": "統治",
+      "category_id": "GV.PO",
+      "category_name": "Policy",
+      "category_name_ja": "方針",
+      "description": "組織のサイバーセキュリティ方針を確立し、組織のコンテキストに基づいて伝達・実施する。",
+      "description_en": "Organizational cybersecurity policy is established, communicated, and enforced."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-gv-sc-0000-0000-000000000005",
+    "fields": {
+      "function_id": "GV",
+      "function_name": "GOVERN",
+      "function_name_ja": "統治",
+      "category_id": "GV.SC",
+      "category_name": "Cybersecurity Supply Chain Risk Management",
+      "category_name_ja": "サイバーセキュリティサプライチェーンリスク管理",
+      "description": "サイバーセキュリティサプライチェーンリスク管理のプロセスを特定、確立、管理、監視し、改善する。",
+      "description_en": "Cyber supply chain risk management processes are identified, established, managed, monitored, and improved by organizational stakeholders."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-id-am-0000-0000-000000000006",
+    "fields": {
+      "function_id": "ID",
+      "function_name": "IDENTIFY",
+      "function_name_ja": "識別",
+      "category_id": "ID.AM",
+      "category_name": "Asset Management",
+      "category_name_ja": "資産管理",
+      "description": "組織にとって重要な機能を実現するための資産（データ、ハードウェア、ソフトウェア、システム、施設、サービス、人）を特定し、管理する。",
+      "description_en": "Assets (e.g., data, hardware, software, systems, facilities, services, people) that enable the organization to achieve business purposes are identified and managed consistent with their relative importance to organizational objectives and the organization's risk strategy."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-id-ra-0000-0000-000000000007",
+    "fields": {
+      "function_id": "ID",
+      "function_name": "IDENTIFY",
+      "function_name_ja": "識別",
+      "category_id": "ID.RA",
+      "category_name": "Risk Assessment",
+      "category_name_ja": "リスクアセスメント",
+      "description": "組織に対するサイバーセキュリティリスクを理解し、資産、脆弱性、脅威、影響、可能性を評価する。",
+      "description_en": "The cybersecurity risk to the organization, assets, and individuals is understood by the organization."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-id-im-0000-0000-000000000008",
+    "fields": {
+      "function_id": "ID",
+      "function_name": "IDENTIFY",
+      "function_name_ja": "識別",
+      "category_id": "ID.IM",
+      "category_name": "Improvement",
+      "category_name_ja": "改善",
+      "description": "組織のサイバーセキュリティリスク管理プロセス、手順、活動の改善を特定する。",
+      "description_en": "Improvements to organizational cybersecurity risk management processes, procedures, and activities are identified across all CSF Functions."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-pr-aa-0000-0000-000000000009",
+    "fields": {
+      "function_id": "PR",
+      "function_name": "PROTECT",
+      "function_name_ja": "防御",
+      "category_id": "PR.AA",
+      "category_name": "Identity Management, Authentication, and Access Control",
+      "category_name_ja": "ID管理・認証・アクセス制御",
+      "description": "物理的・論理的資産及び関連施設へのアクセスを、認可されたユーザー、サービス、ハードウェアに限定し、不正アクセスのリスクに応じて管理する。",
+      "description_en": "Access to physical and logical assets is limited to authorized users, services, and hardware and managed commensurate with the assessed risk of unauthorized access."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-pr-at-0000-0000-000000000010",
+    "fields": {
+      "function_id": "PR",
+      "function_name": "PROTECT",
+      "function_name_ja": "防御",
+      "category_id": "PR.AT",
+      "category_name": "Awareness and Training",
+      "category_name_ja": "意識向上・訓練",
+      "description": "組織の要員にサイバーセキュリティの意識向上教育と訓練を提供し、関連する方針、手順、契約に沿ったサイバーセキュリティ関連の職務を遂行できるようにする。",
+      "description_en": "The organization's personnel are provided cybersecurity awareness and training so that they can perform their cybersecurity-related tasks."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-pr-ds-0000-0000-000000000011",
+    "fields": {
+      "function_id": "PR",
+      "function_name": "PROTECT",
+      "function_name_ja": "防御",
+      "category_id": "PR.DS",
+      "category_name": "Data Security",
+      "category_name_ja": "データセキュリティ",
+      "description": "データの機密性、完全性、可用性を保護するためにデータを管理する。",
+      "description_en": "Data are managed consistent with the organization's risk strategy to protect the confidentiality, integrity, and availability of information."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-pr-ps-0000-0000-000000000012",
+    "fields": {
+      "function_id": "PR",
+      "function_name": "PROTECT",
+      "function_name_ja": "防御",
+      "category_id": "PR.PS",
+      "category_name": "Platform Security",
+      "category_name_ja": "プラットフォームセキュリティ",
+      "description": "物理的・仮想的プラットフォームのハードウェア、ソフトウェア、サービスを組織のリスク戦略に沿って管理し、機密性、完全性、可用性を保護する。",
+      "description_en": "The hardware, software (e.g., firmware, operating systems, applications), and services of physical and virtual platforms are managed consistent with the organization's risk strategy to protect their confidentiality, integrity, and availability."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-pr-ir-0000-0000-000000000013",
+    "fields": {
+      "function_id": "PR",
+      "function_name": "PROTECT",
+      "function_name_ja": "防御",
+      "category_id": "PR.IR",
+      "category_name": "Technology Infrastructure Resilience",
+      "category_name_ja": "技術インフラのレジリエンス",
+      "description": "セキュリティアーキテクチャを組織のリスク戦略に沿って管理し、資産の機密性、完全性、可用性及び組織のレジリエンスを保護する。",
+      "description_en": "Security architectures are managed with the organization's risk strategy to protect asset confidentiality, integrity, and availability, and organizational resilience."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-de-cm-0000-0000-000000000014",
+    "fields": {
+      "function_id": "DE",
+      "function_name": "DETECT",
+      "function_name_ja": "検知",
+      "category_id": "DE.CM",
+      "category_name": "Continuous Monitoring",
+      "category_name_ja": "継続的監視",
+      "description": "資産を継続的に監視し、異常、侵害の兆候、その他の潜在的なサイバーセキュリティイベントを検出する。",
+      "description_en": "Assets are monitored to find anomalies, indicators of compromise, and other potentially adverse events."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-de-ae-0000-0000-000000000015",
+    "fields": {
+      "function_id": "DE",
+      "function_name": "DETECT",
+      "function_name_ja": "検知",
+      "category_id": "DE.AE",
+      "category_name": "Adverse Event Analysis",
+      "category_name_ja": "有害事象分析",
+      "description": "異常、侵害の兆候、その他の潜在的なサイバーセキュリティイベントを分析し、イベントの特性を把握し、サイバーセキュリティインシデントを宣言する。",
+      "description_en": "Anomalies, indicators of compromise, and other potentially adverse events are analyzed to characterize the events and detect cybersecurity incidents."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-rs-ma-0000-0000-000000000016",
+    "fields": {
+      "function_id": "RS",
+      "function_name": "RESPOND",
+      "function_name_ja": "対応",
+      "category_id": "RS.MA",
+      "category_name": "Incident Management",
+      "category_name_ja": "インシデント管理",
+      "description": "検知されたサイバーセキュリティインシデントへの対応を管理する。",
+      "description_en": "Responses to detected cybersecurity incidents are managed."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-rs-an-0000-0000-000000000017",
+    "fields": {
+      "function_id": "RS",
+      "function_name": "RESPOND",
+      "function_name_ja": "対応",
+      "category_id": "RS.AN",
+      "category_name": "Incident Analysis",
+      "category_name_ja": "インシデント分析",
+      "description": "インシデントの調査を実施し、効果的な対応を確保し、フォレンジック・分析活動を支援する。",
+      "description_en": "Investigations are conducted to ensure effective response and support forensics and recovery activities."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-rs-co-0000-0000-000000000018",
+    "fields": {
+      "function_id": "RS",
+      "function_name": "RESPOND",
+      "function_name_ja": "対応",
+      "category_id": "RS.CO",
+      "category_name": "Incident Response Reporting and Communication",
+      "category_name_ja": "インシデント対応の報告・連絡",
+      "description": "法令要求事項に従い、内部及び外部の利害関係者と対応活動を調整する。",
+      "description_en": "Response activities are coordinated with internal and external stakeholders as required by laws, regulations, or policies."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-rs-mi-0000-0000-000000000019",
+    "fields": {
+      "function_id": "RS",
+      "function_name": "RESPOND",
+      "function_name_ja": "対応",
+      "category_id": "RS.MI",
+      "category_name": "Incident Mitigation",
+      "category_name_ja": "インシデント緩和",
+      "description": "インシデントの拡大を防止し、影響を緩和し、インシデントを根絶するための活動を実施する。",
+      "description_en": "Activities are performed to prevent expansion of an event and mitigate its effects."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-rc-rp-0000-0000-000000000020",
+    "fields": {
+      "function_id": "RC",
+      "function_name": "RECOVER",
+      "function_name_ja": "復旧",
+      "category_id": "RC.RP",
+      "category_name": "Incident Recovery Plan Execution",
+      "category_name_ja": "インシデント復旧計画の実行",
+      "description": "サイバーセキュリティインシデントの影響を受けた資産及び運用を復旧するための復旧活動を実施する。",
+      "description_en": "Restoration activities are performed to ensure operational availability of systems and services affected by cybersecurity incidents."
+    }
+  },
+  {
+    "model": "controls.nistcsfcategory",
+    "pk": "nist-rc-co-0000-0000-000000000021",
+    "fields": {
+      "function_id": "RC",
+      "function_name": "RECOVER",
+      "function_name_ja": "復旧",
+      "category_id": "RC.CO",
+      "category_name": "Incident Recovery Communication",
+      "category_name_ja": "インシデント復旧の連絡",
+      "description": "復旧活動及び通常運用の回復について、指定された内部及び外部の利害関係者と連絡する。",
+      "description_en": "Restoration activities are coordinated with internal and external parties."
+    }
+  }
+]

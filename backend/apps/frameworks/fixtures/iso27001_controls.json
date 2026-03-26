@@ -1,0 +1,1769 @@
+[
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5010000-0000-0000-0000-000000000001",
+    "fields": {
+      "control_id": "A.5.1",
+      "domain": "organizational",
+      "title": "情報セキュリティのための方針群",
+      "description": "情報セキュリティ方針及びトピック固有の方針は、管理層によって定義、承認、発行、関連する要員及び利害関係者に伝達され、定期的にレビューされなければならない。",
+      "implementation_guidance": "経営陣が承認した情報セキュリティ方針を策定し、全従業員に周知する。定期的な見直しを実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["情報セキュリティ方針文書", "方針承認記録", "従業員への周知記録"],
+      "nist_csf_mapping": ["GV.PO", "GV.OC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5020000-0000-0000-0000-000000000002",
+    "fields": {
+      "control_id": "A.5.2",
+      "domain": "organizational",
+      "title": "情報セキュリティの役割及び責任",
+      "description": "情報セキュリティの役割及び責任を定義し、割り当てなければならない。",
+      "implementation_guidance": "情報セキュリティに関する役割と責任を明確に定義し、適切な人員に割り当てる。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["役割・責任定義書", "組織図", "任命記録"],
+      "nist_csf_mapping": ["GV.RR", "GV.OC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5030000-0000-0000-0000-000000000003",
+    "fields": {
+      "control_id": "A.5.3",
+      "domain": "organizational",
+      "title": "職務の分離",
+      "description": "相反する職務及び責任範囲は、分離しなければならない。",
+      "implementation_guidance": "利益相反を防止するため、重要な業務プロセスにおいて職務の分離を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["職務分離マトリクス", "アクセス権限一覧", "承認フロー図"],
+      "nist_csf_mapping": ["PR.AA", "GV.RR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5040000-0000-0000-0000-000000000004",
+    "fields": {
+      "control_id": "A.5.4",
+      "domain": "organizational",
+      "title": "経営陣の責任",
+      "description": "経営陣は、組織の確立された方針、トピック固有の方針及び手順に従って情報セキュリティを適用することを全ての要員に要求しなければならない。",
+      "implementation_guidance": "経営陣が情報セキュリティへのコミットメントを示し、全従業員にセキュリティ遵守を要求する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["経営陣コミットメント文書", "セキュリティ会議議事録", "経営レビュー記録"],
+      "nist_csf_mapping": ["GV.OC", "GV.RR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5050000-0000-0000-0000-000000000005",
+    "fields": {
+      "control_id": "A.5.5",
+      "domain": "organizational",
+      "title": "関係当局との連絡",
+      "description": "組織は、関係当局との連絡体制を確立し、維持しなければならない。",
+      "implementation_guidance": "規制当局、法執行機関、監督機関等との適切な連絡体制を構築する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["関係当局連絡先一覧", "連絡手順書", "連絡記録"],
+      "nist_csf_mapping": ["RS.CO", "GV.OC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5060000-0000-0000-0000-000000000006",
+    "fields": {
+      "control_id": "A.5.6",
+      "domain": "organizational",
+      "title": "専門組織との連絡",
+      "description": "組織は、情報セキュリティに関する専門組織、専門家グループ及びフォーラムとの連絡体制を確立し、維持しなければならない。",
+      "implementation_guidance": "ISAC等のセキュリティ関連組織との情報共有体制を構築する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["専門組織参加記録", "情報共有体制文書", "脅威情報受領記録"],
+      "nist_csf_mapping": ["ID.RA", "RS.CO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5070000-0000-0000-0000-000000000007",
+    "fields": {
+      "control_id": "A.5.7",
+      "domain": "organizational",
+      "title": "脅威インテリジェンス",
+      "description": "情報セキュリティの脅威に関する情報を収集し、分析しなければならない。",
+      "implementation_guidance": "脅威インテリジェンスの収集・分析プロセスを確立し、セキュリティ対策に反映する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["脅威情報収集手順", "脅威分析レポート", "対策反映記録"],
+      "nist_csf_mapping": ["ID.RA", "DE.AE"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5080000-0000-0000-0000-000000000008",
+    "fields": {
+      "control_id": "A.5.8",
+      "domain": "organizational",
+      "title": "プロジェクトマネジメントにおける情報セキュリティ",
+      "description": "情報セキュリティをプロジェクトマネジメントに組み込まなければならない。",
+      "implementation_guidance": "全てのプロジェクトにおいて情報セキュリティ要件を考慮し、プロジェクト計画に組み込む。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["プロジェクトセキュリティ計画", "セキュリティ要件定義書", "プロジェクトレビュー記録"],
+      "nist_csf_mapping": ["GV.OC", "ID.RA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5090000-0000-0000-0000-000000000009",
+    "fields": {
+      "control_id": "A.5.9",
+      "domain": "organizational",
+      "title": "情報及びその他の関連資産の目録",
+      "description": "情報及びその他の関連資産の目録を作成し、維持しなければならない。",
+      "implementation_guidance": "情報資産台帳を作成し、全ての情報資産を識別・分類・管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["情報資産台帳", "資産分類基準", "資産棚卸記録"],
+      "nist_csf_mapping": ["ID.AM", "GV.OC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5100000-0000-0000-0000-000000000010",
+    "fields": {
+      "control_id": "A.5.10",
+      "domain": "organizational",
+      "title": "情報及びその他の関連資産の許容される利用",
+      "description": "情報及びその他の関連資産の許容される利用並びに取扱いの手順を特定し、文書化し、実施しなければならない。",
+      "implementation_guidance": "情報資産の利用ルールを策定し、従業員に周知する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["利用規程", "取扱手順書", "利用者同意書"],
+      "nist_csf_mapping": ["PR.DS", "GV.PO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5110000-0000-0000-0000-000000000011",
+    "fields": {
+      "control_id": "A.5.11",
+      "domain": "organizational",
+      "title": "資産の返却",
+      "description": "要員及びその他の利害関係者は、雇用、契約又は合意の変更若しくは終了時に、自らが所持する組織の資産の全てを返却しなければならない。",
+      "implementation_guidance": "退職・異動時の資産返却プロセスを確立し、確実に実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["資産返却チェックリスト", "返却確認記録", "退職手続きフロー"],
+      "nist_csf_mapping": ["ID.AM", "PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5120000-0000-0000-0000-000000000012",
+    "fields": {
+      "control_id": "A.5.12",
+      "domain": "organizational",
+      "title": "情報の分類",
+      "description": "情報は、機密性、完全性、可用性及び関連する利害関係者の要求事項に基づいて分類しなければならない。",
+      "implementation_guidance": "情報分類基準を策定し、全ての情報を適切に分類する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["情報分類基準", "分類ラベル一覧", "分類実施記録"],
+      "nist_csf_mapping": ["ID.AM", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5130000-0000-0000-0000-000000000013",
+    "fields": {
+      "control_id": "A.5.13",
+      "domain": "organizational",
+      "title": "情報のラベル付け",
+      "description": "適切な情報のラベル付けの手順を、組織が採用した情報分類体系に従って策定し、実施しなければならない。",
+      "implementation_guidance": "情報分類に基づくラベル付けルールを策定し、文書・データに適用する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ラベル付け手順書", "ラベル適用例", "ラベル付け監査記録"],
+      "nist_csf_mapping": ["ID.AM", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5140000-0000-0000-0000-000000000014",
+    "fields": {
+      "control_id": "A.5.14",
+      "domain": "organizational",
+      "title": "情報転送",
+      "description": "全ての種類の通信設備の利用による情報転送のための規則、手順又は合意を整備しなければならない。",
+      "implementation_guidance": "情報の転送に関するルールを策定し、安全な転送手段を使用する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["情報転送規程", "暗号化手順書", "転送記録"],
+      "nist_csf_mapping": ["PR.DS", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5150000-0000-0000-0000-000000000015",
+    "fields": {
+      "control_id": "A.5.15",
+      "domain": "organizational",
+      "title": "アクセス制御",
+      "description": "情報及びその他の関連資産へのアクセスを制御するための規則を、業務及び情報セキュリティの要求事項に基づいて確立し、実施しなければならない。",
+      "implementation_guidance": "アクセス制御方針を策定し、最小権限の原則に基づいてアクセス権を管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["アクセス制御方針", "アクセス権限マトリクス", "アクセス権レビュー記録"],
+      "nist_csf_mapping": ["PR.AA", "GV.PO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5160000-0000-0000-0000-000000000016",
+    "fields": {
+      "control_id": "A.5.16",
+      "domain": "organizational",
+      "title": "識別情報の管理",
+      "description": "識別情報のライフサイクル全体を管理しなければならない。",
+      "implementation_guidance": "ユーザーID等の識別情報の発行・変更・無効化のライフサイクルを管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ID管理手順書", "ID発行・変更記録", "ID棚卸記録"],
+      "nist_csf_mapping": ["PR.AA", "ID.AM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5170000-0000-0000-0000-000000000017",
+    "fields": {
+      "control_id": "A.5.17",
+      "domain": "organizational",
+      "title": "認証情報",
+      "description": "認証情報の割当て及び管理は、管理プロセスによって管理されなければならない。",
+      "implementation_guidance": "パスワード等の認証情報の管理プロセスを確立し、安全な認証を実現する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["パスワードポリシー", "認証情報管理手順", "多要素認証導入記録"],
+      "nist_csf_mapping": ["PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5180000-0000-0000-0000-000000000018",
+    "fields": {
+      "control_id": "A.5.18",
+      "domain": "organizational",
+      "title": "アクセス権",
+      "description": "情報及びその他の関連資産へのアクセス権は、アクセス制御に関するトピック固有の方針及び規則に従って、付与、レビュー、変更及び削除しなければならない。",
+      "implementation_guidance": "アクセス権の申請・承認・付与・レビュー・削除プロセスを確立する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["アクセス権申請・承認記録", "定期レビュー記録", "権限変更履歴"],
+      "nist_csf_mapping": ["PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5190000-0000-0000-0000-000000000019",
+    "fields": {
+      "control_id": "A.5.19",
+      "domain": "organizational",
+      "title": "供給者関係における情報セキュリティ",
+      "description": "供給者の製品又はサービスの利用に関連する情報セキュリティリスクを管理するためのプロセス及び手順を定義し、実施しなければならない。",
+      "implementation_guidance": "サプライヤーとの関係における情報セキュリティ要件を定義し、契約に含める。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["供給者管理方針", "セキュリティ要件書", "供給者評価記録"],
+      "nist_csf_mapping": ["GV.SC", "ID.RA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5200000-0000-0000-0000-000000000020",
+    "fields": {
+      "control_id": "A.5.20",
+      "domain": "organizational",
+      "title": "供給者との合意における情報セキュリティの取扱い",
+      "description": "供給者関係の種類に基づき、各供給者と関連する情報セキュリティ要求事項を確立し、合意しなければならない。",
+      "implementation_guidance": "供給者との契約に情報セキュリティ条項を含め、遵守を求める。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["供給者契約書（セキュリティ条項含む）", "NDA", "SLA文書"],
+      "nist_csf_mapping": ["GV.SC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5210000-0000-0000-0000-000000000021",
+    "fields": {
+      "control_id": "A.5.21",
+      "domain": "organizational",
+      "title": "ICTサプライチェーンにおける情報セキュリティの管理",
+      "description": "ICT製品及びサービスのサプライチェーンに関連する情報セキュリティリスクを管理するためのプロセス及び手順を定義し、実施しなければならない。",
+      "implementation_guidance": "ICTサプライチェーン全体のセキュリティリスクを評価し、管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["サプライチェーンリスク評価書", "供給者セキュリティ監査記録", "サプライチェーン管理手順"],
+      "nist_csf_mapping": ["GV.SC", "ID.RA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5220000-0000-0000-0000-000000000022",
+    "fields": {
+      "control_id": "A.5.22",
+      "domain": "organizational",
+      "title": "供給者のサービスの監視、レビュー及び変更管理",
+      "description": "組織は、供給者の情報セキュリティの実践及びサービス提供を定期的に監視、レビュー、評価し、変更を管理しなければならない。",
+      "implementation_guidance": "供給者のセキュリティパフォーマンスを定期的に監視・レビューする。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["供給者監視記録", "定期レビュー報告書", "変更管理記録"],
+      "nist_csf_mapping": ["GV.SC", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5230000-0000-0000-0000-000000000023",
+    "fields": {
+      "control_id": "A.5.23",
+      "domain": "organizational",
+      "title": "クラウドサービスの利用における情報セキュリティ",
+      "description": "クラウドサービスの取得、利用、管理及び終了のプロセスを、組織の情報セキュリティ要求事項に従って確立しなければならない。",
+      "implementation_guidance": "クラウドサービスの利用に関するセキュリティ方針を策定し、適切に管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["クラウド利用方針", "クラウドサービス評価記録", "クラウドセキュリティ設定記録"],
+      "nist_csf_mapping": ["GV.SC", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5240000-0000-0000-0000-000000000024",
+    "fields": {
+      "control_id": "A.5.24",
+      "domain": "organizational",
+      "title": "情報セキュリティインシデント管理の計画及び準備",
+      "description": "組織は、情報セキュリティインシデントの管理プロセスを定義し、確立し、伝達することによって、情報セキュリティインシデント管理を計画し、準備しなければならない。",
+      "implementation_guidance": "インシデント管理プロセスを策定し、対応体制を構築する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["インシデント管理計画", "インシデント対応手順書", "対応体制図"],
+      "nist_csf_mapping": ["RS.MA", "RS.AN"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5250000-0000-0000-0000-000000000025",
+    "fields": {
+      "control_id": "A.5.25",
+      "domain": "organizational",
+      "title": "情報セキュリティ事象の評価及び決定",
+      "description": "組織は、情報セキュリティ事象を評価し、それを情報セキュリティインシデントに分類するか否かを決定しなければならない。",
+      "implementation_guidance": "セキュリティ事象の評価基準を策定し、インシデントの判定プロセスを確立する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["インシデント分類基準", "事象評価記録", "インシデント判定記録"],
+      "nist_csf_mapping": ["RS.AN", "DE.AE"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5260000-0000-0000-0000-000000000026",
+    "fields": {
+      "control_id": "A.5.26",
+      "domain": "organizational",
+      "title": "情報セキュリティインシデントへの対応",
+      "description": "情報セキュリティインシデントは、文書化された手順に従って対応しなければならない。",
+      "implementation_guidance": "インシデント発生時の対応手順を整備し、迅速に対応する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["インシデント対応手順書", "インシデント対応記録", "エスカレーション記録"],
+      "nist_csf_mapping": ["RS.MA", "RS.MI"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5270000-0000-0000-0000-000000000027",
+    "fields": {
+      "control_id": "A.5.27",
+      "domain": "organizational",
+      "title": "情報セキュリティインシデントからの学習",
+      "description": "情報セキュリティインシデントから得た知識を、情報セキュリティ管理策の強化及び改善に利用しなければならない。",
+      "implementation_guidance": "インシデントの事後レビューを実施し、再発防止策を策定する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["インシデント事後レビュー報告書", "再発防止策", "改善実施記録"],
+      "nist_csf_mapping": ["RS.AN", "ID.IM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5280000-0000-0000-0000-000000000028",
+    "fields": {
+      "control_id": "A.5.28",
+      "domain": "organizational",
+      "title": "証拠の収集",
+      "description": "組織は、情報セキュリティ事象に関連する証拠の特定、収集、取得及び保全のための手順を確立し、実施しなければならない。",
+      "implementation_guidance": "デジタルフォレンジックを含む証拠収集・保全手順を確立する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["証拠収集手順書", "証拠保全記録", "チェーンオブカストディ記録"],
+      "nist_csf_mapping": ["RS.AN", "RS.MA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5290000-0000-0000-0000-000000000029",
+    "fields": {
+      "control_id": "A.5.29",
+      "domain": "organizational",
+      "title": "中断時の情報セキュリティ",
+      "description": "組織は、中断時に情報セキュリティを適切なレベルに維持する方法を計画しなければならない。",
+      "implementation_guidance": "事業継続計画に情報セキュリティ要件を組み込み、中断時のセキュリティを確保する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["事業継続計画（セキュリティ含む）", "中断時対応手順", "BCP訓練記録"],
+      "nist_csf_mapping": ["RC.RP", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5300000-0000-0000-0000-000000000030",
+    "fields": {
+      "control_id": "A.5.30",
+      "domain": "organizational",
+      "title": "事業継続のためのICTの備え",
+      "description": "ICTの備えは、事業継続の目的及びICT継続の要求事項に基づいて計画、実施、維持及びテストしなければならない。",
+      "implementation_guidance": "ICT環境の事業継続計画を策定し、定期的にテストする。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ICT継続計画", "DR計画", "復旧テスト記録"],
+      "nist_csf_mapping": ["RC.RP", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5310000-0000-0000-0000-000000000031",
+    "fields": {
+      "control_id": "A.5.31",
+      "domain": "organizational",
+      "title": "法令、規制及び契約上の要求事項",
+      "description": "情報セキュリティに関連する法令、規制及び契約上の要求事項並びにこれらの要求事項を満たすための組織の取組みを特定し、文書化し、最新に保たなければならない。",
+      "implementation_guidance": "適用される法令・規制を特定し、遵守状況を管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["法令・規制一覧", "遵守状況評価記録", "コンプライアンス管理台帳"],
+      "nist_csf_mapping": ["GV.OC", "GV.PO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5320000-0000-0000-0000-000000000032",
+    "fields": {
+      "control_id": "A.5.32",
+      "domain": "organizational",
+      "title": "知的財産権",
+      "description": "組織は、知的財産権を保護するための適切な手順を実施しなければならない。",
+      "implementation_guidance": "ソフトウェアライセンス管理等、知的財産権保護のための手順を確立する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ライセンス管理台帳", "知的財産権保護手順", "ライセンス監査記録"],
+      "nist_csf_mapping": ["GV.OC", "GV.PO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5330000-0000-0000-0000-000000000033",
+    "fields": {
+      "control_id": "A.5.33",
+      "domain": "organizational",
+      "title": "記録の保護",
+      "description": "記録は、滅失、破壊、改ざん、認可されていないアクセス及び不正な流出から保護しなければならない。",
+      "implementation_guidance": "記録の保護・保存・廃棄に関するルールを策定し、実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["記録管理規程", "保存期間一覧", "記録廃棄記録"],
+      "nist_csf_mapping": ["PR.DS", "GV.PO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5340000-0000-0000-0000-000000000034",
+    "fields": {
+      "control_id": "A.5.34",
+      "domain": "organizational",
+      "title": "プライバシー及びPIIの保護",
+      "description": "組織は、適用される法令、規制及び契約上の要求事項に従って、プライバシー及びPIIの保護に関する要求事項を特定し、満たさなければならない。",
+      "implementation_guidance": "個人情報保護方針を策定し、PIIの取扱いに関する手順を確立する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["個人情報保護方針", "PII取扱手順書", "プライバシー影響評価記録"],
+      "nist_csf_mapping": ["GV.PO", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5350000-0000-0000-0000-000000000035",
+    "fields": {
+      "control_id": "A.5.35",
+      "domain": "organizational",
+      "title": "情報セキュリティの独立したレビュー",
+      "description": "情報セキュリティ及びその実施の管理に対する組織の取組みについて、あらかじめ定めた間隔で、又は重大な変化が生じた場合に、独立したレビューを実施しなければならない。",
+      "implementation_guidance": "定期的な内部監査・外部監査を実施し、ISMSの有効性を評価する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["内部監査計画・報告書", "外部監査報告書", "是正措置記録"],
+      "nist_csf_mapping": ["GV.OC", "ID.IM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5360000-0000-0000-0000-000000000036",
+    "fields": {
+      "control_id": "A.5.36",
+      "domain": "organizational",
+      "title": "情報セキュリティのための方針群、規則及び標準の順守",
+      "description": "組織の情報セキュリティ方針、トピック固有の方針、規則及び標準の順守を定期的にレビューしなければならない。",
+      "implementation_guidance": "セキュリティポリシーの遵守状況を定期的にレビューし、不適合を是正する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["遵守状況レビュー報告書", "不適合一覧", "是正措置計画"],
+      "nist_csf_mapping": ["GV.OC", "ID.IM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a5370000-0000-0000-0000-000000000037",
+    "fields": {
+      "control_id": "A.5.37",
+      "domain": "organizational",
+      "title": "文書化した操作手順",
+      "description": "情報処理設備の操作手順を文書化し、必要とする要員が利用できるようにしなければならない。",
+      "implementation_guidance": "情報処理設備の運用手順を文書化し、関係者に提供する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["操作手順書", "手順書管理台帳", "手順書レビュー記録"],
+      "nist_csf_mapping": ["GV.PO", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6010000-0000-0000-0000-000000000038",
+    "fields": {
+      "control_id": "A.6.1",
+      "domain": "people",
+      "title": "選考",
+      "description": "全ての候補者の経歴の確認は、雇用契約を結ぶ前に、関連する法令、規制及び倫理に従って実施しなければならない。",
+      "implementation_guidance": "採用前に候補者の身元確認・経歴調査を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["採用時選考基準", "経歴確認記録", "身元確認チェックリスト"],
+      "nist_csf_mapping": ["GV.RR", "PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6020000-0000-0000-0000-000000000039",
+    "fields": {
+      "control_id": "A.6.2",
+      "domain": "people",
+      "title": "雇用条件",
+      "description": "雇用契約書には、情報セキュリティに関する要員及び組織の責任を記載しなければならない。",
+      "implementation_guidance": "雇用契約に情報セキュリティに関する責任・義務を明記する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["雇用契約書（セキュリティ条項含む）", "守秘義務契約書", "就業規則"],
+      "nist_csf_mapping": ["GV.RR", "GV.PO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6030000-0000-0000-0000-000000000040",
+    "fields": {
+      "control_id": "A.6.3",
+      "domain": "people",
+      "title": "情報セキュリティの意識向上、教育及び訓練",
+      "description": "組織の要員及び関連する利害関係者は、職務に関連する組織の情報セキュリティ方針、トピック固有の方針及び手順についての適切な意識向上教育及び訓練を受けなければならない。",
+      "implementation_guidance": "全従業員向けのセキュリティ教育・訓練プログラムを実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["教育訓練計画", "受講記録", "教育効果測定結果"],
+      "nist_csf_mapping": ["PR.AT", "GV.OC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6040000-0000-0000-0000-000000000041",
+    "fields": {
+      "control_id": "A.6.4",
+      "domain": "people",
+      "title": "懲戒手続",
+      "description": "情報セキュリティ方針の違反を犯した要員及びその他の関連する利害関係者に対する措置を講じるための懲戒手続を正式に定め、伝達しなければならない。",
+      "implementation_guidance": "セキュリティ違反に対する懲戒処分の手順を策定し、周知する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["懲戒規程", "違反報告記録", "懲戒処分記録"],
+      "nist_csf_mapping": ["GV.PO", "GV.RR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6050000-0000-0000-0000-000000000042",
+    "fields": {
+      "control_id": "A.6.5",
+      "domain": "people",
+      "title": "雇用の終了又は変更後の責任",
+      "description": "雇用の終了又は変更後も有効な情報セキュリティの責任及び義務を定義し、強制し、伝達しなければならない。",
+      "implementation_guidance": "退職・異動後も継続する秘密保持義務等を明確にする。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["退職時誓約書", "秘密保持契約", "退職手続チェックリスト"],
+      "nist_csf_mapping": ["GV.RR", "PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6060000-0000-0000-0000-000000000043",
+    "fields": {
+      "control_id": "A.6.6",
+      "domain": "people",
+      "title": "秘密保持契約又は守秘義務契約",
+      "description": "情報セキュリティのニーズを反映する秘密保持契約又は守秘義務契約を特定し、定期的にレビューし、文書化しなければならない。",
+      "implementation_guidance": "NDAを策定し、関係者と締結する。定期的に見直しを行う。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["NDAテンプレート", "NDA締結記録", "NDAレビュー記録"],
+      "nist_csf_mapping": ["GV.PO", "GV.SC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6070000-0000-0000-0000-000000000044",
+    "fields": {
+      "control_id": "A.6.7",
+      "domain": "people",
+      "title": "リモートワーキング",
+      "description": "要員が遠隔で作業する場合に、情報のアクセス、処理又は保存を保護するためのセキュリティ対策を実施しなければならない。",
+      "implementation_guidance": "リモートワーク時のセキュリティルールを策定し、技術的対策を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["リモートワークセキュリティ規程", "VPN利用手順", "リモートアクセスログ"],
+      "nist_csf_mapping": ["PR.AA", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a6080000-0000-0000-0000-000000000045",
+    "fields": {
+      "control_id": "A.6.8",
+      "domain": "people",
+      "title": "情報セキュリティ事象の報告",
+      "description": "組織は、要員が観察した又は疑われる情報セキュリティ事象を適切な連絡経路を通じて適時に報告するための仕組みを提供しなければならない。",
+      "implementation_guidance": "セキュリティ事象の報告窓口・手順を整備し、全従業員に周知する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["事象報告手順書", "報告窓口連絡先", "事象報告記録"],
+      "nist_csf_mapping": ["DE.AE", "RS.CO"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7010000-0000-0000-0000-000000000046",
+    "fields": {
+      "control_id": "A.7.1",
+      "domain": "physical",
+      "title": "物理的セキュリティ境界",
+      "description": "機密情報又は重要な情報を含む領域及び情報処理設備を保護するためのセキュリティ境界を定義し、利用しなければならない。",
+      "implementation_guidance": "セキュリティゾーンを定義し、物理的な境界を設ける。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュリティゾーン図", "境界防護設備一覧", "物理セキュリティ評価記録"],
+      "nist_csf_mapping": ["PR.AA", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7020000-0000-0000-0000-000000000047",
+    "fields": {
+      "control_id": "A.7.2",
+      "domain": "physical",
+      "title": "物理的入退",
+      "description": "セキュリティを保つべき領域は、適切な入退管理策及びアクセスポイントによって保護しなければならない。",
+      "implementation_guidance": "入退室管理システムを導入し、アクセスを制御・記録する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["入退室管理手順", "入退室ログ", "入退室権限一覧"],
+      "nist_csf_mapping": ["PR.AA", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7030000-0000-0000-0000-000000000048",
+    "fields": {
+      "control_id": "A.7.3",
+      "domain": "physical",
+      "title": "オフィス、部屋及び施設のセキュリティ",
+      "description": "オフィス、部屋及び施設に対する物理的セキュリティを設計し、実施しなければならない。",
+      "implementation_guidance": "オフィス・施設の物理的セキュリティ対策を設計・実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["施設セキュリティ設計書", "セキュリティ設備一覧", "施設点検記録"],
+      "nist_csf_mapping": ["PR.IR", "PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7040000-0000-0000-0000-000000000049",
+    "fields": {
+      "control_id": "A.7.4",
+      "domain": "physical",
+      "title": "物理的セキュリティの監視",
+      "description": "施設は、認可されていない物理的アクセスについて継続的に監視しなければならない。",
+      "implementation_guidance": "監視カメラ、警報装置等で施設を継続的に監視する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["監視設備一覧", "監視運用手順", "監視映像保存記録"],
+      "nist_csf_mapping": ["DE.CM", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7050000-0000-0000-0000-000000000050",
+    "fields": {
+      "control_id": "A.7.5",
+      "domain": "physical",
+      "title": "物理的及び環境的脅威からの保護",
+      "description": "自然災害及びその他の意図的又は意図的でない物理的脅威からの保護を設計し、実施しなければならない。",
+      "implementation_guidance": "自然災害、火災、水害等の物理的脅威に対する保護策を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["環境リスク評価書", "防災設備一覧", "防災訓練記録"],
+      "nist_csf_mapping": ["PR.IR", "ID.RA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7060000-0000-0000-0000-000000000051",
+    "fields": {
+      "control_id": "A.7.6",
+      "domain": "physical",
+      "title": "セキュリティを保つべき領域での作業",
+      "description": "セキュリティを保つべき領域での作業のためのセキュリティ対策を設計し、実施しなければならない。",
+      "implementation_guidance": "サーバールーム等のセキュリティエリアでの作業ルールを策定する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュリティエリア作業手順", "作業許可記録", "立入記録"],
+      "nist_csf_mapping": ["PR.AA", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7070000-0000-0000-0000-000000000052",
+    "fields": {
+      "control_id": "A.7.7",
+      "domain": "physical",
+      "title": "クリアデスク・クリアスクリーン",
+      "description": "クリアデスクの規則及びクリアスクリーンの規則を定義し、適切に強制しなければならない。",
+      "implementation_guidance": "クリアデスク・クリアスクリーンポリシーを策定し、遵守を徹底する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["クリアデスク・クリアスクリーン規程", "遵守チェック記録", "スクリーンロック設定記録"],
+      "nist_csf_mapping": ["PR.DS", "PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7080000-0000-0000-0000-000000000053",
+    "fields": {
+      "control_id": "A.7.8",
+      "domain": "physical",
+      "title": "装置の設置及び保護",
+      "description": "装置は、環境上の脅威及びハザード並びに認可されていないアクセスの機会を低減するように、セキュリティを保って設置し、保護しなければならない。",
+      "implementation_guidance": "IT機器を環境脅威や不正アクセスから保護するよう適切に設置する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["装置設置基準", "設置環境チェック記録", "装置台帳"],
+      "nist_csf_mapping": ["PR.IR", "ID.AM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7090000-0000-0000-0000-000000000054",
+    "fields": {
+      "control_id": "A.7.9",
+      "domain": "physical",
+      "title": "構外にある資産のセキュリティ",
+      "description": "構外にある資産を保護しなければならない。",
+      "implementation_guidance": "社外に持ち出す機器・資産のセキュリティ対策を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["資産持出管理手順", "持出記録", "暗号化設定記録"],
+      "nist_csf_mapping": ["PR.DS", "ID.AM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7100000-0000-0000-0000-000000000055",
+    "fields": {
+      "control_id": "A.7.10",
+      "domain": "physical",
+      "title": "記憶媒体",
+      "description": "記憶媒体は、そのライフサイクルを通じて、組織の分類体系及び取扱いの要求事項に従って管理しなければならない。",
+      "implementation_guidance": "USB、外付けHDD等の記憶媒体のライフサイクル管理を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["記憶媒体管理台帳", "媒体廃棄記録", "媒体取扱手順"],
+      "nist_csf_mapping": ["PR.DS", "ID.AM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7110000-0000-0000-0000-000000000056",
+    "fields": {
+      "control_id": "A.7.11",
+      "domain": "physical",
+      "title": "サポートユーティリティ",
+      "description": "情報処理設備は、サポートユーティリティの不具合による、停電、その他の中断から保護しなければならない。",
+      "implementation_guidance": "UPS、空調等のサポートユーティリティを適切に整備・維持する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["サポートユーティリティ一覧", "保守点検記録", "UPS動作テスト記録"],
+      "nist_csf_mapping": ["PR.IR", "ID.AM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7120000-0000-0000-0000-000000000057",
+    "fields": {
+      "control_id": "A.7.12",
+      "domain": "physical",
+      "title": "ケーブル配線のセキュリティ",
+      "description": "電源ケーブル及び通信ケーブルの配線は、傍受、妨害又は損傷から保護しなければならない。",
+      "implementation_guidance": "ケーブル配線を物理的に保護し、不正アクセスを防止する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ケーブル配線図", "配線保護状況記録", "配線点検記録"],
+      "nist_csf_mapping": ["PR.IR", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7130000-0000-0000-0000-000000000058",
+    "fields": {
+      "control_id": "A.7.13",
+      "domain": "physical",
+      "title": "装置の保守",
+      "description": "装置は、情報の可用性、完全性及び機密性を継続的に保証するために、正しく保守しなければならない。",
+      "implementation_guidance": "IT機器の定期保守計画を策定し、実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["保守計画", "保守実施記録", "保守業者管理記録"],
+      "nist_csf_mapping": ["PR.IR", "PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a7140000-0000-0000-0000-000000000059",
+    "fields": {
+      "control_id": "A.7.14",
+      "domain": "physical",
+      "title": "装置のセキュリティを保った処分又は再利用",
+      "description": "記憶媒体を内蔵する装置は、処分又は再利用する前に、全ての機密データ及びライセンス供与されたソフトウェアが削除されている又はセキュリティを保って上書きされていることを確実にするために検証しなければならない。",
+      "implementation_guidance": "機器の処分・再利用時にデータの完全消去を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["データ消去手順書", "消去証明書", "処分・再利用記録"],
+      "nist_csf_mapping": ["PR.DS", "ID.AM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8010000-0000-0000-0000-000000000060",
+    "fields": {
+      "control_id": "A.8.1",
+      "domain": "technological",
+      "title": "利用者エンドポイント機器",
+      "description": "利用者エンドポイント機器に保存され、処理され、又はそれを介してアクセスされる情報を保護しなければならない。",
+      "implementation_guidance": "PCやモバイルデバイス等のエンドポイントセキュリティ対策を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["エンドポイント管理方針", "MDM設定記録", "エンドポイント保護ソフト導入記録"],
+      "nist_csf_mapping": ["PR.DS", "PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8020000-0000-0000-0000-000000000061",
+    "fields": {
+      "control_id": "A.8.2",
+      "domain": "technological",
+      "title": "特権的アクセス権",
+      "description": "特権的アクセス権の割当て及び利用は、制限し、管理しなければならない。",
+      "implementation_guidance": "特権アカウントの管理を厳格化し、利用を最小限に制限する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["特権アカウント一覧", "特権アクセス管理手順", "特権アクセスログ"],
+      "nist_csf_mapping": ["PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8030000-0000-0000-0000-000000000062",
+    "fields": {
+      "control_id": "A.8.3",
+      "domain": "technological",
+      "title": "情報へのアクセス制限",
+      "description": "情報及びその他の関連資産へのアクセスは、確立されたアクセス制御に関するトピック固有の方針に従って制限しなければならない。",
+      "implementation_guidance": "業務上必要な範囲に情報へのアクセスを制限する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["アクセス制御設定記録", "アクセス権限一覧", "アクセスレビュー記録"],
+      "nist_csf_mapping": ["PR.AA", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8040000-0000-0000-0000-000000000063",
+    "fields": {
+      "control_id": "A.8.4",
+      "domain": "technological",
+      "title": "ソースコードへのアクセス",
+      "description": "ソースコード、開発ツール及びソフトウェアライブラリへの読取り及び書込みアクセスは、適切に管理しなければならない。",
+      "implementation_guidance": "ソースコードリポジトリへのアクセスを制御し、変更履歴を管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["リポジトリアクセス権限一覧", "コードレビュー記録", "ブランチ保護設定記録"],
+      "nist_csf_mapping": ["PR.AA", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8050000-0000-0000-0000-000000000064",
+    "fields": {
+      "control_id": "A.8.5",
+      "domain": "technological",
+      "title": "セキュリティを保った認証",
+      "description": "セキュリティを保った認証技術及び手順を、情報アクセスの制限及びアクセス制御に関するトピック固有の方針に基づいて確立しなければならない。",
+      "implementation_guidance": "多要素認証等のセキュアな認証メカニズムを実装する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["認証方式設計書", "MFA導入記録", "認証ログ"],
+      "nist_csf_mapping": ["PR.AA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8060000-0000-0000-0000-000000000065",
+    "fields": {
+      "control_id": "A.8.6",
+      "domain": "technological",
+      "title": "容量管理",
+      "description": "資源の利用を監視し、調整し、現在及び予想される容量要求事項に合わせなければならない。",
+      "implementation_guidance": "システムリソースの使用状況を監視し、容量計画を策定する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["容量計画書", "リソース監視レポート", "キャパシティ管理記録"],
+      "nist_csf_mapping": ["PR.IR", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8070000-0000-0000-0000-000000000066",
+    "fields": {
+      "control_id": "A.8.7",
+      "domain": "technological",
+      "title": "マルウェアに対する保護",
+      "description": "マルウェアに対する保護を実施し、利用者の適切な認識によって支援しなければならない。",
+      "implementation_guidance": "アンチウイルスソフト等を導入し、マルウェア対策を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["マルウェア対策ソフト導入記録", "定義ファイル更新記録", "マルウェア検知レポート"],
+      "nist_csf_mapping": ["PR.DS", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8080000-0000-0000-0000-000000000067",
+    "fields": {
+      "control_id": "A.8.8",
+      "domain": "technological",
+      "title": "技術的ぜい弱性の管理",
+      "description": "利用している情報システムの技術的ぜい弱性に関する情報を適時に取得し、それらのぜい弱性に対する組織のエクスポージャを評価し、適切な措置を講じなければならない。",
+      "implementation_guidance": "脆弱性情報を収集し、パッチ適用等の対策を迅速に実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["脆弱性管理手順", "脆弱性スキャン結果", "パッチ適用記録"],
+      "nist_csf_mapping": ["ID.RA", "PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8090000-0000-0000-0000-000000000068",
+    "fields": {
+      "control_id": "A.8.9",
+      "domain": "technological",
+      "title": "構成管理",
+      "description": "ハードウェア、ソフトウェア、サービス及びネットワークのセキュリティ構成を含む構成を確立し、文書化し、実施し、監視し、レビューしなければならない。",
+      "implementation_guidance": "システム構成のベースラインを策定し、変更を管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["構成ベースライン文書", "構成管理台帳", "構成変更記録"],
+      "nist_csf_mapping": ["PR.PS", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8100000-0000-0000-0000-000000000069",
+    "fields": {
+      "control_id": "A.8.10",
+      "domain": "technological",
+      "title": "情報の削除",
+      "description": "情報システム、装置又はその他の記憶媒体に保存されている情報は、不要になった場合に削除しなければならない。",
+      "implementation_guidance": "不要データの定期的な削除プロセスを確立する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["データ削除手順", "削除スケジュール", "削除実施記録"],
+      "nist_csf_mapping": ["PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8110000-0000-0000-0000-000000000070",
+    "fields": {
+      "control_id": "A.8.11",
+      "domain": "technological",
+      "title": "データマスキング",
+      "description": "データマスキングは、適用される法令を考慮した上で、アクセス制御に関するトピック固有の方針及びその他の関連するトピック固有の方針並びに業務要求事項に従って利用しなければならない。",
+      "implementation_guidance": "テスト環境等で個人情報をマスキングし、データを保護する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["データマスキング方針", "マスキング実施記録", "マスキングルール定義書"],
+      "nist_csf_mapping": ["PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8120000-0000-0000-0000-000000000071",
+    "fields": {
+      "control_id": "A.8.12",
+      "domain": "technological",
+      "title": "データ漏えいの防止",
+      "description": "データ漏えい防止策を、機密情報を処理、保存又は送信するシステム、ネットワーク及びその他の装置に適用しなければならない。",
+      "implementation_guidance": "DLPツール等を導入し、機密データの不正な流出を防止する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["DLP導入記録", "DLPポリシー設定", "データ漏えい検知レポート"],
+      "nist_csf_mapping": ["PR.DS", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8130000-0000-0000-0000-000000000072",
+    "fields": {
+      "control_id": "A.8.13",
+      "domain": "technological",
+      "title": "情報のバックアップ",
+      "description": "情報、ソフトウェア及びシステムのバックアップの複製を、合意されたバックアップの方針に従って保守し、定期的にテストしなければならない。",
+      "implementation_guidance": "定期的なバックアップを実施し、リストアテストを行う。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["バックアップ方針", "バックアップ実施記録", "リストアテスト記録"],
+      "nist_csf_mapping": ["PR.DS", "RC.RP"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8140000-0000-0000-0000-000000000073",
+    "fields": {
+      "control_id": "A.8.14",
+      "domain": "technological",
+      "title": "情報処理設備の冗長性",
+      "description": "情報処理設備は、可用性の要求事項を満たすのに十分な冗長性をもって実施しなければならない。",
+      "implementation_guidance": "システムの可用性要件に基づき、冗長構成を実装する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["冗長構成設計書", "可用性要件定義", "フェイルオーバーテスト記録"],
+      "nist_csf_mapping": ["PR.IR", "RC.RP"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8150000-0000-0000-0000-000000000074",
+    "fields": {
+      "control_id": "A.8.15",
+      "domain": "technological",
+      "title": "ログ取得",
+      "description": "活動、例外処理、障害及びその他の関連する事象を記録したログを取得し、保存し、保護し、分析しなければならない。",
+      "implementation_guidance": "システムログ・アクセスログを取得・保存し、定期的に分析する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ログ管理方針", "ログ取得設定記録", "ログ分析レポート"],
+      "nist_csf_mapping": ["DE.CM", "DE.AE"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8160000-0000-0000-0000-000000000075",
+    "fields": {
+      "control_id": "A.8.16",
+      "domain": "technological",
+      "title": "監視活動",
+      "description": "ネットワーク、システム及びアプリケーションの異常な挙動について監視し、潜在的な情報セキュリティインシデントを評価するための適切な措置を講じなければならない。",
+      "implementation_guidance": "SIEM等を活用し、セキュリティ監視を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["監視方針", "SIEM設定記録", "アラート対応記録"],
+      "nist_csf_mapping": ["DE.CM", "DE.AE"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8170000-0000-0000-0000-000000000076",
+    "fields": {
+      "control_id": "A.8.17",
+      "domain": "technological",
+      "title": "クロックの同期",
+      "description": "組織が利用する情報処理システムのクロックは、承認された時刻源と同期しなければならない。",
+      "implementation_guidance": "NTPサーバーを利用し、全システムの時刻同期を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["時刻同期設定記録", "NTPサーバー構成", "同期状態監視記録"],
+      "nist_csf_mapping": ["DE.CM", "PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8180000-0000-0000-0000-000000000077",
+    "fields": {
+      "control_id": "A.8.18",
+      "domain": "technological",
+      "title": "特権的なユーティリティプログラムの使用",
+      "description": "システム及びアプリケーションによる制御を無効にすることのできるユーティリティプログラムの使用は、制限し、厳しく管理しなければならない。",
+      "implementation_guidance": "特権ユーティリティの利用を制限し、使用ログを記録する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["特権ユーティリティ一覧", "使用許可手順", "使用ログ"],
+      "nist_csf_mapping": ["PR.AA", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8190000-0000-0000-0000-000000000078",
+    "fields": {
+      "control_id": "A.8.19",
+      "domain": "technological",
+      "title": "運用システムに関わるソフトウェアの導入",
+      "description": "運用システムへのソフトウェアの導入をセキュリティを保って管理するための手順及び措置を実施しなければならない。",
+      "implementation_guidance": "本番環境へのソフトウェア導入手順を策定し、変更管理を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ソフトウェア導入手順", "変更管理記録", "導入承認記録"],
+      "nist_csf_mapping": ["PR.PS", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8200000-0000-0000-0000-000000000079",
+    "fields": {
+      "control_id": "A.8.20",
+      "domain": "technological",
+      "title": "ネットワークのセキュリティ",
+      "description": "ネットワーク及びネットワーク装置は、システム及びアプリケーション内の情報を保護するために、セキュリティを保ち、管理し、制御しなければならない。",
+      "implementation_guidance": "ネットワークセキュリティ対策（ファイアウォール、IDS/IPS等）を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ネットワーク構成図", "ファイアウォールルール", "ネットワーク監視記録"],
+      "nist_csf_mapping": ["PR.IR", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8210000-0000-0000-0000-000000000080",
+    "fields": {
+      "control_id": "A.8.21",
+      "domain": "technological",
+      "title": "ネットワークサービスのセキュリティ",
+      "description": "ネットワークサービスのセキュリティメカニズム、サービスレベル及びサービス要求事項を特定し、実施し、監視しなければならない。",
+      "implementation_guidance": "ネットワークサービスのSLAにセキュリティ要件を含め、監視する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ネットワークサービスSLA", "セキュリティ要件書", "サービス監視記録"],
+      "nist_csf_mapping": ["PR.IR", "GV.SC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8220000-0000-0000-0000-000000000081",
+    "fields": {
+      "control_id": "A.8.22",
+      "domain": "technological",
+      "title": "ネットワークの分離",
+      "description": "情報サービス、利用者及び情報システムのグループは、組織のネットワークにおいて分離しなければならない。",
+      "implementation_guidance": "VLAN等でネットワークセグメンテーションを実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["ネットワーク分離設計書", "VLAN構成図", "セグメンテーションテスト記録"],
+      "nist_csf_mapping": ["PR.IR", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8230000-0000-0000-0000-000000000082",
+    "fields": {
+      "control_id": "A.8.23",
+      "domain": "technological",
+      "title": "ウェブフィルタリング",
+      "description": "外部ウェブサイトへのアクセスを管理し、悪意のあるコンテンツへのエクスポージャを低減しなければならない。",
+      "implementation_guidance": "Webフィルタリングを導入し、危険なサイトへのアクセスをブロックする。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["Webフィルタリングポリシー", "フィルタリング設定記録", "ブロックログ"],
+      "nist_csf_mapping": ["PR.DS", "DE.CM"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8240000-0000-0000-0000-000000000083",
+    "fields": {
+      "control_id": "A.8.24",
+      "domain": "technological",
+      "title": "暗号の使用",
+      "description": "暗号の効果的な利用のための規則を定義し、実施しなければならない。これには、暗号鍵の管理を含む。",
+      "implementation_guidance": "暗号化方針を策定し、適切な暗号技術と鍵管理を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["暗号化方針", "暗号鍵管理手順", "暗号化実装記録"],
+      "nist_csf_mapping": ["PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8250000-0000-0000-0000-000000000084",
+    "fields": {
+      "control_id": "A.8.25",
+      "domain": "technological",
+      "title": "セキュリティに配慮した開発のライフサイクル",
+      "description": "ソフトウェア及びシステムのセキュリティに配慮した開発のための規則を確立し、適用しなければならない。",
+      "implementation_guidance": "セキュアSDLCを導入し、開発ライフサイクル全体でセキュリティを考慮する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュアSDLC規程", "セキュリティレビュー記録", "開発ガイドライン"],
+      "nist_csf_mapping": ["PR.PS", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8260000-0000-0000-0000-000000000085",
+    "fields": {
+      "control_id": "A.8.26",
+      "domain": "technological",
+      "title": "アプリケーションのセキュリティ要求事項",
+      "description": "アプリケーションを開発又は取得する際には、情報セキュリティ要求事項を特定し、規定し、承認しなければならない。",
+      "implementation_guidance": "アプリケーション開発時にセキュリティ要件を定義し、設計に組み込む。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュリティ要件定義書", "セキュリティ設計書", "要件承認記録"],
+      "nist_csf_mapping": ["PR.PS", "ID.RA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8270000-0000-0000-0000-000000000086",
+    "fields": {
+      "control_id": "A.8.27",
+      "domain": "technological",
+      "title": "セキュリティに配慮したシステムアーキテクチャ及びシステム構築の原則",
+      "description": "セキュリティに配慮したシステムを構築するための原則を確立し、文書化し、維持し、全ての情報システム開発活動に適用しなければならない。",
+      "implementation_guidance": "セキュアアーキテクチャの設計原則を策定し、システム構築に適用する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュリティアーキテクチャ原則", "システム設計書", "アーキテクチャレビュー記録"],
+      "nist_csf_mapping": ["PR.PS", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8280000-0000-0000-0000-000000000087",
+    "fields": {
+      "control_id": "A.8.28",
+      "domain": "technological",
+      "title": "セキュリティに配慮したコーディング",
+      "description": "セキュリティに配慮したコーディングの原則をソフトウェア開発に適用しなければならない。",
+      "implementation_guidance": "セキュアコーディングガイドラインを策定し、開発者に遵守させる。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュアコーディングガイドライン", "コードレビュー記録", "静的解析結果"],
+      "nist_csf_mapping": ["PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8290000-0000-0000-0000-000000000088",
+    "fields": {
+      "control_id": "A.8.29",
+      "domain": "technological",
+      "title": "開発及び受入れにおけるセキュリティテスト",
+      "description": "セキュリティテストのプロセスを開発ライフサイクルにおいて定義し、実施しなければならない。",
+      "implementation_guidance": "開発・受入段階でセキュリティテスト（脆弱性診断、ペネトレーションテスト等）を実施する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["セキュリティテスト計画", "テスト結果報告書", "脆弱性診断レポート"],
+      "nist_csf_mapping": ["PR.PS", "ID.RA"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8300000-0000-0000-0000-000000000089",
+    "fields": {
+      "control_id": "A.8.30",
+      "domain": "technological",
+      "title": "外部委託による開発",
+      "description": "組織は、外部委託したシステム開発活動を指揮し、監視し、レビューしなければならない。",
+      "implementation_guidance": "外部委託開発のセキュリティ要件を定義し、進捗・品質を監視する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["外部委託契約書（セキュリティ条項含む）", "委託先監視記録", "成果物検収記録"],
+      "nist_csf_mapping": ["GV.SC", "PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8310000-0000-0000-0000-000000000090",
+    "fields": {
+      "control_id": "A.8.31",
+      "domain": "technological",
+      "title": "開発環境、テスト環境及び運用環境の分離",
+      "description": "開発環境、テスト環境及び運用環境は、分離し、セキュリティを保たなければならない。",
+      "implementation_guidance": "開発・テスト・本番環境を分離し、各環境のアクセスを制御する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["環境分離設計書", "環境一覧", "アクセス制御記録"],
+      "nist_csf_mapping": ["PR.PS", "PR.DS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8320000-0000-0000-0000-000000000091",
+    "fields": {
+      "control_id": "A.8.32",
+      "domain": "technological",
+      "title": "変更管理",
+      "description": "情報処理設備及び情報システムの変更は、変更管理手順に従わなければならない。",
+      "implementation_guidance": "変更管理プロセスを確立し、全ての変更を管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["変更管理手順書", "変更要求記録", "変更承認・実施記録"],
+      "nist_csf_mapping": ["PR.PS", "PR.IR"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8330000-0000-0000-0000-000000000092",
+    "fields": {
+      "control_id": "A.8.33",
+      "domain": "technological",
+      "title": "テスト情報",
+      "description": "テスト情報は、適切に選定し、保護し、管理しなければならない。",
+      "implementation_guidance": "テストデータの管理方針を策定し、本番データの利用を制限する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["テストデータ管理方針", "テストデータ生成記録", "本番データ利用承認記録"],
+      "nist_csf_mapping": ["PR.DS", "PR.PS"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  },
+  {
+    "model": "controls.iso27001control",
+    "pk": "a8340000-0000-0000-0000-000000000093",
+    "fields": {
+      "control_id": "A.8.34",
+      "domain": "technological",
+      "title": "監査テスト中の情報システムの保護",
+      "description": "運用システムを含む監査テスト及びその他の保証活動を計画し、テスト実施者と適切な管理層との間で合意しなければならない。",
+      "implementation_guidance": "監査テストが本番環境に影響を与えないよう計画・管理する。",
+      "is_applicable": true,
+      "exclusion_reason": "",
+      "implementation_status": "not_started",
+      "implementation_notes": "",
+      "evidence_required": ["監査テスト計画書", "テスト実施承認記録", "テスト影響評価記録"],
+      "nist_csf_mapping": ["PR.PS", "GV.OC"],
+      "review_date": null,
+      "last_reviewed_at": null
+    }
+  }
+]
