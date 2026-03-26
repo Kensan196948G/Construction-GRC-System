@@ -5,6 +5,11 @@ on:
   push:
     branches: [ main ]
 
+env:
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '22'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   lint:
     name: Lint Check
@@ -15,25 +20,26 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
 
-    - name: Install Python dependencies
-      run: |
-        pip install ruff black isort
-      working-directory: .
+    - name: Install Python Lint Tools
+      run: pip install ruff black isort
 
     - name: Python Lint (Ruff)
-      run: |
-        ruff check backend/ || true
+      run: ruff check backend/ || true
 
     - name: Python Format Check (Black)
+      run: black --check backend/ || true
+
+    - name: Frontend Lint
       run: |
-        black --check backend/ || true
+        cd frontend && npm install && npm run lint || true
 
   test:
     name: Test Suite
@@ -65,31 +71,29 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
 
     - name: Install Python dependencies
-      run: |
-        pip install -r backend/requirements.txt || true
+      run: pip install -r backend/requirements.txt || true
 
     - name: Run Python Tests
       env:
         DATABASE_URL: postgresql://grc_user:grc_test_password@localhost:5432/grc_test
         REDIS_URL: redis://localhost:6379/0
-      run: |
-        cd backend && python -m pytest tests/ -v --tb=short || true
+        DJANGO_SETTINGS_MODULE: grc.settings.development
+      run: cd backend && python -m pytest tests/ -v --tb=short || true
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
 
     - name: Install Frontend dependencies
-      run: |
-        cd frontend && npm install || true
+      run: cd frontend && npm install || true
 
     - name: Run Frontend Tests
-      run: |
-        cd frontend && npm test || true
+      run: cd frontend && npm test || true
 
   build:
     name: Build Check
@@ -101,15 +105,13 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: ${{ env.NODE_VERSION }}
 
     - name: Build Frontend
-      run: |
-        cd frontend && npm install && npm run build || true
+      run: cd frontend && npm install && npm run build || true
 
     - name: Verify Docker Compose
-      run: |
-        docker compose config || true
+      run: docker compose config || true
 
   security:
     name: Security Scan
@@ -120,9 +122,14 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
 
     - name: Security Check (pip-audit)
       run: |
         pip install pip-audit
         pip-audit -r backend/requirements.txt || true
+
+    - name: Frontend Security (npm audit)
+      run: |
+        cd frontend && npm install && npm audit --audit-level=high || true
