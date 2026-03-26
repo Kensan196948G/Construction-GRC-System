@@ -1,13 +1,16 @@
-# バックアップ・リストア手順（Backup & Restore）
+# バックアップ・リストア手順（Backup & Restore Procedures）
 
 | 項目 | 内容 |
 |------|------|
-| 文書番号 | OPS-004 |
-| バージョン | 1.0 |
+| 文書番号 | GRC-OPS-004 |
+| バージョン | 1.0.0 |
 | 作成日 | 2026-03-26 |
 | 最終更新日 | 2026-03-26 |
-| 作成者 | 運用チーム |
+| 作成者 | インフラチーム |
+| 承認者 | システム運用責任者 |
+| 分類 | 社外秘 |
 | 対象プロジェクト | 建設業 統合リスク＆コンプライアンス管理システム（Construction-GRC-System） |
+| 準拠規格 | ISO27001:2022 / NIST CSF 2.0 / 建設業法 / 品確法 / 労安法 |
 
 ---
 
@@ -15,512 +18,430 @@
 
 ### 1.1 目的
 
-本文書は、Construction-GRC-Systemのバックアップ戦略、バックアップ手順、リストア手順を定める。データ保護とディザスタリカバリの観点から、確実なデータ復旧を実現する。
+本文書は、Construction-GRC-Systemのデータバックアップおよびリストアに関する手順を定める。データの保全とシステム復旧を確実に行い、事業継続性を確保する。
 
-### 1.2 RTO/RPO 目標
+### 1.2 復旧目標
 
 | 指標 | 目標値 | 説明 |
 |------|--------|------|
 | RTO（Recovery Time Objective） | 4時間 | サービス復旧までの最大許容時間 |
-| RPO（Recovery Point Objective） | 1時間 | データ損失許容量（最大1時間分のデータ） |
+| RPO（Recovery Point Objective） | 24時間 | 許容データ損失の最大時間幅 |
 
-### 1.3 バックアップ対象
+### 1.3 関連文書
 
-| 対象 | データ種別 | 重要度 | 備考 |
-|------|-----------|--------|------|
-| PostgreSQL データベース | 全テーブルデータ | 最重要 | GRCデータ全体 |
-| アップロードファイル | メディアファイル | 重要 | エビデンス、添付ファイル |
-| アプリケーション設定 | 環境変数、設定ファイル | 重要 | .env, nginx設定等 |
-| Redis データ | キャッシュ、セッション | 低 | 再生成可能 |
-| Docker設定 | docker-compose.yml等 | 重要 | Git管理 |
-
----
-
-## 2. バックアップ戦略
-
-### 2.1 バックアップ方式
-
-| バックアップ種別 | 方式 | 頻度 | 保持期間 | 保存先 |
-|----------------|------|------|---------|--------|
-| フルバックアップ（DB） | pg_dump | 毎日深夜2:00 | 30日間 | リモートストレージ |
-| WAL アーカイブ | pg_basebackup + WAL | 継続的（PITR対応） | 7日間 | リモートストレージ |
-| メディアファイル | rsync（増分） | 毎日深夜3:00 | 30日間 | リモートストレージ |
-| 設定ファイル | rsync | 変更時 | 90日間 | リモートストレージ |
-| 週次フルバックアップ | pg_dump + メディア | 毎週日曜深夜1:00 | 90日間 | リモートストレージ |
-| 月次バックアップ | 全体 | 毎月1日深夜0:00 | 1年間 | リモートストレージ |
-
-### 2.2 バックアップの世代管理
-
-```
-バックアップ保存構造:
-backups/
-├── daily/                    # 日次（30日保持）
-│   ├── 2026-03-26/
-│   │   ├── grc_db_20260326_020000.sql.gz
-│   │   └── media_20260326_030000.tar.gz
-│   ├── 2026-03-25/
-│   └── ...
-├── weekly/                   # 週次（90日保持）
-│   ├── 2026-W13/
-│   │   ├── grc_db_full_20260322.sql.gz
-│   │   └── media_full_20260322.tar.gz
-│   └── ...
-├── monthly/                  # 月次（1年保持）
-│   ├── 2026-03/
-│   └── ...
-└── wal_archive/             # WALアーカイブ（7日保持）
-    └── ...
-```
-
-### 2.3 3-2-1 バックアップルール
-
-| ルール | 実装 |
-|--------|------|
-| 3つのコピー | 本番データ + ローカルバックアップ + リモートバックアップ |
-| 2種類のメディア | ローカルストレージ + クラウドストレージ（S3互換） |
-| 1つのオフサイト | 異なるリージョンのクラウドストレージ |
+| 文書番号 | 文書名 |
+|---------|--------|
+| GRC-OPS-001 | 運用手順書 |
+| GRC-OPS-003 | 障害対応手順書 |
+| GRC-OPS-005 | 保守計画 |
+| GRC-REL-004 | ロールバック手順書 |
 
 ---
 
-## 3. バックアップ手順
+## 2. バックアップ設計
 
-### 3.1 データベースバックアップ（日次）
+### 2.1 バックアップ対象一覧
 
-#### 自動バックアップスクリプト
+| No. | 対象 | データ種別 | バックアップ方式 | 頻度 | 保持世代 |
+|-----|------|-----------|----------------|------|---------|
+| 1 | PostgreSQL全データ | データベース | pg_dump（論理） | 日次 | 3世代 |
+| 2 | PostgreSQL WAL | トランザクションログ | WALアーカイブ | 継続的 | 7日分 |
+| 3 | アップロードファイル | ファイル | rsync | 日次 | 3世代 |
+| 4 | アプリケーション設定 | 設定ファイル | rsync | 変更時 | 5世代 |
+| 5 | Elasticsearch インデックス | 検索データ | Snapshot API | 日次 | 3世代 |
+| 6 | Redis データ | キャッシュ・セッション | RDB Snapshot | 日次 | 1世代 |
+| 7 | SSL証明書・鍵 | セキュリティ | 暗号化コピー | 変更時 | 3世代 |
+| 8 | 監査ログ | ログ | 圧縮アーカイブ | 日次 | 1年分 |
+
+### 2.2 バックアップスケジュール
+
+```
+┌──────────────────────────────────────────────────┐
+│              日次バックアップスケジュール            │
+│                                                  │
+│  01:00  Redis RDB Snapshot                       │
+│  02:00  Elasticsearch Snapshot                   │
+│  03:00  アップロードファイル rsync                  │
+│  04:00  PostgreSQL pg_dump（フルバックアップ）      │
+│  05:00  監査ログアーカイブ                         │
+│  05:30  バックアップ検証（チェックサム）             │
+│  06:00  古い世代の削除（3世代管理）                 │
+│                                                  │
+│  常時   PostgreSQL WALアーカイブ（継続的）          │
+└──────────────────────────────────────────────────┘
+```
+
+### 2.3 3世代管理
+
+| 世代 | 保持期間 | 保管場所 | 説明 |
+|------|---------|---------|------|
+| 第1世代（最新） | 当日分 | ローカルストレージ | 直近のバックアップ |
+| 第2世代 | 前日分 | ローカルストレージ | 前日のバックアップ |
+| 第3世代 | 前々日分 | リモートストレージ | 最も古い保持バックアップ |
+
+**世代ローテーション:**
+
+```
+Day N:    backup_day_N.dump    → 第1世代
+          backup_day_N-1.dump  → 第2世代
+          backup_day_N-2.dump  → 第3世代
+          backup_day_N-3.dump  → 削除
+```
+
+### 2.4 バックアップ保管場所
+
+| 保管場所 | 種別 | 用途 | 暗号化 |
+|---------|------|------|--------|
+| /backup/local/ | ローカルディスク | 第1・第2世代保管 | AES-256 |
+| s3://grc-backup/ | S3互換ストレージ | 第3世代・長期保管 | SSE-S3 + KMS |
+| オフサイト | テープ/外部DC | 災害復旧用（月次） | AES-256 |
+
+---
+
+## 3. PostgreSQL バックアップ手順
+
+### 3.1 日次フルバックアップ（pg_dump）
+
+#### 3.1.1 自動実行スクリプト
 
 ```bash
 #!/bin/bash
-# backup_database.sh - 日次データベースバックアップ
+# /opt/grc-backup/scripts/pg_backup.sh
+# PostgreSQL日次フルバックアップ
 
 set -euo pipefail
 
 # 設定
-BACKUP_DIR="/var/backups/grc/daily/$(date +%Y-%m-%d)"
-DB_CONTAINER="grc-postgres"
+BACKUP_DIR="/backup/local/postgresql"
+BACKUP_DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="${BACKUP_DIR}/grc_db_${BACKUP_DATE}.dump"
 DB_NAME="grc_db"
-DB_USER="grc_user"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="grc_db_${TIMESTAMP}.sql.gz"
-REMOTE_BUCKET="s3://grc-backups/daily/"
-RETENTION_DAYS=30
+DB_USER="grc_backup"
+DB_HOST="db-primary.grc-system.internal"
+LOG_FILE="/var/log/grc-system/backup.log"
+MAX_GENERATIONS=3
+S3_BUCKET="s3://grc-backup/postgresql"
 
-# バックアップディレクトリの作成
-mkdir -p "${BACKUP_DIR}"
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
 
-echo "[$(date)] バックアップ開始: ${BACKUP_FILE}"
+log "=== PostgreSQL バックアップ開始 ==="
 
-# pg_dump でバックアップ（カスタム形式 + 圧縮）
-docker compose exec -T postgres pg_dump \
-  -U "${DB_USER}" \
-  -d "${DB_NAME}" \
-  --format=custom \
-  --compress=9 \
-  --verbose \
-  > "${BACKUP_DIR}/${BACKUP_FILE%.gz}.dump" 2>"${BACKUP_DIR}/backup.log"
+# バックアップディレクトリ確認
+mkdir -p "$BACKUP_DIR"
 
-# SQL形式のバックアップも作成（可読性のため）
-docker compose exec -T postgres pg_dump \
-  -U "${DB_USER}" \
-  -d "${DB_NAME}" \
-  --format=plain \
-  | gzip > "${BACKUP_DIR}/${BACKUP_FILE}"
+# バックアップ実行
+log "pg_dump実行開始: ${BACKUP_FILE}"
+pg_dump -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" \
+    -Fc --compress=9 \
+    --verbose \
+    -f "$BACKUP_FILE" \
+    2>> "$LOG_FILE"
 
-# バックアップファイルのサイズ確認
-FILESIZE=$(stat -f%z "${BACKUP_DIR}/${BACKUP_FILE}" 2>/dev/null || stat --printf="%s" "${BACKUP_DIR}/${BACKUP_FILE}")
-echo "[$(date)] バックアップサイズ: ${FILESIZE} bytes"
+# チェックサム生成
+sha256sum "$BACKUP_FILE" > "${BACKUP_FILE}.sha256"
+log "チェックサム生成完了"
 
-# 最小サイズチェック（空バックアップの防止）
-if [ "${FILESIZE}" -lt 1000 ]; then
-  echo "[$(date)] ERROR: バックアップファイルが異常に小さい"
-  exit 1
+# バックアップサイズ確認
+BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+log "バックアップサイズ: ${BACKUP_SIZE}"
+
+# バックアップ検証
+pg_restore --list "$BACKUP_FILE" > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    log "バックアップ検証: OK"
+else
+    log "ERROR: バックアップ検証失敗"
+    exit 1
 fi
 
-# チェックサムの生成
-sha256sum "${BACKUP_DIR}/${BACKUP_FILE}" > "${BACKUP_DIR}/${BACKUP_FILE}.sha256"
+# 第3世代をリモートストレージに転送
+THIRD_GEN=$(ls -t ${BACKUP_DIR}/grc_db_*.dump | sed -n '3p')
+if [ -n "$THIRD_GEN" ]; then
+    log "第3世代をS3に転送: $(basename $THIRD_GEN)"
+    aws s3 cp "$THIRD_GEN" "$S3_BUCKET/" --sse aws:kms
+    aws s3 cp "${THIRD_GEN}.sha256" "$S3_BUCKET/"
+fi
 
-# リモートストレージへの転送
-aws s3 cp "${BACKUP_DIR}/${BACKUP_FILE}" "${REMOTE_BUCKET}$(date +%Y-%m-%d)/"
-aws s3 cp "${BACKUP_DIR}/${BACKUP_FILE}.sha256" "${REMOTE_BUCKET}$(date +%Y-%m-%d)/"
+# 世代管理（3世代を超えるものを削除）
+ls -t ${BACKUP_DIR}/grc_db_*.dump | tail -n +$((MAX_GENERATIONS + 1)) | while read old_file; do
+    log "古い世代を削除: $(basename $old_file)"
+    rm -f "$old_file" "${old_file}.sha256"
+done
 
-# 古いバックアップの削除
-find /var/backups/grc/daily/ -type d -mtime +${RETENTION_DAYS} -exec rm -rf {} + 2>/dev/null || true
-
-echo "[$(date)] バックアップ完了: ${BACKUP_FILE}"
+log "=== PostgreSQL バックアップ完了 ==="
 ```
 
-#### crontab 設定
+#### 3.1.2 cron設定
 
 ```cron
-# 日次データベースバックアップ（毎日2:00）
-0 2 * * * /opt/grc/scripts/backup_database.sh >> /var/log/grc/backup.log 2>&1
-
-# 日次メディアバックアップ（毎日3:00）
-0 3 * * * /opt/grc/scripts/backup_media.sh >> /var/log/grc/backup.log 2>&1
-
-# 週次フルバックアップ（毎週日曜1:00）
-0 1 * * 0 /opt/grc/scripts/backup_full.sh >> /var/log/grc/backup.log 2>&1
-
-# 月次バックアップ（毎月1日0:00）
-0 0 1 * * /opt/grc/scripts/backup_monthly.sh >> /var/log/grc/backup.log 2>&1
-
-# 古いバックアップの削除（毎日4:00）
-0 4 * * * /opt/grc/scripts/cleanup_backups.sh >> /var/log/grc/backup.log 2>&1
+# /etc/cron.d/grc-backup
+# PostgreSQL日次バックアップ（毎日04:00実行）
+0 4 * * * grc-backup /opt/grc-backup/scripts/pg_backup.sh >> /var/log/grc-system/backup_cron.log 2>&1
 ```
 
-### 3.2 メディアファイルバックアップ
+### 3.2 WALアーカイブ（継続的バックアップ）
 
-```bash
-#!/bin/bash
-# backup_media.sh - メディアファイルバックアップ（増分）
-
-set -euo pipefail
-
-MEDIA_DIR="/app/media"
-BACKUP_DIR="/var/backups/grc/daily/$(date +%Y-%m-%d)"
-REMOTE_BUCKET="s3://grc-backups/media/"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-
-mkdir -p "${BACKUP_DIR}"
-
-echo "[$(date)] メディアバックアップ開始"
-
-# rsync で増分バックアップ
-rsync -avz --delete \
-  "${MEDIA_DIR}/" \
-  "${BACKUP_DIR}/media/"
-
-# tar.gz に圧縮
-tar -czf "${BACKUP_DIR}/media_${TIMESTAMP}.tar.gz" \
-  -C "${BACKUP_DIR}" media/
-
-# リモートストレージへ転送
-aws s3 sync "${MEDIA_DIR}/" "${REMOTE_BUCKET}" --delete
-
-echo "[$(date)] メディアバックアップ完了"
-```
-
-### 3.3 WAL アーカイブ（PITR: Point-In-Time Recovery）
-
-#### PostgreSQL 設定（postgresql.conf）
+#### 3.2.1 PostgreSQL設定
 
 ```ini
-# WALアーカイブの有効化
+# postgresql.conf
 wal_level = replica
 archive_mode = on
-archive_command = 'test ! -f /var/backups/wal_archive/%f && cp %p /var/backups/wal_archive/%f'
-archive_timeout = 300  # 5分ごとにWALをアーカイブ
+archive_command = 'test ! -f /backup/local/wal/%f && cp %p /backup/local/wal/%f'
+archive_timeout = 300  # 5分間隔でWAL強制切り替え
 ```
 
-#### ベースバックアップの取得
-
-```bash
-# ベースバックアップの取得
-docker compose exec postgres pg_basebackup \
-  -U replication_user \
-  -D /var/backups/basebackup \
-  -Ft -z -Xs -P
-
-# リモートストレージへの転送
-aws s3 cp /var/backups/basebackup/ s3://grc-backups/basebackup/ --recursive
-```
-
-### 3.4 設定ファイルバックアップ
+#### 3.2.2 WALクリーンアップ
 
 ```bash
 #!/bin/bash
-# backup_config.sh - 設定ファイルバックアップ
+# 7日以上古いWALファイルを削除
+find /backup/local/wal/ -name "*.wal" -mtime +7 -delete
+```
 
-BACKUP_DIR="/var/backups/grc/config/$(date +%Y-%m-%d)"
-mkdir -p "${BACKUP_DIR}"
+### 3.3 バックアップ確認手順
 
-# 設定ファイルのバックアップ（機密情報を含むため暗号化）
-tar -czf - \
-  docker-compose.yml \
-  docker-compose.override.yml \
-  docker/ \
-  .env \
-  nginx/ \
-  | gpg --symmetric --cipher-algo AES256 \
-  > "${BACKUP_DIR}/config_$(date +%Y%m%d).tar.gz.gpg"
+```bash
+# バックアップファイル一覧確認
+ls -lah /backup/local/postgresql/grc_db_*.dump
+
+# チェックサム検証
+sha256sum -c /backup/local/postgresql/grc_db_*.sha256
+
+# バックアップ内容確認
+pg_restore --list /backup/local/postgresql/grc_db_YYYYMMDD_HHMMSS.dump | head -30
+
+# S3上のバックアップ確認
+aws s3 ls s3://grc-backup/postgresql/
 ```
 
 ---
 
 ## 4. リストア手順
 
-### 4.1 データベースリストア
+### 4.1 リストア判断基準
 
-#### 4.1.1 フルリストア
+| 状況 | リストア方式 | 目安時間 |
+|------|------------|---------|
+| テーブル単位の誤削除 | 特定テーブルのリストア | 30分-1時間 |
+| データ不整合 | ポイントインタイムリカバリ（PITR） | 1-2時間 |
+| データベース全体の破損 | フルリストア | 2-4時間 |
+| サーバー障害 | 新規サーバーでのフルリストア | 3-4時間 |
+
+### 4.2 フルリストア手順
+
+#### 4.2.1 事前準備
 
 ```bash
-#!/bin/bash
-# restore_database.sh - データベースリストア
+# 1. 現在のデータベースの状態確認
+psql -U postgres -c "SELECT pg_database_size('grc_db');"
+psql -U postgres -c "SELECT count(*) FROM pg_stat_activity WHERE datname='grc_db';"
 
-set -euo pipefail
+# 2. アプリケーション停止
+sudo systemctl stop grc-application
+sudo systemctl stop celery-worker
+sudo systemctl stop celery-beat
 
-BACKUP_FILE=$1  # 引数: バックアップファイルパス
-
-if [ -z "${BACKUP_FILE}" ]; then
-  echo "Usage: $0 <backup_file>"
-  exit 1
-fi
-
-echo "[$(date)] リストア開始: ${BACKUP_FILE}"
-
-# 1. チェックサムの検証
-echo "[$(date)] チェックサム検証中..."
-sha256sum -c "${BACKUP_FILE}.sha256"
-
-# 2. アプリケーションの停止
-echo "[$(date)] アプリケーションを停止..."
-docker compose stop backend celery-worker celery-beat
-
-# 3. 既存データベースのバックアップ（安全のため）
-echo "[$(date)] 現在のDBをバックアップ..."
-docker compose exec -T postgres pg_dump \
-  -U grc_user -d grc_db --format=custom \
-  > /tmp/pre_restore_backup.dump
-
-# 4. データベースの再作成
-echo "[$(date)] データベースを再作成..."
-docker compose exec -T postgres psql -U postgres -c "
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = 'grc_db' AND pid <> pg_backend_pid();
-"
-docker compose exec -T postgres dropdb -U postgres grc_db
-docker compose exec -T postgres createdb -U postgres -O grc_user grc_db
-
-# 5. リストア実行
-echo "[$(date)] リストア実行中..."
-if [[ "${BACKUP_FILE}" == *.dump ]]; then
-  # カスタム形式
-  docker compose exec -T postgres pg_restore \
-    -U grc_user -d grc_db \
-    --verbose --clean --if-exists \
-    < "${BACKUP_FILE}"
-elif [[ "${BACKUP_FILE}" == *.sql.gz ]]; then
-  # SQL形式（圧縮）
-  gunzip -c "${BACKUP_FILE}" | \
-    docker compose exec -T postgres psql -U grc_user -d grc_db
-fi
-
-# 6. ANALYZE の実行
-echo "[$(date)] ANALYZE 実行中..."
-docker compose exec -T postgres psql -U grc_user -d grc_db -c "ANALYZE;"
-
-# 7. アプリケーションの再起動
-echo "[$(date)] アプリケーションを再起動..."
-docker compose start backend celery-worker celery-beat
-
-# 8. ヘルスチェック
-echo "[$(date)] ヘルスチェック..."
-sleep 10
-curl -sf http://localhost:8000/api/health/ | jq .
-
-echo "[$(date)] リストア完了"
+# 3. リストア対象バックアップの選択・検証
+ls -lah /backup/local/postgresql/grc_db_*.dump
+sha256sum -c /backup/local/postgresql/grc_db_YYYYMMDD_HHMMSS.sha256
 ```
 
-#### 4.1.2 ポイントインタイムリカバリ（PITR）
+#### 4.2.2 リストア実行
 
 ```bash
-#!/bin/bash
-# pitr_restore.sh - 特定時点へのリストア
+# 4. 既存データベースの削除と再作成
+psql -U postgres -c "DROP DATABASE IF EXISTS grc_db;"
+psql -U postgres -c "CREATE DATABASE grc_db OWNER grc_admin;"
 
-TARGET_TIME=$1  # 例: "2026-03-26 10:30:00"
+# 5. リストア実行
+pg_restore -h localhost -U postgres -d grc_db \
+    --verbose --clean --if-exists \
+    /backup/local/postgresql/grc_db_YYYYMMDD_HHMMSS.dump \
+    2>&1 | tee /var/log/grc-system/restore.log
 
-echo "[$(date)] PITR リストア開始: ${TARGET_TIME}"
+# 6. 権限の再設定
+psql -U postgres -d grc_db -c "
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO grc_admin;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO grc_readonly;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO grc_admin;
+"
+```
 
-# 1. アプリケーションの停止
-docker compose stop backend celery-worker celery-beat
+#### 4.2.3 リストア後の確認
 
-# 2. PostgreSQL の停止
-docker compose stop postgres
+```bash
+# 7. データ整合性確認
+psql -U grc_admin -d grc_db -c "
+SELECT schemaname, tablename, n_live_tup
+FROM pg_stat_user_tables
+ORDER BY n_live_tup DESC;"
+
+# 8. アプリケーションマイグレーション確認
+python manage.py showmigrations
+
+# 9. アプリケーション起動
+sudo systemctl start grc-application
+sudo systemctl start celery-worker
+sudo systemctl start celery-beat
+
+# 10. ヘルスチェック
+curl -s http://localhost:8000/health/deep/ | python -m json.tool
+
+# 11. 主要機能の動作確認
+python manage.py check --deploy
+```
+
+### 4.3 特定テーブルリストア
+
+```bash
+# 特定テーブルのみリストア（例: risk_assessments テーブル）
+pg_restore -h localhost -U postgres -d grc_db \
+    --table=risk_assessments \
+    --verbose \
+    /backup/local/postgresql/grc_db_YYYYMMDD_HHMMSS.dump
+```
+
+### 4.4 ポイントインタイムリカバリ（PITR）
+
+```bash
+# 1. アプリケーション停止
+sudo systemctl stop grc-application
+
+# 2. PostgreSQL停止
+sudo systemctl stop postgresql
 
 # 3. データディレクトリのバックアップ
-mv /var/lib/postgresql/data /var/lib/postgresql/data.old
+mv /var/lib/postgresql/16/main /var/lib/postgresql/16/main_broken
 
-# 4. ベースバックアップの展開
-tar -xzf /var/backups/basebackup/base.tar.gz -C /var/lib/postgresql/data
+# 4. ベースバックアップからのリストア
+pg_basebackup -h db-primary -U replication -D /var/lib/postgresql/16/main -P
 
-# 5. リカバリ設定の作成
-cat > /var/lib/postgresql/data/recovery.signal << EOF
-EOF
+# 5. recovery.signal の作成
+touch /var/lib/postgresql/16/main/recovery.signal
 
-cat >> /var/lib/postgresql/data/postgresql.conf << EOF
-restore_command = 'cp /var/backups/wal_archive/%f %p'
-recovery_target_time = '${TARGET_TIME}'
+# 6. postgresql.conf にリカバリターゲットを設定
+cat >> /var/lib/postgresql/16/main/postgresql.conf << EOF
+restore_command = 'cp /backup/local/wal/%f %p'
+recovery_target_time = '2026-03-26 10:00:00+09'
 recovery_target_action = 'promote'
 EOF
 
-# 6. PostgreSQL の起動（リカバリ実行）
-docker compose start postgres
+# 7. PostgreSQL起動（リカバリ自動実行）
+sudo systemctl start postgresql
 
-# 7. リカバリ完了の確認
-echo "リカバリ完了を確認中..."
-sleep 30
-docker compose exec postgres psql -U grc_user -d grc_db -c "SELECT NOW();"
-
-# 8. アプリケーションの再起動
-docker compose start backend celery-worker celery-beat
-
-echo "[$(date)] PITR リストア完了"
+# 8. リカバリ完了確認
+psql -U postgres -c "SELECT pg_is_in_recovery();"
+# false が返ればリカバリ完了
 ```
 
-### 4.2 メディアファイルリストア
+---
+
+## 5. その他のバックアップ・リストア
+
+### 5.1 アップロードファイル
 
 ```bash
-#!/bin/bash
-# restore_media.sh - メディアファイルリストア
+# バックアップ
+rsync -avz --delete \
+    /var/grc-system/uploads/ \
+    /backup/local/uploads/$(date +%Y%m%d)/
 
-BACKUP_FILE=$1
-
-echo "[$(date)] メディアリストア開始"
-
-# 1. 現在のメディアディレクトリのバックアップ
-mv /app/media /app/media.old
-
-# 2. バックアップからリストア
-mkdir -p /app/media
-
-if [ -f "${BACKUP_FILE}" ]; then
-  # ローカルバックアップからリストア
-  tar -xzf "${BACKUP_FILE}" -C /app/media
-else
-  # リモートストレージからリストア
-  aws s3 sync s3://grc-backups/media/ /app/media/
-fi
-
-# 3. パーミッションの設定
-chown -R www-data:www-data /app/media
-chmod -R 755 /app/media
-
-echo "[$(date)] メディアリストア完了"
+# リストア
+rsync -avz \
+    /backup/local/uploads/YYYYMMDD/ \
+    /var/grc-system/uploads/
 ```
 
-### 4.3 完全リストア（ディザスタリカバリ）
+### 5.2 Elasticsearch
 
 ```bash
-#!/bin/bash
-# disaster_recovery.sh - 完全リストア手順
+# スナップショット作成
+curl -X PUT "localhost:9200/_snapshot/grc_backup/snapshot_$(date +%Y%m%d)" \
+    -H 'Content-Type: application/json' \
+    -d '{"indices": "grc-*", "ignore_unavailable": true}'
 
-echo "=========================================="
-echo " ディザスタリカバリ手順"
-echo "=========================================="
-
-# ステップ1: インフラの準備
-echo "[Step 1] インフラの準備"
-# 新しいサーバーにDocker, Docker Composeをインストール
-
-# ステップ2: 設定ファイルの復元
-echo "[Step 2] 設定ファイルの復元"
-aws s3 cp s3://grc-backups/config/latest/ /opt/grc/ --recursive
-gpg --decrypt /opt/grc/config_latest.tar.gz.gpg | tar -xzf - -C /opt/grc/
-
-# ステップ3: Dockerイメージの取得
-echo "[Step 3] Dockerイメージの取得"
-docker compose pull
-
-# ステップ4: データベースの復元
-echo "[Step 4] データベースの復元"
-docker compose up -d postgres
-sleep 10
-./restore_database.sh /var/backups/latest/grc_db_latest.dump
-
-# ステップ5: メディアファイルの復元
-echo "[Step 5] メディアファイルの復元"
-./restore_media.sh
-
-# ステップ6: 全サービスの起動
-echo "[Step 6] 全サービスの起動"
-docker compose up -d
-
-# ステップ7: 動作確認
-echo "[Step 7] 動作確認"
-sleep 30
-curl -sf https://grc-system.example.com/api/health/ | jq .
-
-echo "=========================================="
-echo " ディザスタリカバリ完了"
-echo "=========================================="
+# スナップショットからリストア
+curl -X POST "localhost:9200/_snapshot/grc_backup/snapshot_YYYYMMDD/_restore" \
+    -H 'Content-Type: application/json' \
+    -d '{"indices": "grc-*"}'
 ```
 
----
-
-## 5. バックアップの検証
-
-### 5.1 日次検証
-
-| 検証項目 | 方法 | 合格基準 |
-|---------|------|---------|
-| バックアップジョブの成功 | cron実行ログの確認 | エラーなし |
-| バックアップファイルのサイズ | ファイルサイズの確認 | 前日比で極端な増減がない |
-| チェックサムの整合性 | sha256sum -c | 一致 |
-| リモートストレージへの転送 | S3のオブジェクト確認 | 存在すること |
-
-### 5.2 月次検証（リストアテスト）
-
-| 検証項目 | 手順 | 合格基準 |
-|---------|------|---------|
-| フルリストア | テスト環境でリストアを実行 | RTO内（4時間以内）にリストア完了 |
-| データ整合性 | リストア後のレコード数を確認 | バックアップ時点のデータと一致 |
-| アプリケーション動作 | リストア後にアプリケーションを起動 | 正常に動作すること |
-| PITR テスト | 特定時点へのリカバリを実行 | 指定時点のデータに復旧 |
-
-### 5.3 半期検証（ディザスタリカバリ訓練）
-
-| 検証項目 | 手順 | 合格基準 |
-|---------|------|---------|
-| 完全リストア | 新規環境で全手順を実行 | RTO内に完全復旧 |
-| RPO の確認 | リストア後のデータ損失量を確認 | RPO（1時間）以内 |
-| 手順書の正確性 | 手順書通りに実行 | 手順通りに完了 |
-
----
-
-## 6. バックアップ監視
-
-### 6.1 監視項目
-
-| 監視項目 | 閾値 | アラートレベル |
-|---------|------|--------------|
-| バックアップジョブ失敗 | 1回 | P2（HIGH） |
-| バックアップジョブ2回連続失敗 | 2回 | P1（CRITICAL） |
-| バックアップファイルサイズ異常 | 前日比50%以上の変動 | P3（WARNING） |
-| リモート転送失敗 | 1回 | P2（HIGH） |
-| ディスク残容量（バックアップ用） | 80%超 | P3（WARNING） |
-| ディスク残容量（バックアップ用） | 90%超 | P2（HIGH） |
-
-### 6.2 バックアップ完了通知
+### 5.3 Redis
 
 ```bash
-# バックアップ成功時の通知（Slack）
-curl -X POST -H 'Content-type: application/json' \
-  --data "{\"text\": \"[OK] データベースバックアップ完了: grc_db_$(date +%Y%m%d).sql.gz ($(du -sh ${BACKUP_FILE} | cut -f1))\"}" \
-  "${SLACK_WEBHOOK_URL}"
+# RDBスナップショット（自動: redis.conf で設定済み）
+# 手動バックアップ
+redis-cli BGSAVE
+cp /var/lib/redis/dump.rdb /backup/local/redis/dump_$(date +%Y%m%d).rdb
 
-# バックアップ失敗時の通知
-curl -X POST -H 'Content-type: application/json' \
-  --data "{\"text\": \"[ALERT] データベースバックアップ失敗! 至急確認してください。\"}" \
-  "${SLACK_WEBHOOK_URL}"
+# リストア
+sudo systemctl stop redis
+cp /backup/local/redis/dump_YYYYMMDD.rdb /var/lib/redis/dump.rdb
+sudo chown redis:redis /var/lib/redis/dump.rdb
+sudo systemctl start redis
 ```
 
 ---
 
-## 7. セキュリティ考慮事項
+## 6. バックアップ検証
 
-| 項目 | 対策 |
-|------|------|
-| バックアップファイルの暗号化 | GPG暗号化（AES-256） |
-| 転送時の暗号化 | TLS/SSL（S3へのHTTPS転送） |
-| アクセス制御 | バックアップストレージへのアクセスを最小権限に制限 |
-| バックアップファイルのパーミッション | 600（所有者のみ読み書き） |
-| 暗号化キーの管理 | シークレット管理サービスで管理 |
-| 監査ログ | バックアップ・リストア操作のログ記録 |
+### 6.1 自動検証
+
+| 検証項目 | 実施タイミング | 方法 |
+|---------|--------------|------|
+| ファイルサイズ確認 | バックアップ直後 | 前日比較で異常値検知 |
+| チェックサム検証 | バックアップ直後 | SHA-256照合 |
+| pg_restore --list | バックアップ直後 | バックアップ構造の確認 |
+
+### 6.2 定期リストアテスト
+
+| テスト種別 | 頻度 | 環境 | 確認内容 |
+|-----------|------|------|---------|
+| フルリストアテスト | 月次 | テスト環境 | 全データの復元・アプリ動作確認 |
+| PITRテスト | 四半期 | テスト環境 | 特定時点への復元精度 |
+| DRテスト | 年次 | DR環境 | RTO/RPO目標の達成確認 |
+
+### 6.3 リストアテストチェックリスト
+
+- [ ] バックアップファイルのチェックサム一致
+- [ ] pg_restore が正常完了
+- [ ] テーブル数・レコード数が想定通り
+- [ ] アプリケーションのマイグレーションが一致
+- [ ] 主要機能（リスク管理・コンプライアンス・監査）が動作
+- [ ] ユーザ認証が正常動作
+- [ ] リストア所要時間がRTO内（4時間以内）
+- [ ] データ損失がRPO内（24時間以内）
 
 ---
 
-## 改訂履歴
+## 7. ISO27001 / NIST CSF 2.0 関連
 
-| バージョン | 日付 | 変更内容 | 変更者 |
-|-----------|------|---------|--------|
-| 1.0 | 2026-03-26 | 初版作成 | 運用チーム |
+### 7.1 ISO27001:2022 管理策対応
+
+| 管理策ID | 管理策名 | 本文書での対応 |
+|---------|---------|--------------|
+| A.8.13 | 情報のバックアップ | バックアップ設計・手順 |
+| A.8.14 | 情報処理施設の冗長性 | 3世代管理・リモート保管 |
+| A.5.30 | 事業継続のためのICTの備え | RTO/RPO定義・DRテスト |
+| A.8.10 | 情報の削除 | 世代管理による適切な削除 |
+| A.8.24 | 暗号の利用 | バックアップデータの暗号化 |
+
+### 7.2 NIST CSF 2.0 対応
+
+| 機能 | カテゴリ | 本文書での対応 |
+|------|---------|--------------|
+| PROTECT (PR) | PR.DS | データセキュリティ（暗号化バックアップ） |
+| PROTECT (PR) | PR.IP | 情報保護プロセス（バックアップ手順） |
+| RECOVER (RC) | RC.RP | 復旧計画の実行（リストア手順） |
+| RECOVER (RC) | RC.IM | 復旧の改善（定期テスト） |
+
+---
+
+## 8. 改訂履歴
+
+| バージョン | 日付 | 変更者 | 変更内容 |
+|-----------|------|--------|---------|
+| 1.0.0 | 2026-03-26 | インフラチーム | 初版作成 |
