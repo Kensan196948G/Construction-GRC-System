@@ -343,37 +343,47 @@ docs/
 | 🐳 Docker | 24+ |
 | 🐳 Docker Compose | 2.20+ |
 
-### セットアップ
+### セットアップ（Makefile）
 
 ```bash
 # 1. リポジトリクローン
 git clone https://github.com/Kensan196948G/Construction-GRC-System.git
 cd Construction-GRC-System
 
-# 2. Docker Compose で起動
+# 2. 初期セットアップ（venv作成、依存インストール、.env生成）
+make setup
+
+# 3. DB マイグレーション & フィクスチャ投入
+make migrate
+make fixtures    # ISO27001(93件) + NIST CSF(21件) + 建設業法令(17件)
+
+# 4. 開発サーバー起動
+make dev-backend    # http://localhost:8000
+make dev-frontend   # http://localhost:3000
+```
+
+### Docker で起動
+
+```bash
 docker compose up -d
 
-# 3. アクセス
+# アクセス
 # フロントエンド: http://localhost:3000
 # バックエンドAPI: http://localhost:8000/api/v1/
+# ヘルスチェック: http://localhost:8000/api/health/
 # 管理画面: http://localhost:8000/admin/
 ```
 
-### 開発環境（ローカル）
+### 便利コマンド（Makefile）
 
 ```bash
-# バックエンド
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-
-# フロントエンド
-cd frontend
-npm install
-npm run dev
+make help          # 全コマンド一覧
+make test          # バックエンドテスト
+make test-cov      # カバレッジ付きテスト
+make lint          # Ruff + Black チェック
+make lint-fix      # 自動修正
+make build         # フロントエンドビルド
+make superuser     # 管理者ユーザー作成
 ```
 
 ---
@@ -494,6 +504,26 @@ gantt
 
 ---
 
+## 📈 開発進捗
+
+| 成果物 | 数量 | 状態 |
+|--------|:----:|:----:|
+| 📚 ドキュメント（10カテゴリ） | 57ファイル | ✅ 完了 |
+| 🐍 バックエンド（Django+DRF） | 69ファイル | ✅ Phase 1完了 |
+| 🖥️ フロントエンド（Vue.js 3） | 24ファイル | ✅ Phase 1完了 |
+| 📊 フィクスチャデータ | 131レコード | ✅ 完了 |
+| 🔧 CI/CD | 4ジョブ | ✅ 稼働中 |
+| 🐳 Docker | 6サービス | ✅ 完了 |
+| 🧪 テスト | 30+ケース | ✅ Phase 1完了 |
+
+### フィクスチャデータ
+
+| データ | 件数 | コマンド |
+|--------|:----:|---------|
+| ISO27001:2022 全管理策 | 93件 | `make fixtures` |
+| NIST CSF 2.0 カテゴリ | 21件 | `make fixtures` |
+| 建設業法令準拠要件 | 17件 | `make fixtures` |
+
 ## 🤖 開発パイプライン
 
 このプロジェクトは **ClaudeOS v4** による自律開発パイプラインで管理されています。
@@ -501,6 +531,18 @@ gantt
 ```
 ClaudeOS → GitHub Issues → GitHub Projects → WorkTree → PR → GitHub Actions → Merge → Deploy
 ```
+
+### セッション実績（2026-03-26）
+
+| PR | 内容 | ファイル |
+|----|------|:-------:|
+| #1 | プロジェクト基盤構築（57ドキュメント+スキャフォールディング） | 115 |
+| #2 | 空ファイル設計書補完 | 18 |
+| #3 | 設計書・セキュリティ文書改善 | 6 |
+| #4 | フロントエンド完全構築 + ISO27001フィクスチャ | 21 |
+| #5 | 建設業法令フィクスチャ + pyproject.toml | 2 |
+| #6 | Django AppConfig + migrations + Makefile | 18 |
+| #7 | サービス層 + 型定義 + API統合 + ヘルスチェック | 22 |
 
 ---
 

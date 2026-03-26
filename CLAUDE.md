@@ -41,22 +41,36 @@ Construction-GRC-System/
 - TypeScript: ESLint + Prettier
 - テストカバレッジ: 80%以上目標
 
-## コマンド
+## コマンド（Makefile）
 ```bash
-# バックエンド
-cd backend && python -m pytest tests/ -v
-cd backend && ruff check .
-cd backend && black --check .
-
-# フロントエンド
-cd frontend && npm test
-cd frontend && npm run lint
-cd frontend && npm run build
-
-# Docker
-docker compose up -d
-docker compose down
+make setup          # 初期セットアップ
+make migrate        # DBマイグレーション
+make fixtures       # ISO27001(93)+NIST CSF(21)+建設法令(17)投入
+make dev-backend    # バックエンド開発サーバー
+make dev-frontend   # フロントエンド開発サーバー
+make test           # バックエンドテスト
+make test-cov       # カバレッジ付きテスト
+make lint           # Ruff + Black チェック
+make lint-fix       # 自動修正
+make build          # フロントエンドビルド
+make docker-up      # Docker Compose起動
+make docker-down    # Docker Compose停止
 ```
+
+## 管理コマンド
+```bash
+python manage.py load_frameworks    # フレームワークデータ一括ロード
+python manage.py seed_sample_data   # 開発用サンプルリスク10件投入
+python manage.py createsuperuser    # 管理者ユーザー作成
+```
+
+## API エンドポイント
+- `/api/health/` — ヘルスチェック（DB/Redis接続確認）
+- `/api/v1/risks/` — リスク管理（CRUD + heatmap + dashboard）
+- `/api/v1/controls/` — ISO27001管理策（CRUD + soa + compliance-rate）
+- `/api/v1/compliance/` — コンプライアンス要件（CRUD + compliance-rate）
+- `/api/v1/audits/` — 内部監査（CRUD + findings）
+- `/api/v1/reports/` — レポート管理
 
 ## 準拠規格
 - ISO27001:2022 全93管理策（4ドメイン: 組織的/人的/物理的/技術的）
