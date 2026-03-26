@@ -9,8 +9,10 @@
 | **作成日** | 2026-03-26 |
 | **最終更新日** | 2026-03-26 |
 | **作成者** | みらい建設工業 IT部門 |
-| **関連文書** | DES-GRC-001（システムアーキテクチャ設計書）、REQ-GRC-002（機能要件一覧） |
-| **APIドキュメント** | OpenAPI 3.0（Swagger UI: /api/docs/） |
+| **承認者** | 情報セキュリティ管理責任者（CISO） |
+| **対象リポジトリ** | Kensan196948G/Construction-GRC-System |
+| **準拠規格** | ISO27001:2022 / NIST CSF 2.0 / 建設業法 / 品確法 / 労安法 |
+| **技術スタック** | Django+DRF / Vue.js 3+Vuetify 3 / PostgreSQL / Redis / Celery |
 
 ---
 
@@ -24,738 +26,756 @@
 
 ## 目次
 
-1. [API設計方針](#1-api設計方針)
-2. [共通仕様](#2-共通仕様)
-3. [認証API](#3-認証api)
-4. [ユーザー管理API](#4-ユーザー管理api)
-5. [リスク管理API](#5-リスク管理api)
-6. [コンプライアンス管理API](#6-コンプライアンス管理api)
-7. [ISO27001管理策API](#7-iso27001管理策api)
-8. [内部監査管理API](#8-内部監査管理api)
-9. [レポート・ダッシュボードAPI](#9-レポートダッシュボードapi)
-10. [通知API](#10-通知api)
-11. [エラーコード一覧](#11-エラーコード一覧)
+1. [API設計原則](#1-api設計原則)
+2. [認証・認可API](#2-認証認可api)
+3. [リスク管理API](#3-リスク管理api)
+4. [コンプライアンス管理API](#4-コンプライアンス管理api)
+5. [統制管理API](#5-統制管理api)
+6. [監査管理API](#6-監査管理api)
+7. [レポート管理API](#7-レポート管理api)
+8. [共通仕様](#8-共通仕様)
 
 ---
 
-## 1. API設計方針
+## 1. API設計原則
 
 ### 1.1 基本方針
 
-| 項目 | 方針 |
+| 項目 | 仕様 |
 |------|------|
-| アーキテクチャ | RESTful API |
 | ベースURL | `/api/v1/` |
-| バージョニング | URLパスベース（/api/v1/, /api/v2/） |
-| データ形式 | JSON（Content-Type: application/json） |
-| 文字エンコーディング | UTF-8 |
-| 日時形式 | ISO 8601（例: 2026-03-26T10:30:00+09:00） |
-| ID形式 | UUID v4 |
-| ページネーション | カーソルベース / オフセットベース |
-| ドキュメント | OpenAPI 3.0（drf-spectacular自動生成） |
+| プロトコル | HTTPS（TLS 1.3） |
+| データ形式 | JSON（UTF-8） |
+| 認証方式 | Bearer Token（JWT） |
+| バージョニング | URLパスバージョニング（/api/v1/） |
+| ページネーション | limit-offset方式（デフォルト20件） |
+| 日付形式 | ISO 8601（YYYY-MM-DD / YYYY-MM-DDTHH:MM:SSZ） |
+| エラー形式 | RFC 7807 Problem Details |
 
-### 1.2 HTTPメソッドの使用規約
-
-| メソッド | 用途 | べき等性 | 例 |
-|---------|------|---------|---|
-| GET | リソースの取得 | Yes | リスク一覧取得、リスク詳細取得 |
-| POST | リソースの作成、アクション実行 | No | リスク登録、SoA生成、ログイン |
-| PUT | リソースの全体更新 | Yes | （使用しない、PATCHを推奨） |
-| PATCH | リソースの部分更新 | Yes | リスクステータス更新 |
-| DELETE | リソースの削除（論理削除） | Yes | リスク削除 |
-
-### 1.3 URL命名規約
+### 1.2 認証ヘッダー
 
 ```
-/api/v1/{resource}/                    # 一覧・作成
-/api/v1/{resource}/{id}/               # 詳細・更新・削除
-/api/v1/{resource}/{id}/{sub-resource}/ # サブリソース
-/api/v1/{resource}/{id}/{action}/      # カスタムアクション
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+Accept: application/json
 ```
 
-- リソース名は複数形・小文字・ハイフン区切り
-- ネストは最大2階層まで
+### 1.3 ページネーションパラメータ
 
----
+| パラメータ | 型 | デフォルト | 説明 |
+|----------|-----|----------|------|
+| limit | integer | 20 | 取得件数（最大100） |
+| offset | integer | 0 | スキップ件数 |
 
-## 2. 共通仕様
-
-### 2.1 認証
-
-全APIエンドポイント（認証APIを除く）にJWT Bearer Token認証が必要。
-
-```
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-### 2.2 レスポンス形式
-
-#### 成功レスポンス（単一リソース）
-
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "risk_id": "RISK-IT-001",
-  "title": "不正アクセスによる情報漏洩",
-  "status": "open",
-  "created_at": "2026-03-26T10:30:00+09:00",
-  "updated_at": "2026-03-26T10:30:00+09:00"
-}
-```
-
-#### 成功レスポンス（一覧）
+**レスポンス形式:**
 
 ```json
 {
   "count": 150,
-  "next": "http://grc.example.com/api/v1/risks/?page=2",
+  "next": "https://api.example.com/api/v1/risks/?limit=20&offset=20",
   "previous": null,
-  "results": [
-    { "id": "...", "risk_id": "RISK-IT-001", "title": "..." },
-    { "id": "...", "risk_id": "RISK-IT-002", "title": "..." }
+  "results": [...]
+}
+```
+
+### 1.4 エラーレスポンス形式
+
+```json
+{
+  "type": "validation_error",
+  "title": "バリデーションエラー",
+  "status": 400,
+  "detail": "入力データに誤りがあります",
+  "errors": [
+    {
+      "field": "title",
+      "message": "この項目は必須です",
+      "code": "required"
+    }
   ]
 }
 ```
 
-#### エラーレスポンス
+### 1.5 HTTPステータスコード
 
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "入力内容にエラーがあります",
-    "details": [
-      {
-        "field": "likelihood_inherent",
-        "code": "invalid_value",
-        "message": "1から5の整数で入力してください"
-      }
-    ],
-    "timestamp": "2026-03-26T10:30:00+09:00",
-    "request_id": "req-550e8400-e29b-41d4"
-  }
-}
-```
-
-### 2.3 ページネーション
-
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|---|----------|------|
-| page | integer | 1 | ページ番号 |
-| page_size | integer | 25 | 1ページあたりの件数（最大100） |
-
-### 2.4 フィルタリング・ソート
-
-```
-GET /api/v1/risks/?category=it&status=open&ordering=-risk_score_inherent&search=情報漏洩
-```
-
-| パラメータ | 説明 |
-|-----------|------|
-| search | テキスト検索（title, description） |
-| ordering | ソート（-プレフィックスで降順） |
-| {field} | フィールド値でのフィルタリング |
-| {field}__gte | 以上 |
-| {field}__lte | 以下 |
-| {field}__in | 複数値（カンマ区切り） |
-
-### 2.5 共通レスポンスヘッダー
-
-| ヘッダー | 値 |
-|---------|---|
-| Content-Type | application/json; charset=utf-8 |
-| X-Request-Id | リクエスト固有ID |
-| X-RateLimit-Limit | レートリミット上限 |
-| X-RateLimit-Remaining | レートリミット残り |
-| X-RateLimit-Reset | リセット時刻（UNIX timestamp） |
-
-### 2.6 レートリミット
-
-| 対象 | 制限 |
-|------|------|
-| 認証済ユーザー | 100 req/min |
-| 認証API（ログイン） | 10 req/min |
-| レポート生成API | 5 req/min |
-| ファイルアップロード | 20 req/min |
+| コード | 用途 |
+|-------|------|
+| 200 | 成功（取得・更新・削除） |
+| 201 | 作成成功 |
+| 202 | 非同期タスク受付 |
+| 204 | 削除成功（レスポンスボディなし） |
+| 400 | バリデーションエラー |
+| 401 | 認証エラー |
+| 403 | 権限不足 |
+| 404 | リソース不存在 |
+| 409 | 競合（重複等） |
+| 429 | レート制限超過 |
+| 500 | サーバーエラー |
 
 ---
 
-## 3. 認証API
+## 2. 認証・認可API
 
-### POST /api/v1/auth/login
+### POST /api/v1/auth/login/
 
-ユーザー認証を行い、JWTトークンを発行する。
+**説明:** ログイン（JWTトークン取得）
 
-| 項目 | 内容 |
-|------|------|
-| **メソッド** | POST |
-| **認証** | 不要 |
-| **レートリミット** | 10 req/min |
+**認証:** 不要
 
 **リクエスト:**
 
 ```json
 {
-  "username": "tanaka",
-  "password": "P@ssw0rd123!",
-  "mfa_code": "123456"
+  "email": "admin@example.com",
+  "password": "SecurePassword123!"
 }
 ```
 
-| フィールド | 型 | 必須 | 説明 |
-|-----------|---|------|------|
-| username | string | Yes | ユーザー名 |
-| password | string | Yes | パスワード |
-| mfa_code | string | No | TOTPコード（MFA有効時は必須） |
-
-**レスポンス（200 OK）:**
+**レスポンス（200）:**
 
 ```json
 {
-  "access_token": "eyJhbGciOiJSUzI1NiI...",
-  "refresh_token": "eyJhbGciOiJSUzI1NiI...",
-  "token_type": "Bearer",
-  "expires_in": 1800,
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
-    "username": "tanaka",
-    "full_name": "田中太郎",
-    "role": "grc_admin",
+    "email": "admin@example.com",
+    "username": "admin",
+    "first_name": "太郎",
+    "last_name": "管理",
+    "role": "admin",
     "department": "IT部門"
   }
 }
 ```
 
-**エラーレスポンス:**
+**エラー（401）:**
 
-| ステータス | コード | 説明 |
-|-----------|--------|------|
-| 401 | INVALID_CREDENTIALS | ユーザー名またはパスワードが不正 |
-| 401 | INVALID_MFA_CODE | MFAコードが不正 |
-| 403 | ACCOUNT_LOCKED | アカウントがロックされている |
-| 403 | PASSWORD_EXPIRED | パスワードの有効期限切れ |
+```json
+{
+  "type": "authentication_error",
+  "title": "認証エラー",
+  "status": 401,
+  "detail": "ユーザー名またはパスワードが正しくありません"
+}
+```
 
-### POST /api/v1/auth/refresh
+### POST /api/v1/auth/refresh/
 
-アクセストークンをリフレッシュする。
+**説明:** アクセストークンのリフレッシュ
 
 **リクエスト:**
 
 ```json
 {
-  "refresh_token": "eyJhbGciOiJSUzI1NiI..."
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
-**レスポンス（200 OK）:**
+**レスポンス（200）:**
 
 ```json
 {
-  "access_token": "eyJhbGciOiJSUzI1NiI...",
-  "expires_in": 1800
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
-### POST /api/v1/auth/logout
+### POST /api/v1/auth/logout/
 
-ログアウト（トークン無効化）。
+**説明:** ログアウト（リフレッシュトークン無効化）
 
-**レスポンス（204 No Content）**
+**認証:** 必要
 
-### POST /api/v1/auth/password/change
+### GET /api/v1/auth/me/
 
-パスワード変更。
+**説明:** ログインユーザー情報取得
 
-**リクエスト:**
+**認証:** 必要
+
+**レスポンス（200）:**
 
 ```json
 {
-  "current_password": "OldP@ssw0rd!",
-  "new_password": "NewP@ssw0rd!",
-  "new_password_confirm": "NewP@ssw0rd!"
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "admin@example.com",
+  "username": "admin",
+  "first_name": "太郎",
+  "last_name": "管理",
+  "role": "admin",
+  "department": "IT部門",
+  "permissions": ["risk.create", "risk.read", "risk.update", "risk.delete", "..."]
 }
 ```
 
 ---
 
-## 4. ユーザー管理API
+## 3. リスク管理API
 
 ### エンドポイント一覧
 
 | メソッド | パス | 説明 | 権限 |
 |---------|------|------|------|
-| GET | /api/v1/users/ | ユーザー一覧 | system_admin, grc_admin |
-| POST | /api/v1/users/ | ユーザー作成 | system_admin |
-| GET | /api/v1/users/{id}/ | ユーザー詳細 | system_admin, grc_admin |
-| PATCH | /api/v1/users/{id}/ | ユーザー更新 | system_admin |
-| DELETE | /api/v1/users/{id}/ | ユーザー無効化 | system_admin |
-| GET | /api/v1/users/me/ | 自分の情報取得 | 全ロール |
-| PATCH | /api/v1/users/me/ | プロフィール更新 | 全ロール |
-| POST | /api/v1/users/me/mfa/setup/ | MFA設定 | 全ロール |
-| GET | /api/v1/roles/ | ロール一覧 | system_admin |
-
----
-
-## 5. リスク管理API
-
-### エンドポイント一覧
-
-| メソッド | パス | 説明 | 権限 |
-|---------|------|------|------|
-| GET | /api/v1/risks/ | リスク一覧 | grc_admin, risk_owner, auditor, executive |
-| POST | /api/v1/risks/ | リスク登録 | grc_admin, risk_owner |
-| GET | /api/v1/risks/{id}/ | リスク詳細 | grc_admin, risk_owner, auditor, executive |
-| PATCH | /api/v1/risks/{id}/ | リスク更新 | grc_admin, risk_owner(担当分) |
-| DELETE | /api/v1/risks/{id}/ | リスク論理削除 | grc_admin |
-| GET | /api/v1/risks/heatmap/ | ヒートマップデータ | grc_admin, executive |
-| GET | /api/v1/risks/dashboard/ | リスクサマリ | grc_admin, executive |
-| POST | /api/v1/risks/{id}/assessment/ | リスク評価実施 | grc_admin, risk_owner |
-| GET | /api/v1/risks/{id}/history/ | 評価履歴 | grc_admin, risk_owner |
-| POST | /api/v1/risks/{id}/treatment/ | 対応戦略設定 | grc_admin, risk_owner |
-| POST | /api/v1/risks/{id}/approve/ | 対応戦略承認 | grc_admin, executive |
-| GET | /api/v1/risks/export/ | CSV/Excel出力 | grc_admin |
-| GET | /api/v1/risk-assessments/ | アセスメント一覧 | grc_admin |
-| POST | /api/v1/risk-assessments/ | アセスメント計画作成 | grc_admin |
-| PATCH | /api/v1/risk-assessments/{id}/ | アセスメント更新 | grc_admin |
-| POST | /api/v1/risk-assessments/{id}/start/ | アセスメント開始 | grc_admin |
-| POST | /api/v1/risk-assessments/{id}/complete/ | アセスメント完了 | grc_admin |
-| GET | /api/v1/risk-templates/ | テンプレート一覧 | grc_admin, risk_owner |
+| GET | /api/v1/risks/ | リスク一覧 | 全認証ユーザー |
+| POST | /api/v1/risks/ | リスク登録 | admin, risk_owner |
+| GET | /api/v1/risks/{id}/ | リスク詳細 | 全認証ユーザー |
+| PUT | /api/v1/risks/{id}/ | リスク更新 | admin, risk_owner(自担当) |
+| DELETE | /api/v1/risks/{id}/ | リスク削除（論理） | admin |
+| POST | /api/v1/risks/{id}/evaluate/ | リスク評価 | admin, risk_owner(自担当) |
+| GET | /api/v1/risks/{id}/evaluations/ | 評価履歴 | 全認証ユーザー |
+| POST | /api/v1/risks/{id}/treatment-plans/ | 対応計画作成 | admin, risk_owner |
+| GET | /api/v1/risks/heatmap/ | ヒートマップデータ | 全認証ユーザー |
+| GET | /api/v1/risks/summary/ | リスクサマリー | 全認証ユーザー |
+| POST | /api/v1/risks/report/ | 簡易リスク報告 | 全認証ユーザー |
 
 ### GET /api/v1/risks/
-
-リスク一覧を取得する。
 
 **クエリパラメータ:**
 
 | パラメータ | 型 | 説明 |
-|-----------|---|------|
-| category | string | カテゴリフィルタ（it/physical/legal/construction/environment/financial/human） |
-| status | string | ステータスフィルタ（open/in_progress/closed/accepted） |
-| risk_owner | uuid | リスクオーナーIDフィルタ |
-| level | string | リスクレベルフィルタ（LOW/MEDIUM/HIGH/CRITICAL） |
-| search | string | テキスト検索（title, description） |
-| ordering | string | ソート（risk_id, -risk_score_inherent, created_at, -created_at） |
-| page | integer | ページ番号 |
-| page_size | integer | 1ページあたり件数 |
+|----------|-----|------|
+| category | string | カテゴリフィルタ |
+| status | string | ステータスフィルタ |
+| inherent_level | string | リスクレベルフィルタ |
+| owner | UUID | オーナーフィルタ |
+| search | string | フリーテキスト検索（title, description） |
+| ordering | string | ソート（created_at, inherent_score, -updated_at） |
+| limit | integer | 取得件数 |
+| offset | integer | オフセット |
 
-**レスポンス（200 OK）:**
+**レスポンス（200）:**
 
 ```json
 {
-  "count": 50,
-  "next": "/api/v1/risks/?page=2",
+  "count": 45,
+  "next": "/api/v1/risks/?limit=20&offset=20",
   "previous": null,
   "results": [
     {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "risk_id": "RISK-IT-001",
-      "title": "不正アクセスによる情報漏洩",
-      "description": "外部からの不正アクセスにより...",
-      "category": "it",
-      "category_display": "IT",
-      "source": "threat",
-      "likelihood_inherent": 3,
-      "impact_inherent": 4,
-      "risk_score_inherent": 12,
-      "risk_level_inherent": "HIGH",
-      "likelihood_residual": 2,
-      "impact_residual": 3,
-      "risk_score_residual": 6,
-      "risk_level_residual": "MEDIUM",
-      "treatment_strategy": "mitigate",
-      "treatment_strategy_display": "軽減",
-      "treatment_plan": "ファイアウォールの強化...",
-      "risk_owner": {
-        "id": "...",
-        "full_name": "田中太郎",
-        "department": "IT部門"
-      },
-      "target_date": "2026-06-30",
-      "status": "open",
-      "status_display": "オープン",
-      "review_date": "2026-06-30",
-      "related_controls_count": 3,
-      "related_requirements_count": 2,
-      "created_at": "2026-03-26T10:30:00+09:00",
-      "updated_at": "2026-03-26T10:30:00+09:00"
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "risk_id": "RSK-2026-0001",
+      "title": "社内ネットワークへの不正アクセス",
+      "category": "information_security",
+      "category_display": "情報セキュリティ",
+      "owner_name": "田中太郎",
+      "inherent_score": 12,
+      "inherent_level": "high",
+      "inherent_level_display": "高",
+      "residual_score": 6,
+      "residual_level": "medium",
+      "status": "monitoring",
+      "status_display": "モニタリング中",
+      "created_at": "2026-03-15T09:00:00Z"
     }
   ]
+}
+```
+
+### POST /api/v1/risks/
+
+**リクエスト:**
+
+```json
+{
+  "title": "建設現場の転落事故リスク",
+  "description": "高所作業における転落事故のリスク。安全帯未着用、足場不備等が原因となる。",
+  "category": "occupational_safety",
+  "sub_category": "高所作業",
+  "owner": "550e8400-e29b-41d4-a716-446655440002",
+  "department": "安全管理部",
+  "project": "東京駅前再開発プロジェクト",
+  "inherent_likelihood": 3,
+  "inherent_impact": 5,
+  "framework_controls": [
+    "550e8400-e29b-41d4-a716-446655440010"
+  ]
+}
+```
+
+**レスポンス（201）:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440099",
+  "risk_id": "RSK-2026-0046",
+  "title": "建設現場の転落事故リスク",
+  "inherent_score": 15,
+  "inherent_level": "high",
+  "status": "identified",
+  "created_at": "2026-03-26T10:30:00Z"
+}
+```
+
+### POST /api/v1/risks/{id}/evaluate/
+
+**リクエスト:**
+
+```json
+{
+  "evaluation_date": "2026-03-26",
+  "likelihood": 3,
+  "impact_financial": 4,
+  "impact_operational": 3,
+  "impact_legal": 5,
+  "impact_safety": 5,
+  "impact_reputation": 4,
+  "control_effectiveness": "partially_effective",
+  "comments": "法令リスクと安全リスクが高い。統制は一部有効。"
+}
+```
+
+**レスポンス（201）:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440100",
+  "risk_id": "RSK-2026-0046",
+  "max_impact": 5,
+  "inherent_score": 15,
+  "inherent_level": "high",
+  "residual_score": 10,
+  "residual_level": "medium",
+  "evaluation_date": "2026-03-26"
 }
 ```
 
 ### GET /api/v1/risks/heatmap/
 
-ヒートマップデータを取得する。
+**クエリパラメータ:** category, department, project, risk_type(inherent/residual)
 
-**クエリパラメータ:**
-
-| パラメータ | 型 | 説明 |
-|-----------|---|------|
-| type | string | inherent（固有リスク）/ residual（残存リスク） |
-| category | string | カテゴリフィルタ |
-| department | uuid | 部門フィルタ |
-
-**レスポンス（200 OK）:**
+**レスポンス（200）:**
 
 ```json
 {
-  "matrix": {
-    "1,1": [],
-    "1,2": [{"risk_id": "RISK-CON-005", "title": "...", "score": 2, "level": "LOW"}],
-    "3,4": [
-      {"risk_id": "RISK-IT-001", "title": "...", "score": 12, "level": "HIGH"},
-      {"risk_id": "RISK-IT-003", "title": "...", "score": 12, "level": "HIGH"}
-    ],
-    "5,5": [{"risk_id": "RISK-IT-007", "title": "...", "score": 25, "level": "CRITICAL"}]
-  },
-  "summary": {
-    "total": 50,
-    "by_level": {"LOW": 10, "MEDIUM": 20, "HIGH": 15, "CRITICAL": 5}
-  }
+  "risk_type": "inherent",
+  "matrix": [
+    {"likelihood": 1, "impact": 1, "count": 2, "risks": ["RSK-2026-0010", "RSK-2026-0015"]},
+    {"likelihood": 1, "impact": 2, "count": 0, "risks": []},
+    {"likelihood": 3, "impact": 4, "count": 5, "risks": ["RSK-2026-0001", "..."]},
+    {"likelihood": 5, "impact": 5, "count": 1, "risks": ["RSK-2026-0003"]}
+  ],
+  "total_risks": 45,
+  "filters_applied": {"category": null, "department": null}
 }
 ```
 
 ---
 
-## 6. コンプライアンス管理API
+## 4. コンプライアンス管理API
 
 ### エンドポイント一覧
 
 | メソッド | パス | 説明 | 権限 |
 |---------|------|------|------|
-| GET | /api/v1/compliance-requirements/ | 要件一覧 | grc_admin, compliance_officer, auditor |
-| POST | /api/v1/compliance-requirements/ | 要件登録 | grc_admin |
-| GET | /api/v1/compliance-requirements/{id}/ | 要件詳細 | grc_admin, compliance_officer |
-| PATCH | /api/v1/compliance-requirements/{id}/ | 要件更新 | grc_admin, compliance_officer |
-| PATCH | /api/v1/compliance-requirements/{id}/assess/ | 準拠状況更新 | grc_admin, compliance_officer |
-| GET | /api/v1/compliance-requirements/rates/ | 準拠率取得 | 全ロール |
-| GET | /api/v1/compliance-requirements/rates/by-framework/ | 規格別準拠率 | 全ロール |
-| GET | /api/v1/compliance-requirements/rates/by-department/ | 部門別準拠率 | grc_admin, executive |
-| GET | /api/v1/compliance-requirements/rates/trend/ | 準拠率トレンド | grc_admin, executive |
-| GET | /api/v1/evidence/ | 証跡一覧 | grc_admin, compliance_officer, auditor |
-| POST | /api/v1/evidence/ | 証跡登録 | grc_admin, compliance_officer |
-| GET | /api/v1/evidence/{id}/ | 証跡詳細 | grc_admin, compliance_officer |
-| GET | /api/v1/evidence/{id}/download/ | 証跡ダウンロード | grc_admin, compliance_officer, auditor |
-| GET | /api/v1/evidence/bulk-download/ | 一括ダウンロード | grc_admin, auditor |
-| GET | /api/v1/corrective-actions/ | 是正措置一覧 | grc_admin, compliance_officer |
-| POST | /api/v1/corrective-actions/ | 是正措置作成 | grc_admin, compliance_officer |
-| PATCH | /api/v1/corrective-actions/{id}/ | 是正措置更新 | grc_admin, compliance_officer |
-| POST | /api/v1/corrective-actions/{id}/verify/ | 効果確認 | grc_admin |
-| POST | /api/v1/corrective-actions/{id}/complete/ | 完了承認 | grc_admin |
-| GET | /api/v1/regulatory-changes/ | 法改正一覧 | grc_admin |
-| POST | /api/v1/regulatory-changes/ | 法改正登録 | grc_admin |
+| GET | /api/v1/compliance/ | 要件一覧 | 全認証ユーザー |
+| POST | /api/v1/compliance/ | 要件登録 | admin, compliance_officer |
+| GET | /api/v1/compliance/{id}/ | 要件詳細 | 全認証ユーザー |
+| PUT | /api/v1/compliance/{id}/ | 要件更新 | admin, compliance_officer |
+| POST | /api/v1/compliance/{id}/assess/ | 準拠評価 | admin, compliance_officer |
+| GET | /api/v1/compliance/{id}/assessments/ | 評価履歴 | 全認証ユーザー |
+| GET | /api/v1/compliance/rate/ | 準拠率 | 全認証ユーザー |
+| POST | /api/v1/compliance/import/ | CSV一括インポート | admin |
+| GET | /api/v1/compliance/gap-analysis/ | ギャップ分析一覧 | admin, compliance_officer, auditor |
+| POST | /api/v1/compliance/gap-analysis/ | ギャップ分析実施 | admin, compliance_officer |
+| POST | /api/v1/compliance/gap-analysis/{id}/plans/ | 改善計画作成 | admin, compliance_officer |
+| GET | /api/v1/compliance/legal-updates/ | 法令改正一覧 | admin, compliance_officer |
+| POST | /api/v1/compliance/legal-updates/ | 法令改正登録 | admin, compliance_officer |
 
-### POST /api/v1/evidence/
+### GET /api/v1/compliance/rate/
 
-証跡ファイルをアップロードする。
+**クエリパラメータ:** framework (フレームワークコード)
 
-**リクエスト（multipart/form-data）:**
-
-| フィールド | 型 | 必須 | 説明 |
-|-----------|---|------|------|
-| file | file | Yes | 証跡ファイル（最大50MB） |
-| title | string | Yes | タイトル |
-| description | string | No | 説明 |
-| expires_at | date | No | 有効期限 |
-| related_control_ids | array[uuid] | No | 紐付け管理策ID |
-| related_requirement_ids | array[uuid] | No | 紐付け法令要件ID |
-
-**レスポンス（201 Created）:**
+**レスポンス（200）:**
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "title": "情報セキュリティ基本方針 v2.0",
-  "file_name": "information_security_policy_v2.pdf",
-  "file_size": 1048576,
-  "mime_type": "application/pdf",
-  "version": 1,
-  "expires_at": "2027-03-31",
-  "uploaded_by": {"id": "...", "full_name": "田中太郎"},
-  "uploaded_at": "2026-03-26T10:30:00+09:00",
-  "related_controls": [{"id": "...", "control_id": "A.5.1", "title": "..."}],
-  "related_requirements": []
-}
-```
-
----
-
-## 7. ISO27001管理策API
-
-### エンドポイント一覧
-
-| メソッド | パス | 説明 | 権限 |
-|---------|------|------|------|
-| GET | /api/v1/controls/ | 管理策一覧（93件） | 全ロール（認証済） |
-| GET | /api/v1/controls/{id}/ | 管理策詳細 | 全ロール（認証済） |
-| PATCH | /api/v1/controls/{id}/ | 管理策更新（実施状況等） | grc_admin, compliance_officer |
-| POST | /api/v1/controls/{id}/evidence/ | 証跡アップロード | grc_admin, compliance_officer |
-| GET | /api/v1/controls/{id}/evidence/ | 管理策の証跡一覧 | grc_admin, compliance_officer, auditor |
-| GET | /api/v1/controls/soa/ | SoAデータ取得 | grc_admin |
-| POST | /api/v1/controls/soa/export/ | SoAファイル出力 | grc_admin |
-| GET | /api/v1/controls/compliance-rate/ | 管理策準拠率 | grc_admin, executive |
-| GET | /api/v1/controls/by-domain/ | ドメイン別集計 | grc_admin |
-| GET | /api/v1/controls/nist-mapping/ | NIST CSFマッピング | grc_admin |
-| GET | /api/v1/controls/nist-mapping/coverage/ | マッピングカバレッジ | grc_admin |
-
-### GET /api/v1/controls/soa/
-
-SoA（適用宣言書）データを取得する。
-
-**レスポンス（200 OK）:**
-
-```json
-{
-  "generated_at": "2026-03-26T10:30:00+09:00",
-  "summary": {
-    "total": 93,
-    "applicable": 90,
-    "excluded": 3,
-    "implemented": 70,
-    "in_progress": 15,
-    "not_started": 5,
-    "partially_implemented": 3
-  },
-  "controls": [
+  "rates": [
     {
-      "control_id": "A.5.1",
-      "domain": "organizational",
-      "domain_display": "組織的管理策",
-      "title": "情報セキュリティのための方針群",
-      "is_applicable": true,
-      "exclusion_reason": null,
-      "implementation_status": "implemented",
-      "implementation_percentage": 100,
-      "owner": {"id": "...", "full_name": "田中太郎"},
-      "evidence_required": ["情報セキュリティ基本方針文書", "経営層承認記録", "全従業員への周知記録"],
-      "evidence_count": 3,
-      "nist_csf_mapping": ["GV.PO-01", "GV.PO-02"]
+      "framework": "ISO27001",
+      "framework_name": "ISO/IEC 27001:2022",
+      "total": 93,
+      "compliant": 75,
+      "partially_compliant": 8,
+      "non_compliant": 5,
+      "not_applicable": 5,
+      "not_assessed": 0,
+      "compliance_rate": 85.23
+    },
+    {
+      "framework": "NIST_CSF",
+      "framework_name": "NIST CSF 2.0",
+      "total": 106,
+      "compliant": 80,
+      "partially_compliant": 10,
+      "non_compliant": 8,
+      "not_applicable": 8,
+      "not_assessed": 0,
+      "compliance_rate": 81.63
     }
   ]
 }
 ```
 
-### POST /api/v1/controls/soa/export/
+---
 
-SoAファイルを非同期生成する。
+## 5. 統制管理API
+
+### エンドポイント一覧
+
+| メソッド | パス | 説明 | 権限 |
+|---------|------|------|------|
+| GET | /api/v1/controls/ | 統制一覧 | 全認証ユーザー |
+| POST | /api/v1/controls/ | 統制登録 | admin, compliance_officer |
+| GET | /api/v1/controls/{id}/ | 統制詳細 | 全認証ユーザー |
+| PUT | /api/v1/controls/{id}/ | 統制更新 | admin, compliance_officer |
+| POST | /api/v1/controls/{id}/test/ | テスト結果登録 | admin, auditor |
+| GET | /api/v1/controls/{id}/tests/ | テスト履歴 | 全認証ユーザー |
+| POST | /api/v1/controls/{id}/evaluate/ | 有効性評価 | admin, compliance_officer |
+| POST | /api/v1/controls/import/ | 一括インポート | admin |
+| GET | /api/v1/evidence/ | エビデンス一覧 | 全認証ユーザー |
+| POST | /api/v1/evidence/ | エビデンスアップロード | 全認証ユーザー |
+| DELETE | /api/v1/evidence/{id}/ | エビデンス削除（論理） | admin, 作成者 |
+| GET | /api/v1/corrective-actions/ | 是正措置一覧 | 全認証ユーザー |
+| POST | /api/v1/corrective-actions/ | 是正措置登録 | admin, compliance_officer |
+| POST | /api/v1/corrective-actions/{id}/complete/ | 完了申請 | 担当者 |
+| POST | /api/v1/corrective-actions/{id}/verify/ | 完了確認 | admin, compliance_officer |
+
+### POST /api/v1/controls/{id}/test/
 
 **リクエスト:**
 
 ```json
 {
-  "format": "excel",
-  "include_description": true
+  "test_date": "2026-03-26",
+  "result": "fail",
+  "comments": "退職者3名の特権アカウントが未削除",
+  "findings": "アカウント削除プロセスの不備を確認"
 }
 ```
 
+**レスポンス（201）:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440200",
+  "control_id": "CTL-ISO-0001",
+  "test_date": "2026-03-26",
+  "result": "fail",
+  "result_display": "不合格",
+  "corrective_action_created": {
+    "id": "550e8400-e29b-41d4-a716-446655440201",
+    "title": "統制テスト不合格に対する是正措置",
+    "status": "planned"
+  }
+}
+```
+
+### POST /api/v1/evidence/
+
+**リクエスト（multipart/form-data）:**
+
 | フィールド | 型 | 必須 | 説明 |
-|-----------|---|------|------|
-| format | string | Yes | "excel" または "pdf" |
-| include_description | boolean | No | 管理策説明を含めるか（デフォルト: true） |
+|----------|-----|:----:|------|
+| file | File | YES | アップロードファイル |
+| description | string | NO | 説明 |
+| tags | string(JSON) | NO | タグ配列 |
+| content_type | string | YES | 紐付け先タイプ（risk/control/finding） |
+| object_id | UUID | YES | 紐付け先ID |
+
+**レスポンス（201）:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440300",
+  "original_filename": "特権アカウント棚卸結果.xlsx",
+  "file_size": 5242880,
+  "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "sha256_hash": "a3f2b8c9d4e5f6...",
+  "description": "2026年Q1 特権アカウント棚卸結果",
+  "uploaded_by": "田中太郎",
+  "created_at": "2026-03-26T11:00:00Z"
+}
+```
+
+---
+
+## 6. 監査管理API
+
+### エンドポイント一覧
+
+| メソッド | パス | 説明 | 権限 |
+|---------|------|------|------|
+| GET | /api/v1/audits/ | 監査一覧 | 全認証ユーザー |
+| POST | /api/v1/audits/ | 監査計画作成 | admin, auditor |
+| GET | /api/v1/audits/{id}/ | 監査詳細 | 全認証ユーザー |
+| PUT | /api/v1/audits/{id}/ | 監査更新 | admin, auditor |
+| POST | /api/v1/audits/{id}/approve/ | 監査計画承認 | admin, executive |
+| POST | /api/v1/audits/{id}/reject/ | 監査計画却下 | admin, executive |
+| POST | /api/v1/audits/{id}/start/ | 監査開始 | auditor（主任） |
+| POST | /api/v1/audits/{id}/suspend/ | 監査中断 | auditor（主任） |
+| POST | /api/v1/audits/{id}/resume/ | 監査再開 | auditor（主任） |
+| POST | /api/v1/audits/{id}/complete/ | 監査完了 | auditor（主任） |
+| GET | /api/v1/audits/{id}/checklist/ | チェックリスト取得 | auditor |
+| PUT | /api/v1/audits/{id}/checklist/{item_id}/ | チェック結果入力 | auditor |
+| GET | /api/v1/audits/{id}/findings/ | 所見一覧 | 全認証ユーザー |
+| POST | /api/v1/audits/{id}/findings/ | 所見記録 | auditor |
+| POST | /api/v1/findings/{id}/car/ | 是正勧告発行 | auditor |
+| POST | /api/v1/findings/{id}/follow-up/ | フォローアップ結果登録 | auditor |
+
+### POST /api/v1/audits/
+
+**リクエスト:**
+
+```json
+{
+  "title": "2026年度 Q2内部監査",
+  "audit_type": "internal",
+  "scope": "ISO27001 A.8 技術的管理策",
+  "target_department": "情報システム部門",
+  "framework": "550e8400-e29b-41d4-a716-446655440500",
+  "team_members": [
+    "550e8400-e29b-41d4-a716-446655440501",
+    "550e8400-e29b-41d4-a716-446655440502"
+  ],
+  "planned_start_date": "2026-04-15",
+  "planned_end_date": "2026-04-30",
+  "methodology": ["document_review", "interview", "inspection"]
+}
+```
+
+**レスポンス（201）:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440600",
+  "audit_id": "AUD-2026-0001",
+  "title": "2026年度 Q2内部監査",
+  "status": "draft",
+  "checklist_items_count": 15,
+  "created_at": "2026-03-26T14:00:00Z"
+}
+```
+
+### POST /api/v1/findings/{id}/car/
+
+**リクエスト:**
+
+```json
+{
+  "description": "特権アカウント管理手順の策定と未削除アカウントの即時削除を求める",
+  "due_date": "2026-05-15",
+  "responsible_person": "550e8400-e29b-41d4-a716-446655440700"
+}
+```
+
+**レスポンス（201）:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440800",
+  "finding_id": "FND-2026-0001",
+  "description": "特権アカウント管理手順の策定と未削除アカウントの即時削除を求める",
+  "due_date": "2026-05-15",
+  "responsible_person_name": "佐藤次郎",
+  "status": "issued",
+  "pdf_url": "/api/v1/findings/FND-2026-0001/car/pdf/",
+  "corrective_action_id": "550e8400-e29b-41d4-a716-446655440801",
+  "follow_up_date": "2026-05-20"
+}
+```
+
+---
+
+## 7. レポート管理API
+
+### エンドポイント一覧
+
+| メソッド | パス | 説明 | 権限 |
+|---------|------|------|------|
+| GET | /api/v1/dashboard/ | ダッシュボードデータ | 全認証ユーザー |
+| GET | /api/v1/dashboard/risk-summary/ | リスクサマリー | 全認証ユーザー |
+| GET | /api/v1/dashboard/compliance-rate/ | 準拠率 | 全認証ユーザー |
+| GET | /api/v1/dashboard/control-effectiveness/ | 統制有効性 | 全認証ユーザー |
+| GET | /api/v1/dashboard/open-findings/ | 未対応所見 | 全認証ユーザー |
+| GET | /api/v1/dashboard/overdue-tasks/ | 期限超過タスク | 全認証ユーザー |
+| GET | /api/v1/reports/templates/ | テンプレート一覧 | admin, compliance_officer |
+| POST | /api/v1/reports/generate/ | レポート生成 | admin, compliance_officer |
+| GET | /api/v1/reports/{id}/ | レポート詳細 | 全認証ユーザー |
+| GET | /api/v1/reports/{id}/download/ | レポートダウンロード | 全認証ユーザー |
+| POST | /api/v1/export/ | データエクスポート | 全認証ユーザー |
+| GET | /api/v1/export/{task_id}/status/ | エクスポートステータス | 全認証ユーザー |
+| GET | /api/v1/export/{task_id}/download/ | エクスポートダウンロード | 全認証ユーザー |
+| GET | /api/v1/alerts/ | アラートルール一覧 | admin |
+| POST | /api/v1/alerts/ | アラートルール作成 | admin |
+| GET | /api/v1/alerts/history/ | アラート発報履歴 | admin |
+| GET | /api/v1/notifications/ | 通知一覧 | 全認証ユーザー |
+| PUT | /api/v1/notifications/{id}/read/ | 通知既読 | 全認証ユーザー |
+
+### GET /api/v1/dashboard/
+
+**クエリパラメータ:** period (7d/30d/90d/1y)
+
+**レスポンス（200）:**
+
+```json
+{
+  "risk_summary": {
+    "total": 45,
+    "by_level": {
+      "critical": 2,
+      "high": 8,
+      "medium": 20,
+      "low": 10,
+      "very_low": 5
+    },
+    "trend": [
+      {"date": "2026-03-01", "total": 42, "high_and_above": 9},
+      {"date": "2026-03-15", "total": 44, "high_and_above": 10},
+      {"date": "2026-03-26", "total": 45, "high_and_above": 10}
+    ]
+  },
+  "compliance_rate": {
+    "overall": 83.5,
+    "by_framework": [
+      {"framework": "ISO27001", "rate": 85.23},
+      {"framework": "NIST_CSF", "rate": 81.63}
+    ]
+  },
+  "control_effectiveness": {
+    "effective": 120,
+    "partially_effective": 30,
+    "ineffective": 10,
+    "not_assessed": 5
+  },
+  "open_findings": {
+    "total": 12,
+    "major_nc": 2,
+    "minor_nc": 5,
+    "observations": 5
+  },
+  "overdue_tasks": {
+    "total": 3,
+    "items": [
+      {
+        "type": "treatment_plan",
+        "title": "ファイアウォール設定見直し",
+        "due_date": "2026-03-20",
+        "days_overdue": 6,
+        "assignee": "田中太郎"
+      }
+    ]
+  }
+}
+```
+
+### POST /api/v1/reports/generate/
+
+**リクエスト:**
+
+```json
+{
+  "template_id": "550e8400-e29b-41d4-a716-446655440900",
+  "title": "2026年3月度 GRC月次レポート",
+  "period_start": "2026-03-01",
+  "period_end": "2026-03-31",
+  "format": "pdf"
+}
+```
 
 **レスポンス（202 Accepted）:**
 
 ```json
 {
-  "task_id": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "pending",
-  "message": "SoAの生成を開始しました。完了時に通知します。"
+  "report_id": "550e8400-e29b-41d4-a716-446655440901",
+  "task_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "generating",
+  "message": "レポート生成を開始しました。完了後に通知されます。"
 }
 ```
 
----
-
-## 8. 内部監査管理API
-
-### エンドポイント一覧
-
-| メソッド | パス | 説明 | 権限 |
-|---------|------|------|------|
-| GET | /api/v1/audits/ | 監査計画一覧 | grc_admin, auditor, executive |
-| POST | /api/v1/audits/ | 監査計画作成 | grc_admin, auditor |
-| GET | /api/v1/audits/{id}/ | 監査詳細 | grc_admin, auditor |
-| PATCH | /api/v1/audits/{id}/ | 監査更新 | grc_admin, auditor |
-| POST | /api/v1/audits/{id}/start/ | 監査開始 | auditor |
-| POST | /api/v1/audits/{id}/complete/ | 監査完了 | auditor |
-| POST | /api/v1/audits/{id}/approve/ | 監査計画承認 | grc_admin |
-| GET | /api/v1/audits/{id}/checklist/ | チェックリスト取得 | auditor |
-| PATCH | /api/v1/audits/{id}/checklist/{item_id}/ | チェック結果記録 | auditor |
-| GET | /api/v1/audits/{id}/findings/ | 監査所見一覧 | grc_admin, auditor |
-| POST | /api/v1/audits/{id}/findings/ | 監査所見登録 | auditor |
-| PATCH | /api/v1/audits/{id}/findings/{fid}/ | 監査所見更新 | auditor |
-| GET | /api/v1/audits/{id}/report/ | 監査報告書生成 | auditor |
-| GET | /api/v1/caps/ | CAP一覧 | grc_admin, auditor |
-| POST | /api/v1/caps/ | CAP作成 | grc_admin, auditor |
-| PATCH | /api/v1/caps/{id}/ | CAP更新 | grc_admin, auditor, compliance_officer |
-| POST | /api/v1/caps/{id}/verify/ | CAP効果確認 | auditor |
-| POST | /api/v1/caps/{id}/approve/ | CAP完了承認 | grc_admin |
-| GET | /api/v1/caps/statistics/ | CAP統計 | grc_admin, auditor |
-
-### POST /api/v1/audits/{id}/findings/
-
-監査所見を登録する。
+### POST /api/v1/export/
 
 **リクエスト:**
 
 ```json
 {
-  "finding_type": "major_nc",
-  "title": "ログ記録が不十分",
-  "description": "A.8.15 ログ記録に関する管理策について、一部サーバーでログ収集が設定されていない...",
-  "evidence": "サーバーXXXのログ設定を確認したところ、syslogの転送設定が未実施であった",
-  "root_cause": "サーバー導入時のセットアップ手順にログ設定が含まれていなかった",
-  "related_control_id": "550e8400-e29b-41d4-a716-446655440000",
-  "cap_required": true
+  "data_source": "risks",
+  "format": "csv",
+  "filters": {
+    "category": "information_security",
+    "status": ["identified", "assessing", "treating"]
+  },
+  "fields": ["risk_id", "title", "category", "inherent_level", "status", "owner_name"]
 }
 ```
 
-**レスポンス（201 Created）:**
+**レスポンス（202 Accepted）:**
 
 ```json
 {
-  "id": "...",
-  "finding_id": "FIND-2026-001",
-  "finding_type": "major_nc",
-  "finding_type_display": "重大不適合",
-  "title": "ログ記録が不十分",
-  "description": "...",
-  "evidence": "...",
-  "root_cause": "...",
-  "cap_required": true,
-  "related_control": {"id": "...", "control_id": "A.8.15", "title": "ログ記録"},
-  "created_at": "2026-03-26T10:30:00+09:00",
-  "created_by": {"id": "...", "full_name": "山田花子"}
+  "task_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "status": "processing",
+  "message": "エクスポートを開始しました。"
 }
 ```
 
 ---
 
-## 9. レポート・ダッシュボードAPI
+## 8. 共通仕様
 
-### エンドポイント一覧
+### 8.1 ヘルスチェック
+
+#### GET /api/v1/health/
+
+**認証:** 不要
+
+**レスポンス（200）:**
+
+```json
+{
+  "status": "healthy",
+  "components": {
+    "django": {"status": "healthy", "version": "5.1"},
+    "postgresql": {"status": "healthy", "version": "16.2"},
+    "redis": {"status": "healthy", "version": "7.2"},
+    "celery": {"status": "healthy", "workers": 3}
+  },
+  "timestamp": "2026-03-26T15:00:00Z"
+}
+```
+
+### 8.2 レート制限
+
+| エンドポイント | 制限 |
+|-------------|------|
+| /api/v1/auth/login/ | 5回/分（IPアドレスごと） |
+| /api/v1/auth/refresh/ | 30回/分 |
+| 一般API（GET） | 100回/分（ユーザーごと） |
+| 一般API（POST/PUT/DELETE） | 30回/分（ユーザーごと） |
+| エクスポートAPI | 5回/時（ユーザーごと） |
+| レポート生成API | 10回/時（ユーザーごと） |
+
+### 8.3 フレームワークAPI
+
+| メソッド | パス | 説明 |
+|---------|------|------|
+| GET | /api/v1/frameworks/ | フレームワーク一覧 |
+| GET | /api/v1/frameworks/{id}/ | フレームワーク詳細 |
+| GET | /api/v1/frameworks/{id}/controls/ | 管理策ツリー |
+| GET | /api/v1/frameworks/{id}/mappings/ | マッピング一覧 |
+
+### 8.4 監査ログAPI
 
 | メソッド | パス | 説明 | 権限 |
 |---------|------|------|------|
-| GET | /api/v1/dashboard/ | GRCダッシュボードデータ | 全ロール（認証済） |
-| GET | /api/v1/dashboard/grc-score/ | GRC総合スコア | executive, grc_admin |
-| GET | /api/v1/reports/ | レポート一覧 | grc_admin, auditor, executive |
-| POST | /api/v1/reports/annual-iso27001/ | 年次レポート生成 | grc_admin |
-| POST | /api/v1/reports/compliance/{framework}/ | 規格別準拠レポート生成 | grc_admin |
-| POST | /api/v1/reports/risk-trend/ | リスクトレンドレポート生成 | grc_admin |
-| GET | /api/v1/reports/{id}/ | レポート詳細 | grc_admin, auditor, executive |
-| GET | /api/v1/reports/{id}/download/ | レポートダウンロード | grc_admin, auditor, executive |
-| GET | /api/v1/tasks/{task_id}/ | 非同期タスク状態確認 | 全ロール（認証済） |
-
-### GET /api/v1/dashboard/
-
-GRCダッシュボードの全データを取得する。
+| GET | /api/v1/audit-logs/ | 監査ログ検索 | admin |
+| GET | /api/v1/audit-logs/export/ | ログエクスポート | admin |
 
 **クエリパラメータ:**
 
-| パラメータ | 型 | デフォルト | 説明 |
-|-----------|---|----------|------|
-| period | string | quarterly | monthly/quarterly/yearly |
-
-**レスポンス（200 OK）:**
-
-```json
-{
-  "grc_score": 78.5,
-  "risk_heatmap": {
-    "matrix": { "...": "..." },
-    "summary": { "total": 50, "by_level": { "...": "..." } }
-  },
-  "compliance_rates": {
-    "overall": { "rate": 82.5 },
-    "ISO27001": { "rate": 85.0 },
-    "NIST CSF": { "rate": 80.0 },
-    "建設業法": { "rate": 90.0 },
-    "品確法": { "rate": 88.0 },
-    "労安法": { "rate": 75.0 }
-  },
-  "top_risks": [
-    { "risk_id": "RISK-IT-007", "title": "...", "score": 25, "level": "CRITICAL" }
-  ],
-  "overdue_caps": [
-    { "ca_id": "CA-2026-003", "title": "...", "due_date": "2026-03-15", "days_overdue": 11 }
-  ],
-  "recent_audits": [
-    { "audit_id": "AUD-2026-001", "title": "...", "status": "completed", "findings_count": 5 }
-  ],
-  "compliance_trend": {
-    "labels": ["2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"],
-    "datasets": [
-      { "label": "全体", "data": [70, 72, 75, 78, 80, 82.5] }
-    ]
-  },
-  "action_required_count": {
-    "overdue_risks": 3,
-    "overdue_caps": 2,
-    "pending_approvals": 5,
-    "expiring_evidence": 4,
-    "total": 14
-  },
-  "generated_at": "2026-03-26T10:30:00+09:00"
-}
-```
-
----
-
-## 10. 通知API
-
-### エンドポイント一覧
-
-| メソッド | パス | 説明 | 権限 |
-|---------|------|------|------|
-| GET | /api/v1/notifications/ | 通知一覧 | 全ロール（認証済） |
-| GET | /api/v1/notifications/unread-count/ | 未読数取得 | 全ロール（認証済） |
-| PATCH | /api/v1/notifications/{id}/read/ | 既読にする | 全ロール（認証済） |
-| POST | /api/v1/notifications/mark-all-read/ | 全て既読にする | 全ロール（認証済） |
-| GET | /api/v1/notifications/settings/ | 通知設定取得 | 全ロール（認証済） |
-| PATCH | /api/v1/notifications/settings/ | 通知設定更新 | 全ロール（認証済） |
-
----
-
-## 11. エラーコード一覧
-
-### 11.1 HTTPステータスコード
-
-| ステータス | 説明 | 使用場面 |
-|-----------|------|---------|
-| 200 OK | 成功（取得・更新） | GET, PATCH |
-| 201 Created | 作成成功 | POST |
-| 202 Accepted | 非同期処理受付 | 非同期タスク起動 |
-| 204 No Content | 削除成功 | DELETE |
-| 400 Bad Request | リクエスト不正 | バリデーションエラー |
-| 401 Unauthorized | 認証エラー | 未認証、トークン期限切れ |
-| 403 Forbidden | 認可エラー | 権限不足 |
-| 404 Not Found | リソース未検出 | 存在しないID |
-| 409 Conflict | 競合 | 楽観的ロック競合 |
-| 413 Payload Too Large | ファイルサイズ超過 | 50MB超過 |
-| 429 Too Many Requests | レートリミット超過 | API呼び出し頻度超過 |
-| 500 Internal Server Error | サーバーエラー | 予期しないエラー |
-
-### 11.2 アプリケーションエラーコード
-
-| コード | 説明 | HTTPステータス |
-|--------|------|--------------|
-| VALIDATION_ERROR | 入力バリデーションエラー | 400 |
-| INVALID_CREDENTIALS | 認証情報不正 | 401 |
-| INVALID_MFA_CODE | MFAコード不正 | 401 |
-| TOKEN_EXPIRED | トークン期限切れ | 401 |
-| TOKEN_INVALID | トークン不正 | 401 |
-| ACCOUNT_LOCKED | アカウントロック | 403 |
-| PASSWORD_EXPIRED | パスワード期限切れ | 403 |
-| PERMISSION_DENIED | 権限不足 | 403 |
-| RESOURCE_NOT_FOUND | リソース未検出 | 404 |
-| CONFLICT | 競合（楽観的ロック） | 409 |
-| FILE_TOO_LARGE | ファイルサイズ超過 | 413 |
-| UNSUPPORTED_FILE_TYPE | 非対応ファイル形式 | 400 |
-| RATE_LIMIT_EXCEEDED | レートリミット超過 | 429 |
-| INTERNAL_ERROR | 内部エラー | 500 |
-| TASK_FAILED | 非同期タスク失敗 | 500 |
-| EXTERNAL_SERVICE_ERROR | 外部サービスエラー | 502 |
-
----
-
-*文書管理: 本文書はバージョン管理対象とし、API追加・変更時は改訂履歴を更新すること。*
+| パラメータ | 型 | 説明 |
+|----------|-----|------|
+| user | UUID | ユーザーフィルタ |
+| action | string | 操作種別フィルタ |
+| resource_type | string | リソースタイプフィルタ |
+| from_date | date | 開始日 |
+| to_date | date | 終了日 |
