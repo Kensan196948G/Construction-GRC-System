@@ -1,0 +1,39 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["apps", "grc", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "COM", "C4", "DTZ", "DJ", "PIE", "RET", "SIM", "TCH"]
+ignore = ["S101", "COM812"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "grc"]
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["apps", "grc"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "grc.settings.development"
+python_files = ["tests.py", "test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring external services",
+]
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/tests/*", "*/admin.py"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
