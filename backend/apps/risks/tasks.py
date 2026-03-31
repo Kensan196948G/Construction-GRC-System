@@ -1,4 +1,5 @@
 """リスク管理 定期タスク"""
+
 from celery import shared_task
 
 

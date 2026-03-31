@@ -1,4 +1,5 @@
 """Initial migration for accounts app - GRCUser model."""
+
 import django.contrib.auth.models
 import django.contrib.auth.validators
 import django.utils.timezone
@@ -31,9 +32,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "last_login",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="last login"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="last login"),
                 ),
                 (
                     "is_superuser",
@@ -46,35 +45,25 @@ class Migration(migrations.Migration):
                 (
                     "username",
                     models.CharField(
-                        error_messages={
-                            "unique": "A user with that username already exists."
-                        },
+                        error_messages={"unique": "A user with that username already exists."},
                         help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
                         max_length=150,
                         unique=True,
-                        validators=[
-                            django.contrib.auth.validators.UnicodeUsernameValidator()
-                        ],
+                        validators=[django.contrib.auth.validators.UnicodeUsernameValidator()],
                         verbose_name="username",
                     ),
                 ),
                 (
                     "first_name",
-                    models.CharField(
-                        blank=True, max_length=150, verbose_name="first name"
-                    ),
+                    models.CharField(blank=True, max_length=150, verbose_name="first name"),
                 ),
                 (
                     "last_name",
-                    models.CharField(
-                        blank=True, max_length=150, verbose_name="last name"
-                    ),
+                    models.CharField(blank=True, max_length=150, verbose_name="last name"),
                 ),
                 (
                     "email",
-                    models.EmailField(
-                        blank=True, max_length=254, verbose_name="email address"
-                    ),
+                    models.EmailField(blank=True, max_length=254, verbose_name="email address"),
                 ),
                 (
                     "is_staff",
@@ -117,21 +106,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "department",
-                    models.CharField(
-                        blank=True, max_length=100, verbose_name="部署"
-                    ),
+                    models.CharField(blank=True, max_length=100, verbose_name="部署"),
                 ),
                 (
                     "display_name",
-                    models.CharField(
-                        blank=True, max_length=100, verbose_name="表示名"
-                    ),
+                    models.CharField(blank=True, max_length=100, verbose_name="表示名"),
                 ),
                 (
                     "phone",
-                    models.CharField(
-                        blank=True, max_length=20, verbose_name="電話番号"
-                    ),
+                    models.CharField(blank=True, max_length=20, verbose_name="電話番号"),
                 ),
                 (
                     "groups",

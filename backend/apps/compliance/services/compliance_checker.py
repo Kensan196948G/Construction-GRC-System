@@ -1,4 +1,5 @@
 """コンプライアンス準拠率チェックサービス"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -54,21 +55,11 @@ class ComplianceChecker:
 
     def get_non_compliant_items(self, requirements: list[dict[str, Any]]) -> list[dict]:
         """非準拠項目の一覧を取得"""
-        return [
-            r
-            for r in requirements
-            if r.get("compliance_status") in ("non_compliant", "unknown")
-        ]
+        return [r for r in requirements if r.get("compliance_status") in ("non_compliant", "unknown")]
 
-    def get_upcoming_assessments(
-        self, requirements: list[dict[str, Any]], days: int = 30
-    ) -> list[dict]:
+    def get_upcoming_assessments(self, requirements: list[dict[str, Any]], days: int = 30) -> list[dict]:
         """今後N日以内に評価期限が到来する要件を取得"""
         from datetime import UTC, datetime, timedelta
 
         cutoff = datetime.now(tz=UTC).date() + timedelta(days=days)
-        return [
-            r
-            for r in requirements
-            if r.get("next_assessment") and r["next_assessment"] <= str(cutoff)
-        ]
+        return [r for r in requirements if r.get("next_assessment") and r["next_assessment"] <= str(cutoff)]

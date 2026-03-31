@@ -1,4 +1,5 @@
 """Initial migration for risks app - Risk model."""
+
 import uuid
 
 import django.db.models.deletion

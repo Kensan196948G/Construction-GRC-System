@@ -169,9 +169,7 @@ class Command(BaseCommand):
 
         if options["clear"]:
             deleted_count, _ = Risk.objects.filter(risk_id__in=sample_risk_ids).delete()
-            self.stdout.write(
-                self.style.WARNING(f"既存サンプルデータ {deleted_count} 件を削除しました")
-            )
+            self.stdout.write(self.style.WARNING(f"既存サンプルデータ {deleted_count} 件を削除しました"))
 
         created_count = 0
         skipped_count = 0
@@ -192,8 +190,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"  作成: {risk_id} - {risk_data['title']}"))
             created_count += 1
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"\n完了: {created_count} 件作成, {skipped_count} 件スキップ"
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(f"\n完了: {created_count} 件作成, {skipped_count} 件スキップ"))

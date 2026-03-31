@@ -1,4 +1,5 @@
 """Initial migration for compliance app - ComplianceRequirement model."""
+
 import uuid
 
 import django.contrib.postgres.fields
@@ -51,9 +52,7 @@ class Migration(migrations.Migration):
                 ("description", models.TextField(blank=True)),
                 (
                     "article_ref",
-                    models.CharField(
-                        blank=True, help_text="条文番号", max_length=100
-                    ),
+                    models.CharField(blank=True, help_text="条文番号", max_length=100),
                 ),
                 ("is_mandatory", models.BooleanField(default=True)),
                 ("due_date", models.DateField(blank=True, null=True)),

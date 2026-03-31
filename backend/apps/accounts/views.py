@@ -1,4 +1,5 @@
 """GRC認証・ユーザー管理ビュー."""
+
 from __future__ import annotations
 
 from rest_framework import generics

@@ -47,14 +47,10 @@ class ISO27001Control(models.Model):
     )
 
     # 証跡
-    evidence_required = ArrayField(
-        models.CharField(max_length=200), default=list, blank=True
-    )
+    evidence_required = ArrayField(models.CharField(max_length=200), default=list, blank=True)
 
     # NIST CSF マッピング
-    nist_csf_mapping = ArrayField(
-        models.CharField(max_length=20), default=list, blank=True
-    )
+    nist_csf_mapping = ArrayField(models.CharField(max_length=20), default=list, blank=True)
 
     # レビュー
     review_date = models.DateField(null=True, blank=True)

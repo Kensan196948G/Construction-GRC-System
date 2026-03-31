@@ -1,4 +1,5 @@
 """ISO27001管理策 定期タスク"""
+
 from celery import shared_task
 
 

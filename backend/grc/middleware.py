@@ -1,4 +1,5 @@
 """GRCシステム共通ミドルウェア"""
+
 from __future__ import annotations
 
 import json
@@ -36,9 +37,7 @@ class AuditLogMiddleware:
 
         return response
 
-    def _log_api_request(
-        self, request: HttpRequest, response: HttpResponse, duration_ms: float
-    ) -> None:
+    def _log_api_request(self, request: HttpRequest, response: HttpResponse, duration_ms: float) -> None:
         user = getattr(request, "user", None)
         username = user.username if user and user.is_authenticated else "anonymous"
 

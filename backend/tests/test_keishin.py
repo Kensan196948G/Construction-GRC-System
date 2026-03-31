@@ -1,4 +1,5 @@
 """経営事項審査（経審）P点計算テスト"""
+
 from apps.compliance.services.keishin_calculator import (
     KeishinCalculator,
     KeishinInput,

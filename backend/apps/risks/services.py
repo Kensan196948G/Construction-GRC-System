@@ -104,33 +104,35 @@ class RiskHeatmapService:
             row: list[dict[str, Any]] = []
             for impact in range(1, 6):
                 level = cls.calculate_risk_level(likelihood, impact)
-                row.append({
-                    "likelihood": likelihood,
-                    "impact": impact,
-                    "count": 0,
-                    "level": level,
-                    "color": cls.get_risk_color(level),
-                })
+                row.append(
+                    {
+                        "likelihood": likelihood,
+                        "impact": impact,
+                        "count": 0,
+                        "level": level,
+                        "color": cls.get_risk_color(level),
+                    }
+                )
             matrix.append(row)
 
         # リスクをマトリクスに配置
         risks_data: list[dict[str, Any]] = []
-        for risk in queryset.only(
-            "risk_id", "title", "likelihood_inherent", "impact_inherent"
-        ):
+        for risk in queryset.only("risk_id", "title", "likelihood_inherent", "impact_inherent"):
             li = risk.likelihood_inherent
             im = risk.impact_inherent
             level = cls.calculate_risk_level(li, im)
             matrix[li - 1][im - 1]["count"] += 1
-            risks_data.append({
-                "risk_id": risk.risk_id,
-                "title": risk.title,
-                "likelihood": li,
-                "impact": im,
-                "score": li * im,
-                "level": level,
-                "color": cls.get_risk_color(level),
-            })
+            risks_data.append(
+                {
+                    "risk_id": risk.risk_id,
+                    "title": risk.title,
+                    "likelihood": li,
+                    "impact": im,
+                    "score": li * im,
+                    "level": level,
+                    "color": cls.get_risk_color(level),
+                }
+            )
 
         return {
             "matrix": matrix,
@@ -173,9 +175,7 @@ class RiskHeatmapService:
         # レベル別集計（Pythonで計算）
         level_counts: dict[str, int] = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
         for risk in queryset.only("likelihood_inherent", "impact_inherent"):
-            level = cls.calculate_risk_level(
-                risk.likelihood_inherent, risk.impact_inherent
-            )
+            level = cls.calculate_risk_level(risk.likelihood_inherent, risk.impact_inherent)
             level_counts[level] += 1
 
         level_colors: dict[str, str] = {rl.name: rl.color for rl in RISK_LEVELS}

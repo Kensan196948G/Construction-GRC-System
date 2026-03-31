@@ -9,6 +9,7 @@ Y:  経営状況評点
 Z:  技術力評点
 W:  その他社会性等評点
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

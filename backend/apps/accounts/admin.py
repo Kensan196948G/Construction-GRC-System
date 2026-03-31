@@ -1,4 +1,5 @@
 """GRCUser管理画面設定."""
+
 from __future__ import annotations
 
 from django.contrib import admin
