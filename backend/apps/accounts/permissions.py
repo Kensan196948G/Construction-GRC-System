@@ -84,3 +84,52 @@ class RoleBasedPermission(BasePermission):
         if not allowed_roles:
             return True
         return getattr(user, "role", None) in allowed_roles
+
+
+class IsRiskOwner(BasePermission):
+    """リスクオーナー以上を許可."""
+
+    message = "リスクオーナー以上の権限が必要です。"
+
+    ALLOWED_ROLES: frozenset[str] = frozenset(
+        {GRCUser.Role.RISK_OWNER, GRCUser.Role.GRC_ADMIN}
+    )
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        user: Any = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and getattr(user, "role", None) in self.ALLOWED_ROLES
+        )
+
+
+class IsComplianceOfficer(BasePermission):
+    """コンプライアンス担当以上を許可."""
+
+    message = "コンプライアンス担当以上の権限が必要です。"
+
+    ALLOWED_ROLES: frozenset[str] = frozenset(
+        {GRCUser.Role.COMPLIANCE_OFFICER, GRCUser.Role.GRC_ADMIN}
+    )
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        user: Any = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and getattr(user, "role", None) in self.ALLOWED_ROLES
+        )
+
+
+class ReadOnlyOrAdmin(BasePermission):
+    """読み取りは全認証ユーザー、書き込みはGRC管理者のみ."""
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return bool(request.user and request.user.is_authenticated)
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and getattr(request.user, "role", None) == GRCUser.Role.GRC_ADMIN
+        )

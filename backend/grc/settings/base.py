@@ -112,6 +112,7 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "EXCEPTION_HANDLER": "grc.exception_handler.grc_exception_handler",
 }
 
 # JWT Settings

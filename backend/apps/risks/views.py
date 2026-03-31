@@ -3,6 +3,9 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from apps.accounts.models import GRCUser
+from apps.accounts.permissions import RoleBasedPermission
+
 from .models import Risk
 from .serializers import RiskSerializer
 
@@ -16,6 +19,12 @@ class RiskViewSet(viewsets.ModelViewSet):
     filterset_fields = ["category", "status", "treatment_strategy"]
     search_fields = ["risk_id", "title", "description"]
     ordering_fields = ["created_at", "risk_id", "status"]
+    allowed_roles = [GRCUser.Role.GRC_ADMIN, GRCUser.Role.RISK_OWNER]
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [RoleBasedPermission()]
+        return super().get_permissions()
 
     @action(detail=False, methods=["get"])
     def heatmap(self, request):
