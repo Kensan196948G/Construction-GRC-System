@@ -7,7 +7,7 @@ Excel/PDFデータとして生成するサービスレイヤー。
 from __future__ import annotations
 
 import io
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from django.utils import timezone
@@ -143,7 +143,7 @@ class SoAGenerator:
         # タイトル行
         ws.merge_cells("A1:H1")
         title_cell = ws["A1"]
-        title_cell.value = f"ISO27001:2022 適用宣言書（SoA） - 生成日: {datetime.now().strftime('%Y-%m-%d')}"
+        title_cell.value = f"ISO27001:2022 適用宣言書（SoA） - 生成日: {datetime.now(tz=UTC).strftime('%Y-%m-%d')}"
         title_cell.font = Font(bold=True, size=14)
 
         # ヘッダー

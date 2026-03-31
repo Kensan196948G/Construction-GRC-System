@@ -34,7 +34,12 @@ class RiskViewSet(viewsets.ModelViewSet):
         for risk in risks:
             key = f"{risk.likelihood_inherent},{risk.impact_inherent}"
             if key not in matrix:
-                matrix[key] = {"likelihood": risk.likelihood_inherent, "impact": risk.impact_inherent, "count": 0, "risks": []}
+                matrix[key] = {
+                    "likelihood": risk.likelihood_inherent,
+                    "impact": risk.impact_inherent,
+                    "count": 0,
+                    "risks": [],
+                }
             matrix[key]["count"] += 1
             matrix[key]["risks"].append(RiskSerializer(risk).data)
         return Response({"matrix": list(matrix.values())})

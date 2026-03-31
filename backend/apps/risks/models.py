@@ -93,8 +93,8 @@ class Risk(models.Model):
         score = self.risk_score_inherent
         if score >= 15:
             return "CRITICAL"
-        elif score >= 10:
+        if score >= 10:
             return "HIGH"
-        elif score >= 5:
+        if score >= 5:
             return "MEDIUM"
         return "LOW"

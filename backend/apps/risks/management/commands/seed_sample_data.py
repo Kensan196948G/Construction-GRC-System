@@ -9,7 +9,7 @@ Usage:
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
@@ -175,7 +175,7 @@ class Command(BaseCommand):
 
         created_count = 0
         skipped_count = 0
-        today = date.today()
+        today = datetime.now(tz=UTC).date()
 
         for risk_data in SAMPLE_RISKS:
             risk_id = risk_data["risk_id"]

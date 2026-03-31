@@ -105,10 +105,10 @@ class KeishinCalculator:
         """P点に基づく等級判定（参考値）"""
         if p >= 1200:
             return "A"
-        elif p >= 900:
+        if p >= 900:
             return "B"
-        elif p >= 700:
+        if p >= 700:
             return "C"
-        elif p >= 500:
+        if p >= 500:
             return "D"
         return "E"

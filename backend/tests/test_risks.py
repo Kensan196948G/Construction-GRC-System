@@ -1,5 +1,4 @@
 """リスク管理モジュール テスト"""
-import pytest
 
 
 class TestRiskModel:

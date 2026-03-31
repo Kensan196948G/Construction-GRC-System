@@ -1,5 +1,4 @@
 """API統合テスト基盤（DB不要のリクエスト/レスポンス構造テスト）"""
-import json
 
 
 class TestAPIEndpointDefinitions:
@@ -152,7 +151,7 @@ class TestCeleryTaskDefinitions:
         assert callable(generate_compliance_report)
 
     def test_control_tasks_exist(self):
-        from apps.controls.tasks import check_control_reviews, calculate_soa_status
+        from apps.controls.tasks import calculate_soa_status, check_control_reviews
         assert callable(check_control_reviews)
         assert callable(calculate_soa_status)
 

@@ -2,8 +2,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 FIXTURES_DIR = Path(__file__).resolve().parent.parent / "apps" / "frameworks" / "fixtures"
 
 

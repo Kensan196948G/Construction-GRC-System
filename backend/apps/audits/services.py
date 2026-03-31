@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, QuerySet
 from django.utils import timezone
 
 from apps.audits.models import Audit, AuditFinding

@@ -2,10 +2,14 @@
 target-version = "py312"
 line-length = 120
 src = ["apps", "grc", "tests"]
+exclude = ["*/migrations/*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "COM", "C4", "DTZ", "DJ", "PIE", "RET", "SIM", "TCH"]
 ignore = ["S101", "COM812"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S106"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "grc"]

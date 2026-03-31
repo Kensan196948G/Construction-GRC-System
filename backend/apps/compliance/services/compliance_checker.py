@@ -64,9 +64,9 @@ class ComplianceChecker:
         self, requirements: list[dict[str, Any]], days: int = 30
     ) -> list[dict]:
         """今後N日以内に評価期限が到来する要件を取得"""
-        from datetime import date, timedelta
+        from datetime import UTC, datetime, timedelta
 
-        cutoff = date.today() + timedelta(days=days)
+        cutoff = datetime.now(tz=UTC).date() + timedelta(days=days)
         return [
             r
             for r in requirements
