@@ -77,6 +77,13 @@ jobs:
     - name: Install Python dependencies
       run: pip install -r backend/requirements.txt
 
+    - name: Run Migrations
+      env:
+        DATABASE_URL: postgresql://grc_user:grc_test_password@localhost:5432/grc_test
+        REDIS_URL: redis://localhost:6379/0
+        DJANGO_SETTINGS_MODULE: grc.settings.development
+      run: cd backend && python manage.py migrate --no-input
+
     - name: Run Python Tests
       env:
         DATABASE_URL: postgresql://grc_user:grc_test_password@localhost:5432/grc_test
