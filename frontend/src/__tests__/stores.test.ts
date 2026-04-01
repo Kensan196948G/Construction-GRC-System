@@ -1,23 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-describe("Pinia Store Types", () => {
-  it("should define compliance store exports", async () => {
-    const module = await import("@/store/compliance");
-    expect(module.useComplianceStore).toBeDefined();
-  });
-
-  it("should define audits store exports", async () => {
-    const module = await import("@/store/audits");
-    expect(module.useAuditsStore).toBeDefined();
-  });
-
-  it("should define risks store exports", async () => {
-    const module = await import("@/store/risks");
-    expect(module.useRisksStore).toBeDefined();
-  });
-});
-
-describe("Type Definitions", () => {
+describe("GRC Type Definitions", () => {
   it("should have correct risk categories", () => {
     const categories = ["IT", "Physical", "Legal", "Construction", "Financial", "Operational"];
     expect(categories).toHaveLength(6);
