@@ -23,11 +23,16 @@ All notable changes to this project will be documented in this file.
 - Kubernetes本番デプロイ対応
 - OpenAPI/Swagger + 運用マニュアル + デプロイガイド
 - Settings画面 (テーマ/言語/通知/プロフィール)
+- CSVエクスポート全モデル対応 (Risk/Control/Compliance/Audit)
+- ファイルアップロード (ISO27001証跡管理)
+- アクティビティログ (変更履歴記録・表示)
+- GitHub Releases自動化 (タグpush → 自動Release)
 
 ### Infrastructure
 - Docker Compose (開発/本番)
 - Kubernetes 14マニフェスト
 - GitHub Actions CI (Lint/Test/Build/Security)
+- GitHub Releases ワークフロー
 - Nginx リバースプロキシ
 
 ### Testing
