@@ -6,6 +6,7 @@ ISO27001管理策の準拠率をドメイン別・全体・トレンドで算出
 
 from __future__ import annotations
 
+import datetime as _dt
 from typing import Any
 
 from django.db.models import Count, QuerySet
@@ -161,7 +162,7 @@ class ComplianceRateService:
             else:
                 next_year, next_month = year, month + 1
 
-            cutoff = timezone.datetime(next_year, next_month, 1, tzinfo=timezone.utc)
+            cutoff = _dt.datetime(next_year, next_month, 1, tzinfo=_dt.UTC)
 
             implemented = queryset.filter(
                 is_applicable=True,

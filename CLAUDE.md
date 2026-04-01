@@ -73,6 +73,10 @@ python manage.py createsuperuser    # 管理者ユーザー作成
 - `/api/v1/audits/` — 内部監査（CRUD + findings）
 - `/api/v1/reports/` — レポート管理
 - `/api/v1/frameworks/` — フレームワーク定義（読取専用 + summary）
+- `/api/v1/dashboard/` — 統合GRCダッシュボード（全KPI一括）
+- `/api/v1/reports/generate/dashboard-pdf/` — ダッシュボードPDF生成
+- `/api/v1/reports/generate/compliance-pdf/` — コンプライアンスPDF
+- `/api/v1/reports/generate/risk-pdf/` — リスク評価PDF
 
 ## 準拠規格
 - ISO27001:2022 全93管理策（4ドメイン: 組織的/人的/物理的/技術的）
