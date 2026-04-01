@@ -34,6 +34,12 @@ class TestGRCBaseException:
         exc = GRCBaseException(detail="カスタムエラー")
         assert exc.detail == "カスタムエラー"
 
+    def test_is_api_exception(self):
+        from rest_framework.exceptions import APIException
+
+        exc = GRCBaseException()
+        assert isinstance(exc, APIException)
+
 
 class TestResourceNotFoundError:
     """ResourceNotFoundError テスト."""
@@ -54,6 +60,10 @@ class TestResourceNotFoundError:
         exc = ResourceNotFoundError(detail="リスクが見つかりません")
         assert exc.detail == "リスクが見つかりません"
 
+    def test_inherits_from_base(self):
+        exc = ResourceNotFoundError()
+        assert isinstance(exc, GRCBaseException)
+
 
 class TestComplianceStateError:
     """ComplianceStateError テスト."""
@@ -69,6 +79,10 @@ class TestComplianceStateError:
     def test_default_code(self):
         exc = ComplianceStateError()
         assert exc.default_code == "compliance_state_error"
+
+    def test_inherits_from_base(self):
+        exc = ComplianceStateError()
+        assert isinstance(exc, GRCBaseException)
 
 
 class TestInsufficientPermissionError:
@@ -86,6 +100,10 @@ class TestInsufficientPermissionError:
         exc = InsufficientPermissionError()
         assert exc.default_code == "insufficient_permission"
 
+    def test_inherits_from_base(self):
+        exc = InsufficientPermissionError()
+        assert isinstance(exc, GRCBaseException)
+
 
 class TestRiskAssessmentError:
     """RiskAssessmentError テスト."""
@@ -101,6 +119,10 @@ class TestRiskAssessmentError:
     def test_default_code(self):
         exc = RiskAssessmentError()
         assert exc.default_code == "risk_assessment_error"
+
+    def test_inherits_from_base(self):
+        exc = RiskAssessmentError()
+        assert isinstance(exc, GRCBaseException)
 
 
 class TestGRCExceptionHandler:
@@ -128,6 +150,14 @@ class TestGRCExceptionHandler:
         assert response.data["status_code"] == 404
         assert response.data["error_code"] == "resource_not_found"
 
+    def test_handles_compliance_state_error(self):
+        """ComplianceStateErrorが409を返すことを確認."""
+        exc = ComplianceStateError()
+        context = self._make_context()
+        response = grc_exception_handler(exc, context)
+        assert response.status_code == 409
+        assert response.data["error_code"] == "compliance_state_error"
+
     def test_handles_unhandled_exception(self):
         """未処理例外が500レスポンスを返すことを確認."""
         exc = ValueError("unexpected error")
@@ -154,3 +184,11 @@ class TestGRCExceptionHandler:
         response = grc_exception_handler(exc, context)
         assert "status_code" in response.data
         assert response.data["status_code"] == 403
+
+    def test_unhandled_exception_logs_error(self):
+        """未処理例外がログに記録されることを確認."""
+        exc = RuntimeError("something broke")
+        context = self._make_context()
+        with patch("grc.exception_handler.logger") as mock_logger:
+            grc_exception_handler(exc, context)
+            mock_logger.exception.assert_called_once()

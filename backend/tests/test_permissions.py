@@ -1,10 +1,8 @@
-"""RBAC権限テスト."""
+"""RBAC権限テスト（DB不要・モックベース）."""
 
 from __future__ import annotations
 
 from unittest.mock import MagicMock
-
-import pytest
 
 from apps.accounts.models import GRCUser
 from apps.accounts.permissions import (
@@ -15,6 +13,14 @@ from apps.accounts.permissions import (
     ReadOnlyOrAdmin,
     RoleBasedPermission,
 )
+
+
+class MockUser:
+    """テスト用モックユーザー（DB不要）."""
+
+    def __init__(self, role=None, is_authenticated=True):
+        self.role = role
+        self.is_authenticated = is_authenticated
 
 
 class MockRequest:
@@ -32,15 +38,6 @@ class MockView:
         self.allowed_roles = allowed_roles or []
 
 
-class MockUser:
-    """テスト用モックユーザー（DB不要）."""
-
-    def __init__(self, role=None, is_authenticated=True):
-        self.role = role
-        self.is_authenticated = is_authenticated
-
-
-@pytest.mark.django_db
 class TestIsGRCAdmin:
     """IsGRCAdmin パーミッションテスト."""
 
@@ -59,6 +56,11 @@ class TestIsGRCAdmin:
         request = MockRequest(user=user)
         assert IsGRCAdmin().has_permission(request, MockView()) is False
 
+    def test_denies_risk_owner(self):
+        user = MockUser(role=GRCUser.Role.RISK_OWNER)
+        request = MockRequest(user=user)
+        assert IsGRCAdmin().has_permission(request, MockView()) is False
+
     def test_denies_unauthenticated(self):
         user = MockUser(role=GRCUser.Role.GRC_ADMIN, is_authenticated=False)
         request = MockRequest(user=user)
@@ -69,7 +71,6 @@ class TestIsGRCAdmin:
         assert IsGRCAdmin().has_permission(request, MockView()) is False
 
 
-@pytest.mark.django_db
 class TestIsAuditor:
     """IsAuditor パーミッションテスト."""
 
@@ -93,13 +94,17 @@ class TestIsAuditor:
         request = MockRequest(user=user)
         assert IsAuditor().has_permission(request, MockView()) is False
 
+    def test_denies_compliance_officer(self):
+        user = MockUser(role=GRCUser.Role.COMPLIANCE_OFFICER)
+        request = MockRequest(user=user)
+        assert IsAuditor().has_permission(request, MockView()) is False
+
     def test_denies_unauthenticated(self):
         user = MockUser(role=GRCUser.Role.AUDITOR, is_authenticated=False)
         request = MockRequest(user=user)
         assert IsAuditor().has_permission(request, MockView()) is False
 
 
-@pytest.mark.django_db
 class TestIsRiskOwner:
     """IsRiskOwner パーミッションテスト."""
 
@@ -123,8 +128,17 @@ class TestIsRiskOwner:
         request = MockRequest(user=user)
         assert IsRiskOwner().has_permission(request, MockView()) is False
 
+    def test_denies_executive(self):
+        user = MockUser(role=GRCUser.Role.EXECUTIVE)
+        request = MockRequest(user=user)
+        assert IsRiskOwner().has_permission(request, MockView()) is False
 
-@pytest.mark.django_db
+    def test_denies_unauthenticated(self):
+        user = MockUser(role=GRCUser.Role.RISK_OWNER, is_authenticated=False)
+        request = MockRequest(user=user)
+        assert IsRiskOwner().has_permission(request, MockView()) is False
+
+
 class TestIsComplianceOfficer:
     """IsComplianceOfficer パーミッションテスト."""
 
@@ -148,8 +162,12 @@ class TestIsComplianceOfficer:
         request = MockRequest(user=user)
         assert IsComplianceOfficer().has_permission(request, MockView()) is False
 
+    def test_denies_executive(self):
+        user = MockUser(role=GRCUser.Role.EXECUTIVE)
+        request = MockRequest(user=user)
+        assert IsComplianceOfficer().has_permission(request, MockView()) is False
 
-@pytest.mark.django_db
+
 class TestRoleBasedPermission:
     """RoleBasedPermission パーミッションテスト."""
 
@@ -184,8 +202,13 @@ class TestRoleBasedPermission:
         view = MagicMock(spec=[])  # no attributes
         assert RoleBasedPermission().has_permission(request, view) is True
 
+    def test_allows_admin_in_mixed_roles(self):
+        user = MockUser(role=GRCUser.Role.GRC_ADMIN)
+        request = MockRequest(user=user)
+        view = MockView(allowed_roles=[GRCUser.Role.RISK_OWNER, GRCUser.Role.GRC_ADMIN])
+        assert RoleBasedPermission().has_permission(request, view) is True
 
-@pytest.mark.django_db
+
 class TestReadOnlyOrAdmin:
     """ReadOnlyOrAdmin パーミッションテスト."""
 
@@ -219,12 +242,27 @@ class TestReadOnlyOrAdmin:
         request = MockRequest(user=user, method="PUT")
         assert ReadOnlyOrAdmin().has_permission(request, MockView()) is True
 
+    def test_patch_allowed_for_admin(self):
+        user = MockUser(role=GRCUser.Role.GRC_ADMIN)
+        request = MockRequest(user=user, method="PATCH")
+        assert ReadOnlyOrAdmin().has_permission(request, MockView()) is True
+
     def test_delete_denied_for_non_admin(self):
         user = MockUser(role=GRCUser.Role.AUDITOR)
         request = MockRequest(user=user, method="DELETE")
         assert ReadOnlyOrAdmin().has_permission(request, MockView()) is False
 
+    def test_delete_allowed_for_admin(self):
+        user = MockUser(role=GRCUser.Role.GRC_ADMIN)
+        request = MockRequest(user=user, method="DELETE")
+        assert ReadOnlyOrAdmin().has_permission(request, MockView()) is True
+
     def test_get_denied_for_unauthenticated(self):
         user = MockUser(role=GRCUser.Role.GENERAL, is_authenticated=False)
         request = MockRequest(user=user, method="GET")
+        assert ReadOnlyOrAdmin().has_permission(request, MockView()) is False
+
+    def test_post_denied_for_unauthenticated(self):
+        user = MockUser(role=GRCUser.Role.GRC_ADMIN, is_authenticated=False)
+        request = MockRequest(user=user, method="POST")
         assert ReadOnlyOrAdmin().has_permission(request, MockView()) is False
