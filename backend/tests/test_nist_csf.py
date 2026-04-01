@@ -1,5 +1,6 @@
 """NistCSFCategory モデルテスト."""
 
+import django.db
 import pytest
 from django.test import TestCase
 
@@ -57,8 +58,9 @@ class TestNistCSFCategoryDefinition:
 
 
 @pytest.mark.django_db
+@pytest.mark.integration
 class TestNistCSFCategoryModel(TestCase):
-    """NistCSFCategory モデルCRUDテスト（DB必要）."""
+    """NistCSFCategory モデルCRUDテスト（DB必要 — PostgreSQL環境で実行）."""
 
     def _create_category(self, **kwargs):
         """テスト用NistCSFCategoryを作成するヘルパー."""
@@ -84,7 +86,7 @@ class TestNistCSFCategoryModel(TestCase):
 
     def test_unique_category_id(self):
         self._create_category(category_id="GV.OC-01")
-        with pytest.raises(Exception):
+        with pytest.raises(django.db.IntegrityError):
             self._create_category(category_id="GV.OC-01")
 
     def test_read_category(self):
