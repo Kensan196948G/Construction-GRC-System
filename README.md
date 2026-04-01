@@ -17,13 +17,16 @@
 |:-----:|------|:----:|
 | Phase 1 | 基盤構築 (Django + DRF + JWT認証 + RBAC) | ✅ 完了 |
 | Phase 2 | マイグレーション + UI強化 + Celery + 監査ログ | ✅ 完了 |
-| Phase 3 | フレームワークAPI + RBAC拡充 + UI3画面完全実装 | 🔄 進行中 |
-| Phase 4 | 監査管理強化 + レポート生成 + 外部連携 | ⏸ 予定 |
+| Phase 3 | フレームワークAPI + RBAC拡充 + UI3画面完全実装 | ✅ 完了 |
+| Phase 3.5 | テスト強化 + インフラ本番化 | 🔄 進行中 |
+| Phase 4 | 統合ダッシュボードAPI + PDFレポート生成 | 🔄 進行中 |
+| Phase 5 | 外部連携 + 多言語対応 + E2E | ⏸ 予定 |
 
 | 指標 | 値 |
 |------|-----|
 | CI状態 | [![CI](https://github.com/Kensan196948G/Construction-GRC-System/actions/workflows/claudeos-ci.yml/badge.svg)](https://github.com/Kensan196948G/Construction-GRC-System/actions) |
-| STABLE マージ数 | 14 PRs |
+| STABLE マージ数 | 15 PRs |
+| テスト数 | 180+ ケース |
 | 最終更新 | 2026-04-01 |
 
 ---
