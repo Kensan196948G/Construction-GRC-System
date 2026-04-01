@@ -11,6 +11,7 @@ class Audit(models.Model):
         PLANNED = "planned", "計画済み"
         IN_PROGRESS = "in_progress", "実施中"
         COMPLETED = "completed", "完了"
+        CLOSED = "closed", "クローズ"
         CANCELLED = "cancelled", "中止"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

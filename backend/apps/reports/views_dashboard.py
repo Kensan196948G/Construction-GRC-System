@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.db.models import Count
+from django.db.models import Count, F
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,6 +17,7 @@ from apps.audits.models import Audit, AuditFinding
 from apps.compliance.models import ComplianceRequirement
 from apps.controls.models import ISO27001Control
 from apps.risks.models import Risk
+from grc.cache import CACHE_TTL, cache_key, get_or_set
 
 
 class GRCDashboardView(APIView):
@@ -29,14 +30,16 @@ class GRCDashboardView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Any) -> Response:
-        return Response(
-            {
+        def _build():
+            return {
                 "risks": self._risk_summary(),
                 "compliance": self._compliance_summary(),
                 "controls": self._controls_summary(),
                 "audits": self._audit_summary(),
             }
-        )
+
+        data = get_or_set(cache_key("dashboard"), _build, CACHE_TTL["dashboard"])
+        return Response(data)
 
     @staticmethod
     def _risk_summary() -> dict[str, Any]:
@@ -45,20 +48,24 @@ class GRCDashboardView(APIView):
         if total == 0:
             return {"total": 0, "by_level": {}, "by_status": {}, "by_category": {}}
 
-        by_level: dict[str, int] = {}
-        for risk in qs:
-            level = risk.risk_level
-            by_level[level] = by_level.get(level, 0) + 1
+        # DB側でrisk_score (likelihood * impact) を計算してレベル別集計
+        scored = qs.annotate(
+            risk_score=F("likelihood_inherent") * F("impact_inherent"),
+        )
+        by_level = {
+            "CRITICAL": scored.filter(risk_score__gte=15).count(),
+            "HIGH": scored.filter(risk_score__gte=10, risk_score__lt=15).count(),
+            "MEDIUM": scored.filter(risk_score__gte=5, risk_score__lt=10).count(),
+            "LOW": scored.filter(risk_score__lt=5).count(),
+        }
+
+        # ステータス別をDB一括集計
+        by_status = dict(qs.values("status").annotate(count=Count("id")).values_list("status", "count"))
 
         return {
             "total": total,
             "by_level": by_level,
-            "by_status": {
-                "open": qs.filter(status="open").count(),
-                "in_progress": qs.filter(status="in_progress").count(),
-                "closed": qs.filter(status="closed").count(),
-                "accepted": qs.filter(status="accepted").count(),
-            },
+            "by_status": by_status,
             "by_category": dict(qs.values("category").annotate(count=Count("id")).values_list("category", "count")),
         }
 
