@@ -4,12 +4,12 @@
 Slack/Teams/メール等のWebhook URLに対してPOSTリクエストを送信。
 """
 
-import logging
 from datetime import UTC, datetime
+import logging
 from typing import Any
 
-import requests
 from django.conf import settings
+import requests
 
 logger = logging.getLogger(__name__)
 

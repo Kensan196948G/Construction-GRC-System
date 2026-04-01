@@ -6,8 +6,8 @@ WeasyPrint を使用したPDFレポート生成基盤。
 
 from __future__ import annotations
 
-import io
 from datetime import UTC, datetime
+import io
 from typing import Any
 
 

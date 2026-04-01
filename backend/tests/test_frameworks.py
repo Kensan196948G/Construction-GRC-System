@@ -1,8 +1,8 @@
 """Framework API テスト."""
 
 import django.db
-import pytest
 from django.test import TestCase
+import pytest
 
 from apps.frameworks.models import Framework
 

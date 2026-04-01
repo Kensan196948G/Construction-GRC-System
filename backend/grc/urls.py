@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.urls import include, path
 
-import grc.signals  # noqa: F401 -- register cache invalidation signals
 from apps.reports.views_dashboard import GRCDashboardView
 from grc.health import HealthCheckView
+import grc.signals  # noqa: F401 -- register cache invalidation signals
 
 urlpatterns = [
     path("admin/", admin.site.urls),

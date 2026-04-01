@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import logging
 
-import requests
 from django.conf import settings
 from django.core.mail import send_mail
+import requests
 
 logger = logging.getLogger(__name__)
 

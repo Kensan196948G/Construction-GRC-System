@@ -13,6 +13,7 @@ ignore = ["S101", "COM812"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "grc"]
+force-sort-within-sections = true
 
 [tool.black]
 line-length = 120
