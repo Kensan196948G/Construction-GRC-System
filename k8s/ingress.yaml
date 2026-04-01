@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grc-ingress
+  namespace: grc-system
+  labels:
+    app.kubernetes.io/name: grc-ingress
+    app.kubernetes.io/part-of: grc-system
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - grc.example.com
+      secretName: grc-tls
+  rules:
+    - host: grc.example.com
+      http:
+        paths:
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: grc-backend
+                port:
+                  number: 8000
+          - path: /admin/
+            pathType: Prefix
+            backend:
+              service:
+                name: grc-backend
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grc-frontend
+                port:
+                  number: 80

@@ -1,0 +1,27 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: grc-backend-pdb
+  namespace: grc-system
+  labels:
+    app.kubernetes.io/name: grc-backend-pdb
+    app.kubernetes.io/part-of: grc-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grc-backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: grc-frontend-pdb
+  namespace: grc-system
+  labels:
+    app.kubernetes.io/name: grc-frontend-pdb
+    app.kubernetes.io/part-of: grc-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grc-frontend

@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: grc-system
+  labels:
+    app.kubernetes.io/name: celery-worker
+    app.kubernetes.io/component: worker
+    app.kubernetes.io/part-of: grc-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: celery-worker
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/part-of: grc-system
+    spec:
+      containers:
+        - name: celery-worker
+          image: construction-grc-backend:latest
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - grc
+            - worker
+            - --loglevel=info
+            - --concurrency=2
+          envFrom:
+            - configMapRef:
+                name: grc-config
+            - secretRef:
+                name: grc-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - grc
+                - inspect
+                - ping
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: grc-system
+  labels:
+    app.kubernetes.io/name: celery-beat
+    app.kubernetes.io/component: scheduler
+    app.kubernetes.io/part-of: grc-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: celery-beat
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: celery-beat
+        app.kubernetes.io/component: scheduler
+        app.kubernetes.io/part-of: grc-system
+    spec:
+      containers:
+        - name: celery-beat
+          image: construction-grc-backend:latest
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - grc
+            - beat
+            - --loglevel=info
+          envFrom:
+            - configMapRef:
+                name: grc-config
+            - secretRef:
+                name: grc-secrets
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+      restartPolicy: Always

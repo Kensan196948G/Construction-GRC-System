@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeToggle } from '@/composables/useTheme'
 import SkipLink from '@/components/SkipLink.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const drawer = ref(true)
 const router = useRouter()
@@ -58,6 +59,7 @@ const handleLogout = async () => {
         <span v-if="authStore.user" class="mr-4 text-body-2">
           {{ authStore.user.username }}
         </span>
+        <LanguageSwitcher />
         <v-btn
           :icon="isDark() ? 'mdi-weather-night' : 'mdi-weather-sunny'"
           @click="toggleTheme"

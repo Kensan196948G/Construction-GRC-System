@@ -1,0 +1,3 @@
+[bandit]
+exclude: /tests,/migrations
+skips: B101
