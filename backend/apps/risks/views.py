@@ -1,4 +1,5 @@
 from django.db.models import Count, F
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 
 from apps.accounts.models import GRCUser
 from apps.accounts.permissions import RoleBasedPermission
+from apps.reports.export_service import RISK_FIELDS, ExportService
 from grc.cache import CACHE_TTL, cache_key, get_or_set
 
 from .models import Risk
@@ -78,3 +80,24 @@ class RiskViewSet(viewsets.ModelViewSet):
 
         data = get_or_set(cache_key("risk_dashboard"), _build, CACHE_TTL["risk_dashboard"])
         return Response(data)
+
+    @action(detail=False, methods=["get"], url_path="export/csv")
+    def export_csv(self, request):
+        """リスク一覧CSV"""
+        qs = self.filter_queryset(self.get_queryset())
+        content = ExportService.queryset_to_csv(qs, RISK_FIELDS)
+        response = HttpResponse(content, content_type="text/csv; charset=utf-8-sig")
+        response["Content-Disposition"] = 'attachment; filename="risks.csv"'
+        return response
+
+    @action(detail=False, methods=["get"], url_path="export/excel")
+    def export_excel(self, request):
+        """リスク一覧Excel"""
+        qs = self.filter_queryset(self.get_queryset())
+        content = ExportService.queryset_to_excel(qs, RISK_FIELDS, sheet_name="リスク一覧")
+        response = HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="risks.xlsx"'
+        return response
