@@ -42,6 +42,9 @@ ruff==0.8.4
 black==24.10.0
 isort==5.13.2
 
+# API Documentation
+drf-spectacular==0.28.0
+
 # Security
 pip-audit==2.7.3
 safety==3.2.14

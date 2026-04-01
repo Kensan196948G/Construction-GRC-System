@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "django_filters",
     "django_celery_beat",
     "django_celery_results",
+    "drf_spectacular",
     # Local apps
     "apps.accounts.apps.AccountsConfig",
     "apps.risks.apps.RisksConfig",
@@ -43,6 +44,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "grc.middleware.AuditLogMiddleware",
+    "grc.security.SecurityHeadersMiddleware",
+    "grc.security.RequestLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "grc.urls"
@@ -110,6 +113,15 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
     ],
     "EXCEPTION_HANDLER": "grc.exception_handler.grc_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "30/minute",
+        "user": "120/minute",
+    },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # JWT Settings
@@ -135,4 +147,22 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/1"),
     }
+}
+
+# drf-spectacular (OpenAPI)
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Construction-GRC-System API",
+    "DESCRIPTION": "建設業 統合リスク＆コンプライアンス管理システム REST API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "TAGS": [
+        {"name": "auth", "description": "認証・ユーザー管理"},
+        {"name": "risks", "description": "リスク管理"},
+        {"name": "compliance", "description": "コンプライアンス管理"},
+        {"name": "controls", "description": "ISO27001 管理策"},
+        {"name": "audits", "description": "内部監査"},
+        {"name": "reports", "description": "レポート生成"},
+        {"name": "frameworks", "description": "フレームワーク定義"},
+        {"name": "dashboard", "description": "統合GRCダッシュボード"},
+    ],
 }

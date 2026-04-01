@@ -2,11 +2,14 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { useThemeToggle } from '@/composables/useTheme'
+import SkipLink from '@/components/SkipLink.vue'
 
 const drawer = ref(true)
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { toggleTheme, isDark } = useThemeToggle()
 
 const isLoginPage = computed(() => route.path === '/login')
 
@@ -27,6 +30,7 @@ const handleLogout = async () => {
 
 <template>
   <v-app>
+    <SkipLink />
     <template v-if="!isLoginPage">
       <v-navigation-drawer v-model="drawer" app>
         <v-list-item
@@ -54,11 +58,16 @@ const handleLogout = async () => {
         <span v-if="authStore.user" class="mr-4 text-body-2">
           {{ authStore.user.username }}
         </span>
+        <v-btn
+          :icon="isDark() ? 'mdi-weather-night' : 'mdi-weather-sunny'"
+          @click="toggleTheme"
+          title="テーマ切替"
+        />
         <v-btn icon="mdi-logout" @click="handleLogout" />
       </v-app-bar>
     </template>
 
-    <v-main>
+    <v-main id="main-content">
       <router-view />
     </v-main>
   </v-app>
