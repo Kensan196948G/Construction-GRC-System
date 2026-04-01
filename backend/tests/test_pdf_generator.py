@@ -33,8 +33,9 @@ class TestPDFReportGeneratorDashboard(TestCase):
             "audits": {"total_audits": 0},
         }
         result = PDFReportGenerator.generate_grc_dashboard_pdf(data)
-        # WeasyPrint未インストール時はHTMLバイトが返る
-        assert b"GRC" in result or b"html" in result.lower()
+        # WeasyPrint有無で出力形式が異なる
+        # PDF: %PDF マジックバイト、HTML: b"GRC" or b"html"
+        assert b"%PDF" in result or b"GRC" in result or b"html" in result.lower()
 
     def test_dashboard_empty_data(self) -> None:
         data = {
