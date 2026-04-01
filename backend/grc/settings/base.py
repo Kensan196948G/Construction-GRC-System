@@ -140,6 +140,16 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Tokyo"
+CELERY_BEAT_SCHEDULE = {
+    "audits-check-cap-deadlines": {
+        "task": "audits.check_cap_deadlines",
+        "schedule": timedelta(days=1),
+    },
+    "audits-auto-complete-audits": {
+        "task": "audits.auto_complete_audits",
+        "schedule": timedelta(days=1),
+    },
+}
 
 # Cache
 CACHES = {

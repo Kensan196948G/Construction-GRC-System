@@ -12,7 +12,7 @@ from .serializers import ComplianceRequirementSerializer
 class ComplianceRequirementViewSet(viewsets.ModelViewSet):
     """コンプライアンス要件 API ViewSet"""
 
-    queryset = ComplianceRequirement.objects.all()
+    queryset = ComplianceRequirement.objects.select_related("owner").all()
     serializer_class = ComplianceRequirementSerializer
     filterset_fields = ["framework", "compliance_status", "is_mandatory"]
     search_fields = ["req_id", "title", "description"]
