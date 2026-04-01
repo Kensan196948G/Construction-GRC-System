@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRisksStore } from '@/store/risks'
 import type { Risk } from '@/store/risks'
-import apiClient from '@/api/client'
+
 
 const risksStore = useRisksStore()
 
@@ -87,8 +87,7 @@ const mockRisks: Risk[] = [
   { risk_id: 'RISK-IT-004', title: 'IoTセンサー改ざん', description: '建設現場のIoTセンサー（振動・温度・傾斜計）のデータが改ざんされ、安全判定を誤るリスク。', category: 'IT', likelihood: 2, impact: 4, risk_level: 'MEDIUM', status: 'open', owner: '田中太郎', created_at: '2026-03-22' },
 ]
 
-// サーバサイドテーブル用の総件数
-const totalItems = ref(mockRisks.length)
+
 
 // フィルタ済みリスク
 const filteredRisks = computed(() => {
@@ -193,7 +192,7 @@ const resetForm = () => {
 }
 
 // テーブルデータ読み込み（サーバサイド対応）
-const loadItems = async (options: { page: number; itemsPerPage: number; sortBy: { key: string; order: string }[] }) => {
+const loadItems = async (_options: { page: number; itemsPerPage: number; sortBy: { key: string; order: string }[] }) => {
   try {
     await risksStore.fetchRisks({
       category: categoryFilter.value || undefined,

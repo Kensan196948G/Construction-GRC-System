@@ -1,4 +1,5 @@
 """Initial migration for audits app - Audit and AuditFinding models."""
+
 import uuid
 
 import django.db.models.deletion
@@ -38,9 +39,7 @@ class Migration(migrations.Migration):
                 ("description", models.TextField(blank=True)),
                 (
                     "audit_type",
-                    models.CharField(
-                        help_text="例: ISO27001定期監査", max_length=50
-                    ),
+                    models.CharField(help_text="例: ISO27001定期監査", max_length=50),
                 ),
                 ("target_department", models.CharField(max_length=100)),
                 (

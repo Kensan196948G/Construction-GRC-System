@@ -1,4 +1,5 @@
 """リスク管理 定期タスク"""
+
 from celery import shared_task
 
 
@@ -9,20 +10,21 @@ def check_review_deadlines():
     review_date が今日から7日以内のリスクを検出し、通知を生成する。
     ISO27001 A.8.8 技術的脆弱性の管理に対応。
     """
-    from datetime import date, timedelta
+    from datetime import UTC, datetime, timedelta
 
     from apps.risks.models import Risk
 
-    cutoff = date.today() + timedelta(days=7)
+    today = datetime.now(tz=UTC).date()
+    cutoff = today + timedelta(days=7)
     upcoming = Risk.objects.filter(
         review_date__lte=cutoff,
-        review_date__gte=date.today(),
+        review_date__gte=today,
         status__in=["open", "in_progress"],
     )
 
     results = []
     for risk in upcoming:
-        days_until = (risk.review_date - date.today()).days
+        days_until = (risk.review_date - today).days
         results.append(
             {
                 "risk_id": risk.risk_id,

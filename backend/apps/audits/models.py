@@ -79,9 +79,7 @@ class AuditFinding(models.Model):
         related_name="owned_caps",
     )
     cap_due_date = models.DateField(null=True, blank=True)
-    cap_status = models.CharField(
-        max_length=20, choices=CAPStatus.choices, default=CAPStatus.OPEN
-    )
+    cap_status = models.CharField(max_length=20, choices=CAPStatus.choices, default=CAPStatus.OPEN)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

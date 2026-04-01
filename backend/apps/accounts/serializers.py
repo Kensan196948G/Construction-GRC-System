@@ -1,4 +1,5 @@
 """GRCユーザーシリアライザ."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -54,9 +55,7 @@ class GRCUserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     """読み取り用プロフィールシリアライザ（パスワード除外）."""
 
-    role_display: serializers.CharField = serializers.CharField(
-        source="get_role_display", read_only=True
-    )
+    role_display: serializers.CharField = serializers.CharField(source="get_role_display", read_only=True)
 
     class Meta:
         model = GRCUser

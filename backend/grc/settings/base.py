@@ -1,4 +1,5 @@
 """Base settings for Construction-GRC-System."""
+
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -65,11 +66,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "grc.wsgi.application"
 
 # Database
-DATABASES = {
-    "default": dj_database_url.config(
-        default="postgresql://grc_admin:grc_password@localhost:5432/grc_db"
-    )
-}
+DATABASES = {"default": dj_database_url.config(default="postgresql://grc_admin:grc_password@localhost:5432/grc_db")}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -112,6 +109,7 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "EXCEPTION_HANDLER": "grc.exception_handler.grc_exception_handler",
 }
 
 # JWT Settings

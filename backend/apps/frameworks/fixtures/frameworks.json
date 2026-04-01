@@ -1,0 +1,100 @@
+[
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000001-0000-0000-0000-000000000001",
+    "fields": {
+      "code": "iso27001",
+      "name": "ISO/IEC 27001:2022",
+      "name_ja": "情報セキュリティマネジメントシステム",
+      "version": "2022",
+      "description": "情報セキュリティマネジメントシステム（ISMS）の国際規格。全93管理策。",
+      "category": "security",
+      "is_active": true,
+      "official_url": "https://www.iso.org/standard/27001"
+    }
+  },
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000002-0000-0000-0000-000000000002",
+    "fields": {
+      "code": "nist_csf_2",
+      "name": "NIST Cybersecurity Framework 2.0",
+      "name_ja": "NISTサイバーセキュリティフレームワーク2.0",
+      "version": "2.0",
+      "description": "米国国立標準技術研究所によるサイバーセキュリティフレームワーク。6機能21カテゴリ。",
+      "category": "security",
+      "is_active": true,
+      "official_url": "https://www.nist.gov/cyberframework"
+    }
+  },
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000003-0000-0000-0000-000000000003",
+    "fields": {
+      "code": "construction_law",
+      "name": "Construction Business Act",
+      "name_ja": "建設業法",
+      "version": "令和5年改正",
+      "description": "建設業の健全な発達を促進するための法律。許可要件・技術者配置・施工管理等を規定。",
+      "category": "legal",
+      "is_active": true,
+      "official_url": "https://elaws.e-gov.go.jp/document?lawid=324AC0000000100"
+    }
+  },
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000004-0000-0000-0000-000000000004",
+    "fields": {
+      "code": "quality_law",
+      "name": "Quality Assurance Promotion Act",
+      "name_ja": "品質確保促進法（品確法）",
+      "version": "令和元年改正",
+      "description": "公共工事の品質確保の促進に関する法律。発注者責務・技術力評価を規定。",
+      "category": "quality",
+      "is_active": true,
+      "official_url": ""
+    }
+  },
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000005-0000-0000-0000-000000000005",
+    "fields": {
+      "code": "safety_law",
+      "name": "Industrial Safety and Health Act",
+      "name_ja": "労働安全衛生法",
+      "version": "令和4年改正",
+      "description": "職場における労働者の安全と健康を確保するための法律。安全管理体制・危険防止措置を規定。",
+      "category": "legal",
+      "is_active": true,
+      "official_url": ""
+    }
+  },
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000006-0000-0000-0000-000000000006",
+    "fields": {
+      "code": "subcontract_law",
+      "name": "Subcontract Act",
+      "name_ja": "下請法",
+      "version": "令和5年改正",
+      "description": "下請取引の公正化と下請事業者の利益保護のための法律。",
+      "category": "legal",
+      "is_active": true,
+      "official_url": ""
+    }
+  },
+  {
+    "model": "frameworks.framework",
+    "pk": "f0000007-0000-0000-0000-000000000007",
+    "fields": {
+      "code": "iso20000",
+      "name": "ISO/IEC 20000-1:2018",
+      "name_ja": "ITサービスマネジメント",
+      "version": "2018",
+      "description": "ITサービスマネジメントシステム（SMS）の国際規格。",
+      "category": "quality",
+      "is_active": true,
+      "official_url": ""
+    }
+  }
+]

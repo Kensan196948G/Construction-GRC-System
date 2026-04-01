@@ -7,7 +7,7 @@ Excel/PDFデータとして生成するサービスレイヤー。
 from __future__ import annotations
 
 import io
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from django.utils import timezone
@@ -54,29 +54,29 @@ class SoAGenerator:
                 else ctrl.implementation_status
             )
 
-            soa_rows.append({
-                "control_id": ctrl.control_id,
-                "domain": ctrl.domain,
-                "domain_display": domain_label,
-                "title": ctrl.title,
-                "description": ctrl.description,
-                "is_applicable": ctrl.is_applicable,
-                "exclusion_reason": ctrl.exclusion_reason if not ctrl.is_applicable else "",
-                "implementation_status": ctrl.implementation_status,
-                "implementation_status_display": status_label,
-                "implementation_notes": ctrl.implementation_notes,
-                "owner": str(ctrl.owner) if ctrl.owner else "",
-                "evidence_required": ctrl.evidence_required,
-                "nist_csf_mapping": ctrl.nist_csf_mapping,
-                "last_reviewed_at": ctrl.last_reviewed_at,
-            })
+            soa_rows.append(
+                {
+                    "control_id": ctrl.control_id,
+                    "domain": ctrl.domain,
+                    "domain_display": domain_label,
+                    "title": ctrl.title,
+                    "description": ctrl.description,
+                    "is_applicable": ctrl.is_applicable,
+                    "exclusion_reason": ctrl.exclusion_reason if not ctrl.is_applicable else "",
+                    "implementation_status": ctrl.implementation_status,
+                    "implementation_status_display": status_label,
+                    "implementation_notes": ctrl.implementation_notes,
+                    "owner": str(ctrl.owner) if ctrl.owner else "",
+                    "evidence_required": ctrl.evidence_required,
+                    "nist_csf_mapping": ctrl.nist_csf_mapping,
+                    "last_reviewed_at": ctrl.last_reviewed_at,
+                }
+            )
 
         return soa_rows
 
     @classmethod
-    def _get_summary_statistics(
-        cls, soa_data: list[dict[str, Any]]
-    ) -> dict[str, Any]:
+    def _get_summary_statistics(cls, soa_data: list[dict[str, Any]]) -> dict[str, Any]:
         """SoAデータからサマリー統計を算出する。
 
         Returns:
@@ -143,13 +143,19 @@ class SoAGenerator:
         # タイトル行
         ws.merge_cells("A1:H1")
         title_cell = ws["A1"]
-        title_cell.value = f"ISO27001:2022 適用宣言書（SoA） - 生成日: {datetime.now().strftime('%Y-%m-%d')}"
+        title_cell.value = f"ISO27001:2022 適用宣言書（SoA） - 生成日: {datetime.now(tz=UTC).strftime('%Y-%m-%d')}"
         title_cell.font = Font(bold=True, size=14)
 
         # ヘッダー
         headers = [
-            "管理策ID", "ドメイン", "管理策名", "適用",
-            "除外理由", "実施状況", "備考", "担当者",
+            "管理策ID",
+            "ドメイン",
+            "管理策名",
+            "適用",
+            "除外理由",
+            "実施状況",
+            "備考",
+            "担当者",
         ]
         for col_idx, header in enumerate(headers, start=1):
             cell = ws.cell(row=3, column=col_idx, value=header)
@@ -244,8 +250,7 @@ class SoAGenerator:
             domains[domain].append(row)
 
         domain_sections: list[dict[str, Any]] = [
-            {"domain_name": name, "controls": ctrls}
-            for name, ctrls in domains.items()
+            {"domain_name": name, "controls": ctrls} for name, ctrls in domains.items()
         ]
 
         return {

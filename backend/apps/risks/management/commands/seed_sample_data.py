@@ -9,7 +9,7 @@ Usage:
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
@@ -169,13 +169,11 @@ class Command(BaseCommand):
 
         if options["clear"]:
             deleted_count, _ = Risk.objects.filter(risk_id__in=sample_risk_ids).delete()
-            self.stdout.write(
-                self.style.WARNING(f"既存サンプルデータ {deleted_count} 件を削除しました")
-            )
+            self.stdout.write(self.style.WARNING(f"既存サンプルデータ {deleted_count} 件を削除しました"))
 
         created_count = 0
         skipped_count = 0
-        today = date.today()
+        today = datetime.now(tz=UTC).date()
 
         for risk_data in SAMPLE_RISKS:
             risk_id = risk_data["risk_id"]
@@ -192,8 +190,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"  作成: {risk_id} - {risk_data['title']}"))
             created_count += 1
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"\n完了: {created_count} 件作成, {skipped_count} 件スキップ"
-            )
-        )
+        self.stdout.write(self.style.SUCCESS(f"\n完了: {created_count} 件作成, {skipped_count} 件スキップ"))

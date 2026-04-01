@@ -1,4 +1,5 @@
 """ISO27001管理策 定期タスク"""
+
 from celery import shared_task
 
 
@@ -9,14 +10,15 @@ def check_control_reviews():
     review_date が今日から14日以内の管理策を検出。
     ISO27001要求: 管理策の定期的な有効性レビュー。
     """
-    from datetime import date, timedelta
+    from datetime import UTC, datetime, timedelta
 
     from apps.controls.models import ISO27001Control
 
-    cutoff = date.today() + timedelta(days=14)
+    today = datetime.now(tz=UTC).date()
+    cutoff = today + timedelta(days=14)
     upcoming = ISO27001Control.objects.filter(
         review_date__lte=cutoff,
-        review_date__gte=date.today(),
+        review_date__gte=today,
         is_applicable=True,
     )
 

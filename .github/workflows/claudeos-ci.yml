@@ -32,14 +32,14 @@ jobs:
       run: pip install ruff black isort
 
     - name: Python Lint (Ruff)
-      run: ruff check backend/ || true
+      run: ruff check backend/
 
     - name: Python Format Check (Black)
-      run: black --check backend/ || true
+      run: black --check backend/
 
     - name: Frontend Lint
       run: |
-        cd frontend && npm install && npm run lint || true
+        cd frontend && npm install && npm run lint
 
   test:
     name: Test Suite
@@ -75,14 +75,21 @@ jobs:
         cache: 'pip'
 
     - name: Install Python dependencies
-      run: pip install -r backend/requirements.txt || true
+      run: pip install -r backend/requirements.txt
+
+    - name: Run Migrations
+      env:
+        DATABASE_URL: postgresql://grc_user:grc_test_password@localhost:5432/grc_test
+        REDIS_URL: redis://localhost:6379/0
+        DJANGO_SETTINGS_MODULE: grc.settings.development
+      run: cd backend && python manage.py migrate --no-input
 
     - name: Run Python Tests
       env:
         DATABASE_URL: postgresql://grc_user:grc_test_password@localhost:5432/grc_test
         REDIS_URL: redis://localhost:6379/0
         DJANGO_SETTINGS_MODULE: grc.settings.development
-      run: cd backend && python -m pytest tests/ -v --tb=short || true
+      run: cd backend && python -m pytest tests/ -v --tb=short
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -90,10 +97,10 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Install Frontend dependencies
-      run: cd frontend && npm install || true
+      run: cd frontend && npm install
 
     - name: Run Frontend Tests
-      run: cd frontend && npm test || true
+      run: cd frontend && npm test
 
   build:
     name: Build Check
@@ -108,10 +115,10 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Build Frontend
-      run: cd frontend && npm install && npm run build || true
+      run: cd frontend && npm install && npm run build
 
     - name: Verify Docker Compose
-      run: docker compose config || true
+      run: docker compose config
 
   security:
     name: Security Scan

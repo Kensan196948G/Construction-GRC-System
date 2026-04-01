@@ -1,13 +1,16 @@
 """GRCロールベースパーミッション."""
+
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rest_framework.permissions import BasePermission
-from rest_framework.request import Request
-from rest_framework.views import APIView
 
 from apps.accounts.models import GRCUser
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from rest_framework.views import APIView
 
 
 class IsGRCAdmin(BasePermission):
@@ -17,11 +20,7 @@ class IsGRCAdmin(BasePermission):
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         user: Any = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and getattr(user, "role", None) == GRCUser.Role.GRC_ADMIN
-        )
+        return bool(user and user.is_authenticated and getattr(user, "role", None) == GRCUser.Role.GRC_ADMIN)
 
 
 class IsAuditor(BasePermission):
@@ -29,17 +28,11 @@ class IsAuditor(BasePermission):
 
     message = "内部監査員以上の権限が必要です。"
 
-    ALLOWED_ROLES: frozenset[str] = frozenset(
-        {GRCUser.Role.AUDITOR, GRCUser.Role.GRC_ADMIN}
-    )
+    ALLOWED_ROLES: frozenset[str] = frozenset({GRCUser.Role.AUDITOR, GRCUser.Role.GRC_ADMIN})
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         user: Any = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and getattr(user, "role", None) in self.ALLOWED_ROLES
-        )
+        return bool(user and user.is_authenticated and getattr(user, "role", None) in self.ALLOWED_ROLES)
 
 
 class IsExecutiveOrAbove(BasePermission):
@@ -47,17 +40,11 @@ class IsExecutiveOrAbove(BasePermission):
 
     message = "経営層以上の権限が必要です。"
 
-    ALLOWED_ROLES: frozenset[str] = frozenset(
-        {GRCUser.Role.EXECUTIVE, GRCUser.Role.GRC_ADMIN}
-    )
+    ALLOWED_ROLES: frozenset[str] = frozenset({GRCUser.Role.EXECUTIVE, GRCUser.Role.GRC_ADMIN})
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         user: Any = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and getattr(user, "role", None) in self.ALLOWED_ROLES
-        )
+        return bool(user and user.is_authenticated and getattr(user, "role", None) in self.ALLOWED_ROLES)
 
 
 class RoleBasedPermission(BasePermission):
@@ -78,9 +65,44 @@ class RoleBasedPermission(BasePermission):
         user: Any = request.user
         if not (user and user.is_authenticated):
             return False
-        allowed_roles: list[str] | tuple[str, ...] = getattr(
-            view, "allowed_roles", []
-        )
+        allowed_roles: list[str] | tuple[str, ...] = getattr(view, "allowed_roles", [])
         if not allowed_roles:
             return True
         return getattr(user, "role", None) in allowed_roles
+
+
+class IsRiskOwner(BasePermission):
+    """リスクオーナー以上を許可."""
+
+    message = "リスクオーナー以上の権限が必要です。"
+
+    ALLOWED_ROLES: frozenset[str] = frozenset({GRCUser.Role.RISK_OWNER, GRCUser.Role.GRC_ADMIN})
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        user: Any = request.user
+        return bool(user and user.is_authenticated and getattr(user, "role", None) in self.ALLOWED_ROLES)
+
+
+class IsComplianceOfficer(BasePermission):
+    """コンプライアンス担当以上を許可."""
+
+    message = "コンプライアンス担当以上の権限が必要です。"
+
+    ALLOWED_ROLES: frozenset[str] = frozenset({GRCUser.Role.COMPLIANCE_OFFICER, GRCUser.Role.GRC_ADMIN})
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        user: Any = request.user
+        return bool(user and user.is_authenticated and getattr(user, "role", None) in self.ALLOWED_ROLES)
+
+
+class ReadOnlyOrAdmin(BasePermission):
+    """読み取りは全認証ユーザー、書き込みはGRC管理者のみ."""
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return bool(request.user and request.user.is_authenticated)
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and getattr(request.user, "role", None) == GRCUser.Role.GRC_ADMIN
+        )

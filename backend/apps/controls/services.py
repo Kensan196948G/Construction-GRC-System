@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, QuerySet
 from django.utils import timezone
 
 from apps.controls.models import ISO27001Control
@@ -45,15 +45,11 @@ class ComplianceRateService:
         applicable: int = applicable_qs.count()
 
         status_counts: dict[str, int] = {}
-        for entry in applicable_qs.values("implementation_status").annotate(
-            count=Count("id")
-        ):
+        for entry in applicable_qs.values("implementation_status").annotate(count=Count("id")):
             status_counts[entry["implementation_status"]] = entry["count"]
 
         implemented: int = status_counts.get("implemented", 0)
-        compliance_rate: float = (
-            round((implemented / applicable) * 100, 1) if applicable > 0 else 0.0
-        )
+        compliance_rate: float = round((implemented / applicable) * 100, 1) if applicable > 0 else 0.0
 
         return {
             "total": total,
@@ -104,20 +100,18 @@ class ComplianceRateService:
                 is_applicable=True,
                 implementation_status="implemented",
             ).count()
-            compliance_rate = (
-                round((implemented / applicable) * 100, 1)
-                if applicable > 0
-                else 0.0
-            )
+            compliance_rate = round((implemented / applicable) * 100, 1) if applicable > 0 else 0.0
 
-            results.append({
-                "domain": domain_key,
-                "domain_display": domain_display,
-                "total": total,
-                "applicable": applicable,
-                "implemented": implemented,
-                "compliance_rate": compliance_rate,
-            })
+            results.append(
+                {
+                    "domain": domain_key,
+                    "domain_display": domain_display,
+                    "total": total,
+                    "applicable": applicable,
+                    "implemented": implemented,
+                    "compliance_rate": compliance_rate,
+                }
+            )
 
         return results
 
@@ -175,17 +169,15 @@ class ComplianceRateService:
                 updated_at__lt=cutoff,
             ).count()
 
-            compliance_rate = (
-                round((implemented / applicable_count) * 100, 1)
-                if applicable_count > 0
-                else 0.0
-            )
+            compliance_rate = round((implemented / applicable_count) * 100, 1) if applicable_count > 0 else 0.0
 
-            trend.append({
-                "month": month_label,
-                "implemented": implemented,
-                "applicable": applicable_count,
-                "compliance_rate": compliance_rate,
-            })
+            trend.append(
+                {
+                    "month": month_label,
+                    "implemented": implemented,
+                    "applicable": applicable_count,
+                    "compliance_rate": compliance_rate,
+                }
+            )
 
         return trend

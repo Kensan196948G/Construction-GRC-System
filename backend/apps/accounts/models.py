@@ -1,4 +1,5 @@
 """GRCユーザーモデル定義."""
+
 from __future__ import annotations
 
 from django.contrib.auth.models import AbstractUser

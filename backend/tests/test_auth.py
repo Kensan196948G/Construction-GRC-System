@@ -1,4 +1,5 @@
 """認証基盤テスト."""
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock
@@ -61,9 +62,7 @@ class TestUserCreation:
 
     def test_user_str(self) -> None:
         """__str__がdisplay_nameを返すことを確認."""
-        user: GRCUser = GRCUser(
-            username="testuser", display_name="表示名テスト"
-        )
+        user: GRCUser = GRCUser(username="testuser", display_name="表示名テスト")
         assert str(user) == "表示名テスト"
 
     def test_user_str_fallback(self) -> None:
@@ -120,72 +119,50 @@ class TestPermissions:
             role=GRCUser.Role.GENERAL,
         )
 
-    def _make_request(
-        self, factory: RequestFactory, user: GRCUser
-    ) -> MagicMock:
+    def _make_request(self, factory: RequestFactory, user: GRCUser) -> MagicMock:
         request = factory.get("/")
         request.user = user
         return request
 
-    def test_is_grc_admin_allows_admin(
-        self, factory: RequestFactory, admin_user: GRCUser
-    ) -> None:
+    def test_is_grc_admin_allows_admin(self, factory: RequestFactory, admin_user: GRCUser) -> None:
         request = self._make_request(factory, admin_user)
         assert IsGRCAdmin().has_permission(request, MagicMock()) is True
 
-    def test_is_grc_admin_denies_general(
-        self, factory: RequestFactory, general_user: GRCUser
-    ) -> None:
+    def test_is_grc_admin_denies_general(self, factory: RequestFactory, general_user: GRCUser) -> None:
         request = self._make_request(factory, general_user)
         assert IsGRCAdmin().has_permission(request, MagicMock()) is False
 
-    def test_is_auditor_allows_auditor(
-        self, factory: RequestFactory, auditor_user: GRCUser
-    ) -> None:
+    def test_is_auditor_allows_auditor(self, factory: RequestFactory, auditor_user: GRCUser) -> None:
         request = self._make_request(factory, auditor_user)
         assert IsAuditor().has_permission(request, MagicMock()) is True
 
-    def test_is_auditor_allows_admin(
-        self, factory: RequestFactory, admin_user: GRCUser
-    ) -> None:
+    def test_is_auditor_allows_admin(self, factory: RequestFactory, admin_user: GRCUser) -> None:
         request = self._make_request(factory, admin_user)
         assert IsAuditor().has_permission(request, MagicMock()) is True
 
-    def test_is_auditor_denies_general(
-        self, factory: RequestFactory, general_user: GRCUser
-    ) -> None:
+    def test_is_auditor_denies_general(self, factory: RequestFactory, general_user: GRCUser) -> None:
         request = self._make_request(factory, general_user)
         assert IsAuditor().has_permission(request, MagicMock()) is False
 
-    def test_is_executive_allows_executive(
-        self, factory: RequestFactory, executive_user: GRCUser
-    ) -> None:
+    def test_is_executive_allows_executive(self, factory: RequestFactory, executive_user: GRCUser) -> None:
         request = self._make_request(factory, executive_user)
         assert IsExecutiveOrAbove().has_permission(request, MagicMock()) is True
 
-    def test_is_executive_allows_admin(
-        self, factory: RequestFactory, admin_user: GRCUser
-    ) -> None:
+    def test_is_executive_allows_admin(self, factory: RequestFactory, admin_user: GRCUser) -> None:
         request = self._make_request(factory, admin_user)
         assert IsExecutiveOrAbove().has_permission(request, MagicMock()) is True
 
-    def test_is_executive_denies_general(
-        self, factory: RequestFactory, general_user: GRCUser
-    ) -> None:
+    def test_is_executive_denies_general(self, factory: RequestFactory, general_user: GRCUser) -> None:
         request = self._make_request(factory, general_user)
         assert IsExecutiveOrAbove().has_permission(request, MagicMock()) is False
 
-    def test_role_based_permission_with_allowed_roles(
-        self, factory: RequestFactory, auditor_user: GRCUser
-    ) -> None:
+    def test_role_based_permission_with_allowed_roles(self, factory: RequestFactory, auditor_user: GRCUser) -> None:
         request = self._make_request(factory, auditor_user)
         view = MagicMock()
         view.allowed_roles = [GRCUser.Role.AUDITOR, GRCUser.Role.GRC_ADMIN]
         assert RoleBasedPermission().has_permission(request, view) is True
 
-    def test_role_based_permission_denies_unlisted_role(
-        self, factory: RequestFactory, general_user: GRCUser
-    ) -> None:
+    def test_role_based_permission_denies_unlisted_role(self, factory: RequestFactory, general_user: GRCUser) -> None:
         request = self._make_request(factory, general_user)
         view = MagicMock()
         view.allowed_roles = [GRCUser.Role.AUDITOR, GRCUser.Role.GRC_ADMIN]

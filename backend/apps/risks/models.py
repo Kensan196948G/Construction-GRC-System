@@ -51,9 +51,7 @@ class Risk(models.Model):
     )
 
     # 対応
-    treatment_strategy = models.CharField(
-        max_length=20, choices=TreatmentStrategy.choices, blank=True
-    )
+    treatment_strategy = models.CharField(max_length=20, choices=TreatmentStrategy.choices, blank=True)
     treatment_plan = models.TextField(blank=True)
     risk_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -93,8 +91,8 @@ class Risk(models.Model):
         score = self.risk_score_inherent
         if score >= 15:
             return "CRITICAL"
-        elif score >= 10:
+        if score >= 10:
             return "HIGH"
-        elif score >= 5:
+        if score >= 5:
             return "MEDIUM"
         return "LOW"

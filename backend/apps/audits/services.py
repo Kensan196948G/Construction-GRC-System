@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, QuerySet
 from django.utils import timezone
 
 from apps.audits.models import Audit, AuditFinding
@@ -110,17 +110,19 @@ class AuditStatisticsService:
 
         total_caps: int = sum(status_counts.values())
         completed: int = status_counts["verified"] + status_counts["closed"]
-        completion_rate: float = (
-            round((completed / total_caps) * 100, 1) if total_caps > 0 else 0.0
-        )
+        completion_rate: float = round((completed / total_caps) * 100, 1) if total_caps > 0 else 0.0
 
         # 期限超過のCAP数
         today = timezone.now().date()
-        overdue: int = cap_qs.filter(
-            cap_due_date__lt=today,
-        ).exclude(
-            cap_status__in=["verified", "closed"],
-        ).count()
+        overdue: int = (
+            cap_qs.filter(
+                cap_due_date__lt=today,
+            )
+            .exclude(
+                cap_status__in=["verified", "closed"],
+            )
+            .count()
+        )
 
         return {
             "total_caps": total_caps,

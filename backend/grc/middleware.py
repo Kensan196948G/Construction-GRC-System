@@ -1,11 +1,14 @@
 """GRCシステム共通ミドルウェア"""
+
 from __future__ import annotations
 
 import json
 import logging
 import time
+from typing import TYPE_CHECKING
 
-from django.http import HttpRequest, HttpResponse
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger("grc.audit")
 
@@ -34,9 +37,7 @@ class AuditLogMiddleware:
 
         return response
 
-    def _log_api_request(
-        self, request: HttpRequest, response: HttpResponse, duration_ms: float
-    ) -> None:
+    def _log_api_request(self, request: HttpRequest, response: HttpResponse, duration_ms: float) -> None:
         user = getattr(request, "user", None)
         username = user.username if user and user.is_authenticated else "anonymous"
 

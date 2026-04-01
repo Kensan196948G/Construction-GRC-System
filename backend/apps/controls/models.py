@@ -47,14 +47,10 @@ class ISO27001Control(models.Model):
     )
 
     # 証跡
-    evidence_required = ArrayField(
-        models.CharField(max_length=200), default=list, blank=True
-    )
+    evidence_required = ArrayField(models.CharField(max_length=200), default=list, blank=True)
 
     # NIST CSF マッピング
-    nist_csf_mapping = ArrayField(
-        models.CharField(max_length=20), default=list, blank=True
-    )
+    nist_csf_mapping = ArrayField(models.CharField(max_length=20), default=list, blank=True)
 
     # レビュー
     review_date = models.DateField(null=True, blank=True)
@@ -69,3 +65,25 @@ class ISO27001Control(models.Model):
 
     def __str__(self):
         return f"{self.control_id}: {self.title}"
+
+
+class NistCSFCategory(models.Model):
+    """NIST CSF 2.0 カテゴリ"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    function_id = models.CharField(max_length=10)
+    function_name = models.CharField(max_length=50)
+    function_name_ja = models.CharField(max_length=50)
+    category_id = models.CharField(max_length=20, unique=True)
+    category_name = models.CharField(max_length=200)
+    category_name_ja = models.CharField(max_length=200)
+    description = models.TextField()
+    description_en = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["category_id"]
+        verbose_name = "NIST CSFカテゴリ"
+        verbose_name_plural = "NIST CSFカテゴリ"
+
+    def __str__(self):
+        return f"{self.category_id}: {self.category_name_ja}"

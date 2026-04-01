@@ -69,6 +69,12 @@ export interface ComplianceRequirement {
   framework: string
   category: string
   title: string
+  description: string
+  article_ref: string
+  is_mandatory: boolean
+  frequency: string
+  owner: string | null
+  last_assessed_at: string | null
   compliance_status: ComplianceStatus
 }
 
@@ -83,10 +89,15 @@ export interface Audit {
   id: string
   audit_id: string
   title: string
+  audit_type: string
+  scope: string
   status: string
   target_department: string
+  lead_auditor: string | null
   planned_start: string
   planned_end: string
+  actual_start: string | null
+  actual_end: string | null
   findings_count: number
 }
 
@@ -95,7 +106,12 @@ export interface AuditFinding {
   finding_id: string
   finding_type: string
   title: string
+  description: string
+  severity: string
+  corrective_action: string
   cap_status: string
+  due_date: string | null
+  closed_at: string | null
 }
 
 // ダッシュボード

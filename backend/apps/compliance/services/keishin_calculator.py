@@ -9,6 +9,7 @@ Y:  経営状況評点
 Z:  技術力評点
 W:  その他社会性等評点
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -105,10 +106,10 @@ class KeishinCalculator:
         """P点に基づく等級判定（参考値）"""
         if p >= 1200:
             return "A"
-        elif p >= 900:
+        if p >= 900:
             return "B"
-        elif p >= 700:
+        if p >= 700:
             return "C"
-        elif p >= 500:
+        if p >= 500:
             return "D"
         return "E"

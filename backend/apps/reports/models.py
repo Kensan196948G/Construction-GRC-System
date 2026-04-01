@@ -18,9 +18,7 @@ class Report(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=300)
     report_type = models.CharField(max_length=30, choices=ReportType.choices)
-    generated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
-    )
+    generated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     file_path = models.FileField(upload_to="reports/%Y/%m/", blank=True)
     format = models.CharField(max_length=10, default="pdf", help_text="pdf/xlsx")
 

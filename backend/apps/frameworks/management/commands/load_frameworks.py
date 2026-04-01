@@ -1,4 +1,5 @@
 """全フレームワーク・法令フィクスチャデータの一括ロード"""
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 

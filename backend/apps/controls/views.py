@@ -2,8 +2,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import ISO27001Control
-from .serializers import ISO27001ControlSerializer, SoASerializer
+from .models import ISO27001Control, NistCSFCategory
+from .serializers import ISO27001ControlSerializer, NistCSFCategorySerializer, SoASerializer
 
 
 class ISO27001ControlViewSet(viewsets.ModelViewSet):
@@ -39,3 +39,12 @@ class ISO27001ControlViewSet(viewsets.ModelViewSet):
                 "compliance_rate": round(rate, 1),
             }
         )
+
+
+class NistCSFCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """NIST CSF 2.0 カテゴリ API ViewSet"""
+
+    queryset = NistCSFCategory.objects.all()
+    serializer_class = NistCSFCategorySerializer
+    filterset_fields = ["function_id", "function_name"]
+    search_fields = ["category_id", "category_name", "category_name_ja"]

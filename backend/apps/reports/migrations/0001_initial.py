@@ -1,4 +1,5 @@
 """Initial migration for reports app - Report model."""
+
 import uuid
 
 import django.db.models.deletion
@@ -55,9 +56,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "format",
-                    models.CharField(
-                        default="pdf", help_text="pdf/xlsx", max_length=10
-                    ),
+                    models.CharField(default="pdf", help_text="pdf/xlsx", max_length=10),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
             ],

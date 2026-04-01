@@ -1,4 +1,5 @@
 """コンプライアンス管理 定期タスク"""
+
 from celery import shared_task
 
 
@@ -8,19 +9,20 @@ def check_assessment_deadlines():
 
     next_assessment が今日から30日以内の要件を検出し、通知を生成する。
     """
-    from datetime import date, timedelta
+    from datetime import UTC, datetime, timedelta
 
     from apps.compliance.models import ComplianceRequirement
 
-    cutoff = date.today() + timedelta(days=30)
+    today = datetime.now(tz=UTC).date()
+    cutoff = today + timedelta(days=30)
     upcoming = ComplianceRequirement.objects.filter(
         next_assessment__lte=cutoff,
-        next_assessment__gte=date.today(),
+        next_assessment__gte=today,
     ).exclude(compliance_status="compliant")
 
     results = []
     for req in upcoming:
-        days_until = (req.next_assessment - date.today()).days
+        days_until = (req.next_assessment - today).days
         results.append(
             {
                 "req_id": req.req_id,

@@ -1,4 +1,5 @@
 """Initial migration for controls app - ISO27001Control model."""
+
 import uuid
 
 import django.contrib.postgres.fields

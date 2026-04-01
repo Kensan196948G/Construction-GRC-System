@@ -1,5 +1,4 @@
 """リスク管理モジュール テスト"""
-import pytest
 
 
 class TestRiskModel:
@@ -52,7 +51,9 @@ class TestRiskModel:
         from apps.risks.models import Risk
 
         risk = Risk(
-            likelihood_inherent=4, impact_inherent=4,
-            likelihood_residual=2, impact_residual=2,
+            likelihood_inherent=4,
+            impact_inherent=4,
+            likelihood_residual=2,
+            impact_residual=2,
         )
         assert risk.risk_score_residual == 4

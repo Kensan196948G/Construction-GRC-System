@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ISO27001Control
+from .models import ISO27001Control, NistCSFCategory
 
 
 class ISO27001ControlSerializer(serializers.ModelSerializer):
@@ -8,6 +8,12 @@ class ISO27001ControlSerializer(serializers.ModelSerializer):
         model = ISO27001Control
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class NistCSFCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NistCSFCategory
+        fields = "__all__"
 
 
 class SoASerializer(serializers.ModelSerializer):
