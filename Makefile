@@ -24,11 +24,12 @@ dev-frontend: ## フロントエンド開発サーバー起動
 migrate: ## マイグレーション実行
 	cd backend && python manage.py makemigrations && python manage.py migrate
 
-fixtures: ## フィクスチャデータ投入 (ISO27001 93管理策 + NIST CSF + 建設業法令)
+fixtures: ## フィクスチャデータ投入 (ISO27001 93管理策 + NIST CSF + 建設業法令 + フレームワーク定義)
+	cd backend && python manage.py loaddata apps/frameworks/fixtures/frameworks.json
 	cd backend && python manage.py loaddata apps/frameworks/fixtures/iso27001_controls.json
 	cd backend && python manage.py loaddata apps/frameworks/fixtures/nist_csf_2.json
 	cd backend && python manage.py loaddata apps/frameworks/fixtures/construction_regs.json
-	@echo "✅ Loaded: ISO27001 (93), NIST CSF (21), Construction Regs (17)"
+	@echo "✅ Loaded: Frameworks (7), ISO27001 (93), NIST CSF (21), Construction Regs (17)"
 
 superuser: ## 管理者ユーザー作成
 	cd backend && python manage.py createsuperuser
