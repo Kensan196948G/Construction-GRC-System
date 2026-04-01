@@ -328,6 +328,9 @@ class TestISO27001ControlViewSetComplianceRate:
         assert resp.data["compliance_rate"] == expected_rate
 
     def test_compliance_rate_empty_db(self, api_client: APIClient) -> None:
+        from django.core.cache import cache
+
+        cache.clear()
         resp = api_client.get("/api/v1/controls/compliance-rate/")
         assert resp.status_code == 200
         assert resp.data["compliance_rate"] == 0

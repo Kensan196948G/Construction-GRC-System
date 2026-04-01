@@ -236,17 +236,18 @@ class TestComplianceRequirementMeta:
 class TestAuditStatusChoices:
     """Audit.Status の選択肢テスト"""
 
-    def test_has_four_statuses(self) -> None:
-        assert len(Audit.Status.choices) == 4
+    def test_has_five_statuses(self) -> None:
+        assert len(Audit.Status.choices) == 5
 
     def test_all_statuses_present(self) -> None:
         values = {s[0] for s in Audit.Status.choices}
-        assert values == {"planned", "in_progress", "completed", "cancelled"}
+        assert values == {"planned", "in_progress", "completed", "closed", "cancelled"}
 
     def test_status_labels_japanese(self) -> None:
         labels = dict(Audit.Status.choices)
         assert labels["planned"] == "計画済み"
         assert labels["completed"] == "完了"
+        assert labels["closed"] == "クローズ"
         assert labels["cancelled"] == "中止"
 
     def test_default_status_is_planned(self) -> None:
