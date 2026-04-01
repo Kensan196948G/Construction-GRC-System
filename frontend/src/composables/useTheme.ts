@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useTheme as useVuetifyTheme } from 'vuetify'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
