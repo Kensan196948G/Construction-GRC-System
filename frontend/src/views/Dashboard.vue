@@ -560,7 +560,7 @@ onUnmounted(() => {
             <div class="chart-container-bar">
               <Bar
                 :data="controlsBarData"
-                :options="controlsBarOptions"
+                :options="controlsBarOptions as any"
               />
             </div>
             <v-divider class="my-4" />

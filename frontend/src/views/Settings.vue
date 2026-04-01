@@ -8,7 +8,7 @@ import apiClient from '@/api/client'
 
 // ── Composables ──
 const { themeMode, setTheme, isDark } = useThemeToggle()
-const { locale, setLocale, t } = useI18n()
+const { locale, setLocale } = useI18n()
 const authStore = useAuthStore()
 
 // ── Tab state ──
