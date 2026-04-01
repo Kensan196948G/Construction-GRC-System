@@ -503,7 +503,7 @@ class TestRiskModelDB:
     """Risk モデルのDB保存テスト"""
 
     def test_create_and_retrieve(self) -> None:
-        risk = Risk.objects.create(
+        Risk.objects.create(
             risk_id="RISK-VAL-001",
             title="バリデーションテスト",
             category="IT",
@@ -543,7 +543,7 @@ class TestComplianceRequirementModelDB:
     """ComplianceRequirement モデルのDB保存テスト"""
 
     def test_create_and_retrieve(self) -> None:
-        req = ComplianceRequirement.objects.create(
+        ComplianceRequirement.objects.create(
             req_id="KEN-VAL-001",
             framework="construction_law",
             title="バリデーションテスト",
@@ -622,7 +622,7 @@ class TestISO27001ControlModelDB:
     """ISO27001Control モデルのDB保存テスト"""
 
     def test_create_and_retrieve(self) -> None:
-        ctrl = ISO27001Control.objects.create(
+        ISO27001Control.objects.create(
             control_id="A.5.99",
             domain="organizational",
             title="バリデーションテスト管理策",
