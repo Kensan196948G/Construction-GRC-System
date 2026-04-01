@@ -5,6 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -149,6 +150,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "audits.auto_complete_audits",
         "schedule": timedelta(days=1),
     },
+    "daily-grc-digest": {
+        "task": "reports.send_daily_digest",
+        "schedule": crontab(hour=18, minute=0),
+    },
 }
 
 # Cache
@@ -176,3 +181,18 @@ SPECTACULAR_SETTINGS = {
         {"name": "dashboard", "description": "統合GRCダッシュボード"},
     ],
 }
+
+# --- 通知設定 ---
+GRC_SLACK_WEBHOOK_URL = os.environ.get("GRC_SLACK_WEBHOOK_URL", "")
+GRC_NOTIFICATION_EMAILS = (
+    os.environ.get("GRC_NOTIFICATION_EMAILS", "").split(",") if os.environ.get("GRC_NOTIFICATION_EMAILS") else []
+)
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "grc-system@example.com")
+
+# メール設定
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")

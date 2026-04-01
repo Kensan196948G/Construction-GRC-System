@@ -137,6 +137,11 @@ jobs:
         pip install pip-audit
         pip-audit -r backend/requirements.txt || true
 
+    - name: Python Security Scan (Bandit)
+      run: |
+        pip install bandit
+        cd backend && bandit -r apps/ grc/ -c .bandit --format json || true
+
     - name: Frontend Security (npm audit)
       run: |
         cd frontend && npm install && npm audit --audit-level=high || true
