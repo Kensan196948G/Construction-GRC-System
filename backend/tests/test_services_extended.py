@@ -110,39 +110,54 @@ class TestComplianceRateServiceByDomainMocked:
 
 
 class TestComplianceRateServiceTrend:
-    """ComplianceRateService.calculate_trend のテスト"""
+    """ComplianceRateService.calculate_trend のテスト
+
+    calculate_trend は queryset.filter(is_applicable=True).count() で applicable_count を取得し、
+    その後 queryset.filter(is_applicable=True, implementation_status=..., updated_at__lt=...).count()
+    で各月の implemented を取得する。
+    両方とも queryset.filter() を直接呼ぶため、side_effect でキーワード引数に応じて
+    異なるモックを返す。
+    """
+
+    @staticmethod
+    def _make_trend_qs(applicable_count: int, implemented_count: int) -> MagicMock:
+        """calculate_trend 用のモッククエリセットを生成する。
+
+        queryset.filter(is_applicable=True) -> applicable_qs (count = applicable_count)
+        queryset.filter(is_applicable=True, implementation_status=..., updated_at__lt=...)
+        -> impl_qs (count = implemented_count)
+        """
+        qs = MagicMock()
+
+        applicable_qs = MagicMock()
+        applicable_qs.count.return_value = applicable_count
+
+        impl_qs = MagicMock()
+        impl_qs.count.return_value = implemented_count
+
+        def filter_side_effect(**kwargs):
+            if "implementation_status" in kwargs:
+                return impl_qs
+            return applicable_qs
+
+        qs.filter.side_effect = filter_side_effect
+        return qs
 
     def test_trend_returns_correct_month_count(self) -> None:
         """指定月数分のデータが返される"""
-        qs = MagicMock()
-        applicable_qs = MagicMock()
-        applicable_qs.count.return_value = 0
-        qs.filter.return_value = applicable_qs
-
+        qs = self._make_trend_qs(applicable_count=0, implemented_count=0)
         result = ComplianceRateService.calculate_trend(months=3, queryset=qs)
         assert len(result) == 3
 
     def test_trend_returns_six_months_by_default(self) -> None:
         """デフォルトは6ヶ月"""
-        qs = MagicMock()
-        applicable_qs = MagicMock()
-        applicable_qs.count.return_value = 0
-        qs.filter.return_value = applicable_qs
-
+        qs = self._make_trend_qs(applicable_count=0, implemented_count=0)
         result = ComplianceRateService.calculate_trend(queryset=qs)
         assert len(result) == 6
 
     def test_trend_entry_has_required_keys(self) -> None:
         """トレンドエントリに必須キーが含まれる"""
-        qs = MagicMock()
-        applicable_qs = MagicMock()
-        applicable_qs.count.return_value = 10
-        # filter for implemented controls
-        filter_qs = MagicMock()
-        filter_qs.count.return_value = 5
-        applicable_qs.filter.return_value = filter_qs
-        qs.filter.return_value = applicable_qs
-
+        qs = self._make_trend_qs(applicable_count=10, implemented_count=5)
         result = ComplianceRateService.calculate_trend(months=1, queryset=qs)
         assert len(result) == 1
         entry = result[0]
@@ -151,12 +166,7 @@ class TestComplianceRateServiceTrend:
 
     def test_trend_zero_applicable_gives_zero_rate(self) -> None:
         """適用対象ゼロなら各月の rate は 0.0"""
-        qs = MagicMock()
-        applicable_qs = MagicMock()
-        applicable_qs.count.return_value = 0
-        applicable_qs.filter.return_value = applicable_qs
-        qs.filter.return_value = applicable_qs
-
+        qs = self._make_trend_qs(applicable_count=0, implemented_count=0)
         result = ComplianceRateService.calculate_trend(months=2, queryset=qs)
         for entry in result:
             assert entry["compliance_rate"] == 0.0

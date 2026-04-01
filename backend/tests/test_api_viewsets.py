@@ -296,12 +296,13 @@ class TestISO27001ControlViewSetSoA:
 
     def test_soa_returns_all_controls(self, api_client: APIClient, sample_controls) -> None:
         resp = api_client.get("/api/v1/controls/soa/")
-        data = resp.data.get("results", resp.data)
+        # soa action returns a plain list (not paginated), so resp.data is a list
+        data = resp.data if isinstance(resp.data, list) else resp.data.get("results", resp.data)
         assert len(data) == 4
 
     def test_soa_includes_applicability(self, api_client: APIClient, sample_controls) -> None:
         resp = api_client.get("/api/v1/controls/soa/")
-        data = resp.data.get("results", resp.data)
+        data = resp.data if isinstance(resp.data, list) else resp.data.get("results", resp.data)
         for ctrl in data:
             assert "is_applicable" in ctrl
             assert "exclusion_reason" in ctrl
@@ -422,7 +423,8 @@ class TestFrameworkViewSet:
     def test_summary_action(self, api_client: APIClient, sample_frameworks) -> None:
         resp = api_client.get("/api/v1/frameworks/summary/")
         assert resp.status_code == 200
-        data = resp.data.get("results", resp.data)
+        # summary action returns a plain list (not paginated), so resp.data is a list
+        data = resp.data if isinstance(resp.data, list) else resp.data.get("results", resp.data)
         assert len(data) == 2
         # summary serializer のフィールドチェック
         first = data[0]
