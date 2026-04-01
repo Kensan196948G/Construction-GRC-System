@@ -82,3 +82,15 @@ python manage.py createsuperuser    # 管理者ユーザー作成
 - ISO27001:2022 全93管理策（4ドメイン: 組織的/人的/物理的/技術的）
 - NIST CSF 2.0（6機能: GOVERN/IDENTIFY/PROTECT/DETECT/RESPOND/RECOVER）
 - 建設業法・品確法・労安法
+
+## インフラ
+- Docker: docker-compose.yml (開発) / docker-compose.prod.yml (本番)
+- Kubernetes: k8s/ ディレクトリに14マニフェスト (kustomize対応)
+- Nginx: フロントエンドリバースプロキシ + セキュリティヘッダー
+
+## セキュリティ
+- JWT認証 + RBAC 6ロール + 5権限クラス
+- DRF レート制限 (anon: 30/min, user: 120/min)
+- CSP + Permissions-Policy + HSTS (本番)
+- OWASP Top 10 テスト + Bandit CI統合
+- TOTP 2FA基盤 (pyotp)

@@ -21,6 +21,7 @@ const menuItems = [
   { title: '管理策(ISO27001)', icon: 'mdi-shield-check', to: '/controls' },
   { title: '内部監査', icon: 'mdi-clipboard-text', to: '/audits' },
   { title: 'レポート', icon: 'mdi-chart-bar', to: '/reports' },
+  { title: '設定', icon: 'mdi-cog', to: '/settings' },
 ]
 
 const handleLogout = async () => {
