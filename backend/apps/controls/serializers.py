@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ISO27001Control, NistCSFCategory
+from .models import Evidence, ISO27001Control, NistCSFCategory
 
 
 class ISO27001ControlSerializer(serializers.ModelSerializer):
@@ -14,6 +14,21 @@ class NistCSFCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = NistCSFCategory
         fields = "__all__"
+
+
+class EvidenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Evidence
+        fields = "__all__"
+        read_only_fields = [
+            "id",
+            "file_name",
+            "file_size",
+            "file_type",
+            "uploaded_by",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class SoASerializer(serializers.ModelSerializer):

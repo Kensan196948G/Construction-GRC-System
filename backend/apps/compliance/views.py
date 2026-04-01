@@ -1,9 +1,11 @@
+from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.accounts.models import GRCUser
 from apps.accounts.permissions import RoleBasedPermission
+from apps.reports.export_service import COMPLIANCE_FIELDS, ExportService
 
 from .models import ComplianceRequirement
 from .serializers import ComplianceRequirementSerializer
@@ -39,3 +41,24 @@ class ComplianceRequirementViewSet(viewsets.ModelViewSet):
                 "rate": round(compliant / total * 100, 1) if total > 0 else 0,
             }
         return Response(rates)
+
+    @action(detail=False, methods=["get"], url_path="export/csv")
+    def export_csv(self, request):
+        """コンプライアンス要件一覧CSV"""
+        qs = self.filter_queryset(self.get_queryset())
+        content = ExportService.queryset_to_csv(qs, COMPLIANCE_FIELDS)
+        response = HttpResponse(content, content_type="text/csv; charset=utf-8-sig")
+        response["Content-Disposition"] = 'attachment; filename="compliance.csv"'
+        return response
+
+    @action(detail=False, methods=["get"], url_path="export/excel")
+    def export_excel(self, request):
+        """コンプライアンス要件一覧Excel"""
+        qs = self.filter_queryset(self.get_queryset())
+        content = ExportService.queryset_to_excel(qs, COMPLIANCE_FIELDS, sheet_name="コンプライアンス要件")
+        response = HttpResponse(
+            content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = 'attachment; filename="compliance.xlsx"'
+        return response

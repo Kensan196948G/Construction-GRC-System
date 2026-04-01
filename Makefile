@@ -1,4 +1,4 @@
-.PHONY: help setup dev test lint build clean migrate fixtures docker-up docker-down
+.PHONY: help setup dev test lint build clean migrate fixtures docker-up docker-down release
 
 help: ## ヘルプ表示
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -74,6 +74,15 @@ docker-logs: ## Docker Composeログ表示
 
 docker-rebuild: ## Docker Compose再ビルド起動
 	docker compose up -d --build
+
+# === クリーンアップ ===
+
+# === リリース ===
+
+release: ## リリースタグ作成 (usage: make release VERSION=1.0.0)
+	git tag -a v$(VERSION) -m "Release v$(VERSION)"
+	git push origin v$(VERSION)
+	@echo "✅ Released v$(VERSION)"
 
 # === クリーンアップ ===
 

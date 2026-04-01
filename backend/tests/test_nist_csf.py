@@ -1,8 +1,8 @@
 """NistCSFCategory モデルテスト."""
 
 import django.db
-import pytest
 from django.test import TestCase
+import pytest
 
 from apps.controls.models import NistCSFCategory
 

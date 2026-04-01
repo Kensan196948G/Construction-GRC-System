@@ -13,6 +13,7 @@ ignore = ["S101", "COM812"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "grc"]
+force-sort-within-sections = true
 
 [tool.black]
 line-length = 120
@@ -24,7 +25,7 @@ line_length = 120
 known_first_party = ["apps", "grc"]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "grc.settings.development"
+DJANGO_SETTINGS_MODULE = "grc.settings.testing"
 python_files = ["tests.py", "test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

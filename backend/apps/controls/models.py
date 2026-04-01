@@ -87,3 +87,35 @@ class NistCSFCategory(models.Model):
 
     def __str__(self):
         return f"{self.category_id}: {self.category_name_ja}"
+
+
+class Evidence(models.Model):
+    """ISO27001 証跡（エビデンス）ファイル"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    control = models.ForeignKey(
+        ISO27001Control,
+        on_delete=models.CASCADE,
+        related_name="evidences",
+    )
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    file = models.FileField(upload_to="evidences/%Y/%m/")
+    file_name = models.CharField(max_length=255)
+    file_size = models.PositiveIntegerField(default=0)
+    file_type = models.CharField(max_length=100, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "証跡ファイル"
+        verbose_name_plural = "証跡ファイル"
+
+    def __str__(self):
+        return f"{self.control.control_id}: {self.title}"

@@ -91,3 +91,42 @@ class AuditFinding(models.Model):
 
     def __str__(self):
         return f"{self.finding_id}: {self.title}"
+
+
+class ActivityLog(models.Model):
+    """システムアクティビティログ（変更履歴）"""
+
+    class Action(models.TextChoices):
+        CREATE = "create", "作成"
+        UPDATE = "update", "更新"
+        DELETE = "delete", "削除"
+        STATUS_CHANGE = "status_change", "ステータス変更"
+        LOGIN = "login", "ログイン"
+        EXPORT = "export", "エクスポート"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    action = models.CharField(max_length=20, choices=Action.choices)
+    model_name = models.CharField(max_length=100)
+    object_id = models.CharField(max_length=100, blank=True)
+    object_repr = models.CharField(max_length=300, blank=True)
+    changes = models.JSONField(default=dict, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+        verbose_name = "アクティビティログ"
+        verbose_name_plural = "アクティビティログ"
+        indexes = [
+            models.Index(fields=["-timestamp"]),
+            models.Index(fields=["model_name", "-timestamp"]),
+        ]
+
+    def __str__(self):
+        return f"[{self.timestamp}] {self.user} {self.action} {self.model_name}"

@@ -6,8 +6,8 @@ Excel/PDFデータとして生成するサービスレイヤー。
 
 from __future__ import annotations
 
-import io
 from datetime import UTC, datetime
+import io
 from typing import Any
 
 from django.utils import timezone
