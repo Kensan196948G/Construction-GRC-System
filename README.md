@@ -21,13 +21,15 @@
 | Phase 3.5+4 | テスト強化 + インフラ本番化 + 統合ダッシュボードAPI + PDFレポート生成 | 完了 |
 | Phase 5 | 外部連携 + ダークテーマ + セキュリティ強化 + OpenAPI | 完了 |
 | Phase 6 | Redis + N+1最適化 + 監査自動化 + K8s + Slack + OWASP + i18n | 完了 |
-| Phase 7 | 本番品質仕上げ (Dashboard統合 + Settings + テスト改善) | 進行中 |
+| Phase 7 | 本番品質仕上げ (Dashboard統合 + Settings + テスト改善) | 完了 |
+| Phase 8 | CSVエクスポート + ファイルアップロード + アクティビティログ + Releases自動化 | 完了 |
+| Phase 9 | 最終仕上げ | 進行中 |
 
 | 指標 | 値 |
 |------|-----|
 | CI状態 | [![CI](https://github.com/Kensan196948G/Construction-GRC-System/actions/workflows/claudeos-ci.yml/badge.svg)](https://github.com/Kensan196948G/Construction-GRC-System/actions) |
-| STABLE マージ数 | 19 PRs |
-| テスト数 | 400+ ケース |
+| STABLE マージ数 | 21 PRs |
+| テスト数 | 517+ ケース |
 | 最終更新 | 2026-04-01 |
 
 ---
@@ -167,6 +169,10 @@ graph LR
 | 経審P点計算 | 経営事項審査P点の自動計算 |
 | Celery定期タスク | 6タスク（リスク再評価・コンプライアンスチェック・期限通知・レポート生成等） |
 | OpenAPI / Swagger / ReDoc | APIドキュメント自動生成 |
+| 📥 CSVエクスポート | 全モデル CSV/Excel 対応エクスポート |
+| 📎 ファイルアップロード | ISO27001 証跡管理（エビデンスファイル添付） |
+| 📜 アクティビティログ | 変更履歴の記録・表示 |
+| 🏷 GitHub Releases自動化 | タグプッシュ時の自動リリース作成 |
 
 ---
 
@@ -199,11 +205,11 @@ Construction-GRC-System/
 │   │   ├── audits/           #     内部監査 + 所見管理 + ワークフロー
 │   │   ├── frameworks/       #     フレームワーク定義
 │   │   └── reports/          #     レポート生成 (PDF / Excel)
-│   └── tests/                #   テスト (400+ ケース)
+│   └── tests/                #   テスト (517+ ケース)
 ├── frontend/                 # Vue.js 3 フロントエンド
 │   └── src/
 │       ├── components/       #   UI コンポーネント
-│       ├── views/            #   画面 (Dashboard / Risk / Compliance / Audit)
+│       ├── views/            #   9画面 (Dashboard / Risk / Compliance / Audit / Controls / Reports / Settings / Frameworks / ActivityLog)
 │       ├── composables/      #   テーマ・多言語・API フック
 │       └── i18n/             #   多言語リソース (ja / en)
 ├── k8s/                      # Kubernetes マニフェスト
@@ -228,7 +234,9 @@ Construction-GRC-System/
 ├── Makefile                  # 開発コマンド
 ├── docker-compose.yml        # Docker Compose (開発)
 ├── docker-compose.prod.yml   # Docker Compose (本番)
-└── pyproject.toml            # Python プロジェクト設定
+├── pyproject.toml            # Python プロジェクト設定
+├── CHANGELOG.md              # 変更履歴
+└── VERSION                   # バージョンファイル
 ```
 
 ---
@@ -319,6 +327,8 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 | GET/PUT/DELETE | `/api/v1/risks/{id}/` | リスク詳細 / 更新 / 削除 |
 | GET | `/api/v1/risks/heatmap/` | リスクヒートマップ |
 | GET | `/api/v1/risks/dashboard/` | リスクダッシュボード |
+| GET | `/api/v1/risks/export/csv/` | リスク一覧CSVエクスポート |
+| GET | `/api/v1/risks/export/excel/` | リスク一覧Excelエクスポート |
 
 ### コンプライアンス (`/api/v1/compliance/`)
 
@@ -327,6 +337,8 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 | GET/POST | `/api/v1/compliance/` | コンプライアンス要件一覧 / 作成 |
 | GET/PUT/DELETE | `/api/v1/compliance/{id}/` | 要件詳細 / 更新 / 削除 |
 | GET | `/api/v1/compliance/compliance-rate/` | 準拠率 |
+| GET | `/api/v1/compliance/export/csv/` | コンプライアンス要件CSVエクスポート |
+| GET | `/api/v1/compliance/export/excel/` | コンプライアンス要件Excelエクスポート |
 
 ### ISO27001 管理策 (`/api/v1/controls/`)
 
@@ -338,6 +350,10 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 | GET | `/api/v1/controls/compliance-rate/` | 管理策準拠率 |
 | GET/POST | `/api/v1/controls/nist-csf/` | NIST CSF カテゴリ一覧 / 作成 |
 | GET/PUT/DELETE | `/api/v1/controls/nist-csf/{id}/` | NIST CSF 詳細 / 更新 / 削除 |
+| GET | `/api/v1/controls/export/csv/` | 管理策CSVエクスポート |
+| GET | `/api/v1/controls/export/excel/` | 管理策Excelエクスポート |
+| GET/POST | `/api/v1/controls/evidences/` | 証跡一覧 / アップロード |
+| GET/PUT/DELETE | `/api/v1/controls/evidences/{id}/` | 証跡詳細 / 更新 / 削除 |
 
 ### 内部監査 (`/api/v1/audits/`)
 
@@ -350,6 +366,7 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 | GET/PUT/DELETE | `/api/v1/audits/findings/{id}/` | 所見詳細 / 更新 / 削除 |
 | GET | `/api/v1/audits/overdue-caps/` | 期限超過CAP一覧 |
 | GET | `/api/v1/audits/upcoming-caps/` | 期限間近CAP一覧 |
+| GET | `/api/v1/audits/activity-logs/` | 変更履歴（アクティビティログ） |
 
 ### レポート (`/api/v1/reports/`)
 
@@ -384,6 +401,8 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 
 | PR | 内容 | 主要変更 |
 |----|------|----------|
+| #38 | Phase 8 — CSVエクスポート + 証跡アップロード + アクティビティログ + Releases自動化 | CSV/Excel全モデル対応, 証跡ファイル管理, 変更履歴UI, GitHub Releases |
+| #33 | Phase 7完結 — Dashboard統合 + Settings + テスト大幅改善 | 統合ダッシュボード, 設定画面, テスト517+ケース |
 | #32 | Phase 6完結 — K8s + Slack通知 + OWASP監査 + 多言語対応 | K8sマニフェスト14ファイル, Slack Webhook, OWASP対策, i18n |
 | #31 | Phase 6 — Redisキャッシュ + N+1最適化 + 監査ワークフロー + E2E拡充 | Redis導入, select_related最適化, 監査5ステータス遷移, Playwright E2E |
 | #17 | Phase 5 — 外部連携 + UI品質 + セキュリティ + ドキュメント | ダークテーマ, OpenAPI/Swagger, セキュリティヘッダ |
