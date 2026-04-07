@@ -454,7 +454,7 @@ onUnmounted(() => {
     </v-row>
 
     <!-- Row 2: Heatmap + Risk Level Distribution -->
-    <v-row class="mt-4" v-if="dashboardData">
+    <v-row v-if="dashboardData" class="mt-4">
       <v-col cols="12" lg="8">
         <v-card elevation="2" class="fill-height">
           <v-card-title class="d-flex align-center pa-4">
@@ -524,7 +524,7 @@ onUnmounted(() => {
     </v-row>
 
     <!-- Row 3: Compliance Doughnut + Controls Bar Chart -->
-    <v-row class="mt-4" v-if="dashboardData">
+    <v-row v-if="dashboardData" class="mt-4">
       <v-col cols="12" md="6">
         <v-card elevation="2" class="fill-height">
           <v-card-title class="d-flex align-center pa-4">
@@ -588,7 +588,7 @@ onUnmounted(() => {
     </v-row>
 
     <!-- Row 4: Compliance by Law + Audit Summary -->
-    <v-row class="mt-4" v-if="dashboardData">
+    <v-row v-if="dashboardData" class="mt-4">
       <v-col cols="12" md="6">
         <v-card elevation="2" class="fill-height">
           <v-card-title class="d-flex align-center pa-4">
@@ -709,7 +709,7 @@ onUnmounted(() => {
     </v-row>
 
     <!-- Row 5: Recent Activities -->
-    <v-row class="mt-4" v-if="dashboardData">
+    <v-row v-if="dashboardData" class="mt-4">
       <v-col cols="12">
         <v-card elevation="2">
           <v-card-title class="d-flex align-center pa-4">

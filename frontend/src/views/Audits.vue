@@ -412,7 +412,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-2 pa-sm-4">
     <!-- ヘッダ -->
     <div class="d-flex align-center mb-6">
       <div>
@@ -552,8 +552,8 @@ onMounted(() => {
         :items="filteredAudits"
         :loading="auditsStore.loading"
         hover
-        @click:row="onRowClick"
         class="audit-table"
+        @click:row="onRowClick"
       >
         <template #item.audit_id="{ item }">
           <span class="font-weight-medium text-primary">{{ item.audit_id }}</span>

@@ -71,6 +71,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "display_name",
             "phone",
             "is_active",
+            "totp_enabled",
             "date_joined",
             "last_login",
         ]
@@ -79,6 +80,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "username",
             "role",
             "is_active",
+            "totp_enabled",
             "date_joined",
             "last_login",
         ]

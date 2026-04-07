@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useThemeToggle } from '@/composables/useTheme'
 import SkipLink from '@/components/SkipLink.vue'
@@ -11,6 +12,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { toggleTheme, isDark } = useThemeToggle()
+const { smAndDown } = useDisplay()
 
 const isLoginPage = computed(() => route.path === '/login')
 
@@ -34,7 +36,7 @@ const handleLogout = async () => {
   <v-app>
     <SkipLink />
     <template v-if="!isLoginPage">
-      <v-navigation-drawer v-model="drawer" app>
+      <v-navigation-drawer v-model="drawer" :mobile-breakpoint="960" temporary app>
         <v-list-item
           title="建設業GRC"
           subtitle="ガバナンス・リスク・コンプライアンス"
@@ -63,8 +65,8 @@ const handleLogout = async () => {
         <LanguageSwitcher />
         <v-btn
           :icon="isDark() ? 'mdi-weather-night' : 'mdi-weather-sunny'"
-          @click="toggleTheme"
           title="テーマ切替"
+          @click="toggleTheme"
         />
         <v-btn icon="mdi-logout" @click="handleLogout" />
       </v-app-bar>
@@ -73,5 +75,13 @@ const handleLogout = async () => {
     <v-main id="main-content">
       <router-view />
     </v-main>
+
+    <v-bottom-navigation v-if="smAndDown && !isLoginPage" grow>
+      <v-btn to="/" icon="mdi-view-dashboard" />
+      <v-btn to="/risks" icon="mdi-alert" />
+      <v-btn to="/compliance" icon="mdi-check-circle" />
+      <v-btn to="/audits" icon="mdi-clipboard-check" />
+      <v-btn to="/reports" icon="mdi-file-chart" />
+    </v-bottom-navigation>
   </v-app>
 </template>
