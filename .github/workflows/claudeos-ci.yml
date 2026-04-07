@@ -201,10 +201,12 @@ jobs:
           timeout 180 bash -c 'until curl -sf http://localhost:3000/; do sleep 3; done' \
             || { echo "Frontend failed to start"; docker compose logs frontend; exit 1; }
           echo "Frontend ready"
-          # Create test admin user for E2E tests
+          # Create test admin user for E2E tests (fail loudly if it doesn't work)
           docker compose exec -T backend python manage.py shell -c \
-            "from django.contrib.auth import get_user_model; U=get_user_model(); U.objects.filter(username='admin').exists() or U.objects.create_superuser('admin','admin@example.com','admin123')" \
-            || true
+            "from django.contrib.auth import get_user_model; U=get_user_model(); U.objects.filter(username='admin').exists() or U.objects.create_superuser('admin','admin@example.com','admin123')"
+          # Verify admin user exists and can authenticate
+          docker compose exec -T backend python manage.py shell -c \
+            "from django.contrib.auth import get_user_model, authenticate; U=get_user_model(); assert U.objects.filter(username='admin').exists(), 'Admin user missing!'; u=authenticate(username='admin',password='admin123'); assert u is not None, 'Admin auth failed!'; print('Admin user OK')"
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
