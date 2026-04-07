@@ -186,6 +186,9 @@ jobs:
 
       - name: Start services
         run: |
+          # Pre-create directories that the backend container writes to via volume mount
+          mkdir -p backend/staticfiles backend/media
+          chmod 777 backend/staticfiles backend/media
           # Start only required services (skip celery/celery_beat for E2E)
           docker compose up -d --build backend frontend db redis
           # Wait for backend (up to 3 minutes — CI builds from scratch with no cache)
