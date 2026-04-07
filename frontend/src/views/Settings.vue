@@ -5,6 +5,7 @@ import { useI18n } from '@/i18n/plugin'
 import type { Locale } from '@/i18n/index'
 import { useAuthStore } from '@/store/auth'
 import apiClient from '@/api/client'
+import { getUserProfile, setup2FA, verify2FA, disable2FA } from '@/api/auth'
 
 // ── Composables ──
 const { themeMode, setTheme, isDark } = useThemeToggle()
@@ -114,6 +115,8 @@ onMounted(() => {
   } catch {
     // ignore
   }
+  // 2FAステータスを取得
+  fetchTwoFAStatus()
 })
 
 async function saveProfile() {
@@ -157,12 +160,96 @@ const systemInfo = {
   ],
 }
 
+// ── F. 2FA (TOTP) セキュリティ設定 ──
+const twoFAEnabled = ref(false)
+const twoFALoading = ref(false)
+const twoFAError = ref('')
+const twoFASuccess = ref('')
+
+// セットアップダイアログ
+const setupDialog = ref(false)
+const setupQrCodeBase64 = ref('')
+const setupSecret = ref('')
+const setupTokenInput = ref('')
+const setupVerifying = ref(false)
+const setupError = ref('')
+
+// 無効化ダイアログ
+const disableDialog = ref(false)
+const disableLoading = ref(false)
+const disableError = ref('')
+
+async function fetchTwoFAStatus(): Promise<void> {
+  try {
+    const profile = await getUserProfile()
+    twoFAEnabled.value = profile.totp_enabled
+  } catch {
+    // プロフィール取得失敗時は無効状態として扱う
+    twoFAEnabled.value = false
+  }
+}
+
+async function openSetupDialog(): Promise<void> {
+  twoFALoading.value = true
+  twoFAError.value = ''
+  setupError.value = ''
+  setupTokenInput.value = ''
+  try {
+    const data = await setup2FA()
+    setupQrCodeBase64.value = data.qr_code_base64
+    setupSecret.value = data.secret
+    setupDialog.value = true
+  } catch {
+    twoFAError.value = '2FA設定の初期化に失敗しました。再度お試しください。'
+  } finally {
+    twoFALoading.value = false
+  }
+}
+
+async function confirmSetup(): Promise<void> {
+  if (!setupTokenInput.value || setupTokenInput.value.length !== 6) {
+    setupError.value = '6桁のコードを入力してください'
+    return
+  }
+  setupVerifying.value = true
+  setupError.value = ''
+  try {
+    await verify2FA(setupTokenInput.value)
+    twoFAEnabled.value = true
+    setupDialog.value = false
+    twoFASuccess.value = '2FAを有効化しました'
+    setTimeout(() => { twoFASuccess.value = '' }, 3000)
+  } catch (err: unknown) {
+    const axiosError = err as { response?: { data?: { error?: string } } }
+    setupError.value = axiosError.response?.data?.error ?? '認証コードが正しくありません。再度お試しください。'
+  } finally {
+    setupVerifying.value = false
+  }
+}
+
+async function confirmDisable(): Promise<void> {
+  disableLoading.value = true
+  disableError.value = ''
+  try {
+    await disable2FA()
+    twoFAEnabled.value = false
+    disableDialog.value = false
+    twoFASuccess.value = '2FAを無効化しました'
+    setTimeout(() => { twoFASuccess.value = '' }, 3000)
+  } catch {
+    disableError.value = '2FAの無効化に失敗しました。再度お試しください。'
+  } finally {
+    disableLoading.value = false
+  }
+}
+
 // ── タブ定義 ──
 const tabs = [
   { label: 'テーマ', icon: 'mdi-palette' },
   { label: '言語', icon: 'mdi-translate' },
   { label: '通知', icon: 'mdi-bell-outline' },
   { label: 'プロフィール', icon: 'mdi-account-circle' },
+  { label: 'セキュリティ', icon: 'mdi-shield-lock-outline' },
   { label: 'システム情報', icon: 'mdi-information-outline' },
 ]
 </script>
@@ -391,8 +478,89 @@ const tabs = [
           </v-card-text>
         </v-tabs-window-item>
 
-        <!-- E. システム情報 -->
+        <!-- F. セキュリティ（2FA） -->
         <v-tabs-window-item :value="4">
+          <v-card-text class="pa-6">
+            <h2 class="text-h6 mb-2">セキュリティ設定</h2>
+            <p class="text-body-2 text-medium-emphasis mb-6">
+              二要素認証（2FA）を設定することでアカウントのセキュリティを強化できます。
+            </p>
+
+            <!-- 2FA カード -->
+            <v-card variant="outlined" max-width="560" class="mb-4">
+              <v-card-title class="d-flex align-center ga-2 pt-4 px-4">
+                <v-icon color="primary">mdi-two-factor-authentication</v-icon>
+                二要素認証（TOTP）
+              </v-card-title>
+              <v-card-text>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  Google Authenticator や 1Password などの認証アプリと連携し、
+                  ログイン時に6桁のワンタイムパスワードを要求します。
+                </p>
+
+                <div class="d-flex align-center ga-3 mb-2">
+                  <v-chip
+                    :color="twoFAEnabled ? 'success' : 'default'"
+                    :prepend-icon="twoFAEnabled ? 'mdi-check-circle' : 'mdi-close-circle'"
+                    variant="tonal"
+                  >
+                    {{ twoFAEnabled ? '有効' : '無効' }}
+                  </v-chip>
+                  <span class="text-body-2 text-medium-emphasis">
+                    {{ twoFAEnabled ? '2FAは現在有効です' : '2FAは現在無効です' }}
+                  </span>
+                </div>
+
+                <v-alert
+                  v-if="twoFAError"
+                  type="error"
+                  variant="tonal"
+                  class="mt-3"
+                  closable
+                  density="compact"
+                  @click:close="twoFAError = ''"
+                >
+                  {{ twoFAError }}
+                </v-alert>
+              </v-card-text>
+              <v-card-actions class="px-4 pb-4">
+                <v-btn
+                  v-if="!twoFAEnabled"
+                  color="primary"
+                  variant="elevated"
+                  prepend-icon="mdi-qrcode"
+                  :loading="twoFALoading"
+                  @click="openSetupDialog"
+                >
+                  2FAを設定する
+                </v-btn>
+                <v-btn
+                  v-else
+                  color="error"
+                  variant="outlined"
+                  prepend-icon="mdi-shield-off-outline"
+                  @click="disableDialog = true"
+                >
+                  2FAを無効にする
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+
+            <!-- 成功スナックバー -->
+            <v-snackbar
+              v-model="twoFASuccess"
+              color="success"
+              :timeout="3000"
+              location="bottom"
+            >
+              <v-icon start>mdi-check-circle</v-icon>
+              {{ twoFASuccess }}
+            </v-snackbar>
+          </v-card-text>
+        </v-tabs-window-item>
+
+        <!-- E. システム情報 -->
+        <v-tabs-window-item :value="5">
           <v-card-text class="pa-6">
             <h2 class="text-h6 mb-4">システム情報</h2>
 
@@ -439,5 +607,114 @@ const tabs = [
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card>
+
+    <!-- 2FA セットアップダイアログ -->
+    <v-dialog v-model="setupDialog" max-width="500" persistent>
+      <v-card>
+        <v-card-title class="d-flex align-center ga-2 pt-5 px-6">
+          <v-icon color="primary">mdi-qrcode-scan</v-icon>
+          2FAセットアップ
+        </v-card-title>
+        <v-card-text class="px-6">
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            以下のQRコードを Google Authenticator などの認証アプリで読み取ってください。
+          </p>
+
+          <div class="d-flex justify-center mb-4">
+            <img
+              v-if="setupQrCodeBase64"
+              :src="`data:image/png;base64,${setupQrCodeBase64}`"
+              alt="2FA QRコード"
+              width="200"
+              height="200"
+              style="border: 1px solid #e0e0e0; border-radius: 8px;"
+            />
+            <v-icon v-else size="200" color="grey-lighten-2">mdi-qrcode</v-icon>
+          </div>
+
+          <v-expansion-panels variant="accordion" class="mb-4">
+            <v-expansion-panel title="手動でシークレットキーを入力する場合">
+              <v-expansion-panel-text>
+                <code class="text-body-2" style="word-break: break-all;">{{ setupSecret }}</code>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+
+          <v-text-field
+            v-model="setupTokenInput"
+            label="認証アプリの6桁コード"
+            prepend-inner-icon="mdi-lock-outline"
+            variant="outlined"
+            density="comfortable"
+            maxlength="6"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            :error-messages="setupError"
+            @keyup.enter="confirmSetup"
+          />
+        </v-card-text>
+        <v-card-actions class="px-6 pb-5">
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="setupDialog = false"
+          >
+            キャンセル
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="elevated"
+            :loading="setupVerifying"
+            @click="confirmSetup"
+          >
+            確認して有効化
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 2FA 無効化確認ダイアログ -->
+    <v-dialog v-model="disableDialog" max-width="420">
+      <v-card>
+        <v-card-title class="d-flex align-center ga-2 pt-5 px-6">
+          <v-icon color="error">mdi-shield-off-outline</v-icon>
+          2FAを無効にしますか？
+        </v-card-title>
+        <v-card-text class="px-6">
+          <p class="text-body-2 text-medium-emphasis">
+            二要素認証を無効にするとアカウントのセキュリティが低下します。
+            本当に無効化しますか？
+          </p>
+          <v-alert
+            v-if="disableError"
+            type="error"
+            variant="tonal"
+            class="mt-3"
+            density="compact"
+            closable
+            @click:close="disableError = ''"
+          >
+            {{ disableError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="px-6 pb-5">
+          <v-spacer />
+          <v-btn
+            variant="text"
+            @click="disableDialog = false"
+          >
+            キャンセル
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="elevated"
+            :loading="disableLoading"
+            @click="confirmDisable"
+          >
+            無効にする
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
