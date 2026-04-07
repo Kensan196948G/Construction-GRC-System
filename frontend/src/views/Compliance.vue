@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useComplianceStore } from '@/store/compliance'
 import type { ComplianceRequirement, ComplianceStatus } from '@/types'
 import ComplianceGauge from '@/components/ComplianceGauge.vue'
 
 const complianceStore = useComplianceStore()
+const { smAndDown } = useDisplay()
 
 // ---------- タブ ----------
 const activeTab = ref('all')
@@ -279,7 +281,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-2 pa-sm-4">
     <!-- ヘッダ -->
     <div class="d-flex align-center mb-6">
       <h1 class="text-h4">コンプライアンス管理</h1>
@@ -492,11 +494,11 @@ onMounted(async () => {
         </template>
 
         <template #item.owner="{ item }">
-          {{ item.owner || '-' }}
+          <span v-if="!smAndDown">{{ item.owner || '-' }}</span>
         </template>
 
         <template #item.last_assessed_at="{ item }">
-          {{ formatDate(item.last_assessed_at) }}
+          <span v-if="!smAndDown">{{ formatDate(item.last_assessed_at) }}</span>
         </template>
 
         <template #no-data>

@@ -212,7 +212,7 @@ const downloadReport = (item: ReportHistory) => {
 </script>
 
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-2 pa-sm-4">
     <!-- ヘッダ -->
     <div class="d-flex align-center mb-6">
       <div>
