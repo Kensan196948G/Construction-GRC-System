@@ -260,3 +260,75 @@ class SoAGenerator:
             "summary": summary,
             "domains": domain_sections,
         }
+
+
+class GRCDataService:
+    """Celeryタスクからデータを取得するサービスクラス。
+
+    PDF生成に必要なデータをDBから収集して返す。
+    Viewレイヤーに依存しないためCeleryワーカーから安全に呼び出せる。
+    """
+
+    @staticmethod
+    def get_dashboard_data() -> dict:
+        """ダッシュボードPDF用データを収集する。"""
+        from django.db.models import F
+
+        from apps.audits.models import AuditFinding
+        from apps.compliance.models import ComplianceRequirement
+        from apps.risks.models import Risk
+
+        risks = Risk.objects.all()
+        total_risks = risks.count()
+        scored = risks.annotate(risk_score=F("likelihood_inherent") * F("impact_inherent"))
+        by_level = {
+            "CRITICAL": scored.filter(risk_score__gte=15).count(),
+            "HIGH": scored.filter(risk_score__gte=10, risk_score__lt=15).count(),
+            "MEDIUM": scored.filter(risk_score__gte=5, risk_score__lt=10).count(),
+            "LOW": scored.filter(risk_score__lt=5).count(),
+        }
+
+        total_compliance = ComplianceRequirement.objects.count()
+        compliant = ComplianceRequirement.objects.filter(compliance_status="compliant").count()
+        compliance_rate = round(compliant / total_compliance * 100, 1) if total_compliance > 0 else 0.0
+
+        open_findings = AuditFinding.objects.exclude(cap_status="closed").count()
+
+        return {
+            "risks": {"total": total_risks, "by_level": by_level},
+            "compliance": {"total": total_compliance, "compliant": compliant, "rate": compliance_rate},
+            "audits": {"open_findings": open_findings},
+        }
+
+    @staticmethod
+    def get_compliance_data() -> dict:
+        """コンプライアンスPDF用データを収集する。"""
+        from apps.compliance.models import ComplianceRequirement
+
+        qs = ComplianceRequirement.objects.all()
+        total = qs.count()
+        compliant = qs.filter(compliance_status="compliant").count()
+        rate = round(compliant / total * 100, 1) if total > 0 else 0.0
+
+        by_status = {}
+        for req in qs:
+            by_status[req.compliance_status] = by_status.get(req.compliance_status, 0) + 1
+
+        return {"total": total, "compliant": compliant, "rate": rate, "by_status": by_status}
+
+    @staticmethod
+    def get_risk_data() -> dict:
+        """リスクPDF用データを収集する。"""
+        from django.db.models import F
+
+        from apps.risks.models import Risk
+
+        risks = Risk.objects.all()
+        scored = risks.annotate(risk_score=F("likelihood_inherent") * F("impact_inherent"))
+        by_level = {
+            "CRITICAL": scored.filter(risk_score__gte=15).count(),
+            "HIGH": scored.filter(risk_score__gte=10, risk_score__lt=15).count(),
+            "MEDIUM": scored.filter(risk_score__gte=5, risk_score__lt=10).count(),
+            "LOW": scored.filter(risk_score__lt=5).count(),
+        }
+        return {"total": risks.count(), "by_level": by_level}
