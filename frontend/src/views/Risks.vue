@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useRisksStore } from '@/store/risks'
 import type { Risk } from '@/store/risks'
 
 
 const risksStore = useRisksStore()
+const { smAndDown } = useDisplay()
 
 // フィルタ状態
 const categoryFilter = ref<string | null>(null)
@@ -214,7 +216,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-2 pa-sm-4">
     <!-- ヘッダ -->
     <div class="d-flex align-center mb-6">
       <h1 class="text-h4">リスク管理</h1>
@@ -320,8 +322,12 @@ onMounted(() => {
           </v-chip>
         </template>
 
+        <template #item.owner="{ item }">
+          <span v-if="!smAndDown">{{ item.owner || '-' }}</span>
+        </template>
+
         <template #item.updated_at="{ item }">
-          {{ formatDate(item.created_at) }}
+          <span v-if="!smAndDown">{{ formatDate(item.created_at) }}</span>
         </template>
       </v-data-table-server>
     </v-card>

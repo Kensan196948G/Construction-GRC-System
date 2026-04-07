@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-2 pa-sm-4">
     <v-row>
       <v-col cols="12">
         <h1 class="text-h4 mb-4">アクティビティログ</h1>
