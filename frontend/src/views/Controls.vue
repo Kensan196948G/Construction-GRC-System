@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useControlsStore } from '@/store/controls'
 import type { ISO27001Control, ImplementationStatus, ControlDomain } from '@/types'
 import { exportSoA } from '@/api/controls'
 
 const controlsStore = useControlsStore()
+const { smAndDown } = useDisplay()
 
 // タブ
 const activeTab = ref('all')
