@@ -6,7 +6,7 @@ test.describe('Internal Audit', () => {
   })
 
   test('should display audits page', async ({ page }) => {
-    await expect(page.locator('h1, .text-h4')).toContainText(/監査/)
+    await expect(page.locator('h1, .text-h4').first()).toContainText(/監査/)
   })
 
   test('should show audit summary cards', async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe('Internal Audit', () => {
   })
 
   test('should show audit table', async ({ page }) => {
-    await expect(page.locator('table, .v-data-table')).toBeVisible()
+    await expect(page.locator('table, .v-data-table').first()).toBeVisible()
   })
 
   test('should have create audit button', async ({ page }) => {

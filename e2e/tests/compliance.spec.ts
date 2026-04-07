@@ -6,7 +6,7 @@ test.describe('Compliance Management', () => {
   })
 
   test('should display compliance page', async ({ page }) => {
-    await expect(page.locator('h1, .text-h4')).toContainText(/コンプライアンス/)
+    await expect(page.locator('h1, .text-h4').first()).toContainText(/コンプライアンス/)
   })
 
   test('should show compliance gauge', async ({ page }) => {
@@ -26,6 +26,6 @@ test.describe('Compliance Management', () => {
   })
 
   test('should show requirements table', async ({ page }) => {
-    await expect(page.locator('table, .v-data-table, .v-table')).toBeVisible()
+    await expect(page.locator('table, .v-data-table, .v-table').first()).toBeVisible()
   })
 })
