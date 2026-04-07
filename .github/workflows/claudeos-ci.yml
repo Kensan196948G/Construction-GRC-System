@@ -208,6 +208,25 @@ jobs:
           docker compose exec -T backend python manage.py shell -c \
             "from django.contrib.auth import get_user_model, authenticate; U=get_user_model(); assert U.objects.filter(username='admin').exists(), 'Admin user missing!'; u=authenticate(username='admin',password='admin123'); assert u is not None, 'Admin auth failed!'; print('Admin user OK')"
 
+      - name: Verify JWT endpoint (direct + proxy)
+        run: |
+          echo "=== Testing backend JWT endpoint directly ==="
+          curl -s -X POST http://localhost:8000/api/v1/auth/token/ \
+            -H "Content-Type: application/json" \
+            -d '{"username":"admin","password":"admin123"}' \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print('direct OK, access token length=', len(d.get('access','')))" \
+            || { echo "Direct JWT failed!"; curl -v -X POST http://localhost:8000/api/v1/auth/token/ \
+              -H "Content-Type: application/json" \
+              -d '{"username":"admin","password":"admin123"}'; exit 1; }
+          echo "=== Testing via Vite proxy ==="
+          curl -s -X POST http://localhost:3000/api/v1/auth/token/ \
+            -H "Content-Type: application/json" \
+            -d '{"username":"admin","password":"admin123"}' \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print('proxy OK, access token length=', len(d.get('access','')))" \
+            || { echo "Proxy JWT failed — Vite proxy issue!"; curl -v http://localhost:3000/api/v1/auth/token/ \
+              -X POST -H "Content-Type: application/json" \
+              -d '{"username":"admin","password":"admin123"}'; docker compose logs frontend; exit 1; }
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
