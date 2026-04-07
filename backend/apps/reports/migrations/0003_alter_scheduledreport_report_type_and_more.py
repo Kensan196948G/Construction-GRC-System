@@ -29,6 +29,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="scheduledreport",
-            index=models.Index(fields=["is_active", "next_run"], name="scheduled_report_active_next_run_idx"),
+            index=models.Index(fields=["is_active", "next_run"], name="sched_rpt_active_idx"),
         ),
     ]

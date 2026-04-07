@@ -66,7 +66,7 @@ class ScheduledReport(models.Model):
         verbose_name = "レポートスケジュール"
         verbose_name_plural = "レポートスケジュール"
         indexes = [
-            models.Index(fields=["is_active", "next_run"], name="scheduled_report_active_next_run_idx"),
+            models.Index(fields=["is_active", "next_run"], name="sched_rpt_active_idx"),
         ]
 
     def __str__(self):

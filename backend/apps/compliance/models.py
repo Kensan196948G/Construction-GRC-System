@@ -65,7 +65,7 @@ class ComplianceRequirement(models.Model):
         indexes = [
             models.Index(fields=["compliance_status"], name="compliance_status_idx"),
             models.Index(fields=["framework"], name="compliance_framework_idx"),
-            models.Index(fields=["framework", "compliance_status"], name="compliance_framework_status_idx"),
+            models.Index(fields=["framework", "compliance_status"], name="comp_fw_status_idx"),
         ]
 
     def __str__(self):

@@ -24,6 +24,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="compliancerequirement",
-            index=models.Index(fields=["framework", "compliance_status"], name="compliance_framework_status_idx"),
+            index=models.Index(fields=["framework", "compliance_status"], name="comp_fw_status_idx"),
         ),
     ]
