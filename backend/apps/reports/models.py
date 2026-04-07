@@ -31,3 +31,40 @@ class Report(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.created_at.strftime('%Y-%m-%d')})"
+
+
+class ScheduledReport(models.Model):
+    """定期レポートスケジュール."""
+
+    class Frequency(models.TextChoices):
+        DAILY = "daily", "毎日"
+        WEEKLY = "weekly", "毎週"
+        MONTHLY = "monthly", "毎月"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200, verbose_name="スケジュール名")
+    report_type = models.CharField(max_length=30, choices=Report.ReportType.choices)
+    frequency = models.CharField(
+        max_length=20,
+        choices=Frequency.choices,
+        default=Frequency.WEEKLY,
+    )
+    recipients = models.JSONField(default=list, verbose_name="受信者メールアドレスリスト")
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    last_run = models.DateTimeField(null=True, blank=True)
+    next_run = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "レポートスケジュール"
+        verbose_name_plural = "レポートスケジュール"
+
+    def __str__(self):
+        return f"{self.name} ({self.frequency})"
