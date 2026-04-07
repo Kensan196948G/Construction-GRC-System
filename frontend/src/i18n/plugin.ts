@@ -14,7 +14,7 @@ const currentLocale = ref<Locale>(
 export function useI18n() {
   function t(key: string): string {
     const keys = key.split('.')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let result: any = messages[currentLocale.value]
     for (const k of keys) {
       if (result && typeof result === 'object' && k in result) {

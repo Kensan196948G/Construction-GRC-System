@@ -552,8 +552,8 @@ onMounted(() => {
         :items="filteredAudits"
         :loading="auditsStore.loading"
         hover
-        @click:row="onRowClick"
         class="audit-table"
+        @click:row="onRowClick"
       >
         <template #item.audit_id="{ item }">
           <span class="font-weight-medium text-primary">{{ item.audit_id }}</span>

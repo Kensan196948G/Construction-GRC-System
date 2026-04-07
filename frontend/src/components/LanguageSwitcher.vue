@@ -16,7 +16,7 @@ function toggleLocale() {
 </script>
 
 <template>
-  <v-btn icon variant="text" @click="toggleLocale" :title="localeNames[locale]">
+  <v-btn icon variant="text" :title="localeNames[locale]" @click="toggleLocale">
     <v-icon>mdi-translate</v-icon>
   </v-btn>
 </template>

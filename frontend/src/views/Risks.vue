@@ -286,9 +286,9 @@ onMounted(() => {
         :items-length="filteredRisks.length"
         :loading="risksStore.loading"
         hover
+        class="risk-table"
         @update:options="loadItems"
         @click:row="onRowClick"
-        class="risk-table"
       >
         <template #item.risk_id="{ item }">
           <span class="font-weight-medium text-primary">{{ item.risk_id }}</span>

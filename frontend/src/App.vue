@@ -65,8 +65,8 @@ const handleLogout = async () => {
         <LanguageSwitcher />
         <v-btn
           :icon="isDark() ? 'mdi-weather-night' : 'mdi-weather-sunny'"
-          @click="toggleTheme"
           title="テーマ切替"
+          @click="toggleTheme"
         />
         <v-btn icon="mdi-logout" @click="handleLogout" />
       </v-app-bar>

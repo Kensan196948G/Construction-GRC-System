@@ -192,7 +192,7 @@ export const defaultLocale: Locale = 'ja'
 
 export function t(key: string, locale: Locale = defaultLocale): string {
   const keys = key.split('.')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let result: any = messages[locale]
   for (const k of keys) {
     if (result && typeof result === 'object' && k in result) {

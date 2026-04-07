@@ -456,9 +456,9 @@ onMounted(async () => {
         :items="filteredRequirements"
         :loading="complianceStore.loading"
         hover
-        @click:row="onRowClick"
         class="compliance-table"
         :items-per-page-options="[5, 10, 25, 50]"
+        @click:row="onRowClick"
       >
         <template #item.req_id="{ item }">
           <span class="font-weight-medium text-primary">{{ item.req_id }}</span>

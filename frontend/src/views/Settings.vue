@@ -381,8 +381,8 @@ const tabs = [
             <v-btn
               color="primary"
               class="mt-6"
-              @click="saveNotifications"
               prepend-icon="mdi-content-save"
+              @click="saveNotifications"
             >
               通知設定を保存
             </v-btn>
@@ -406,7 +406,7 @@ const tabs = [
               表示名や連絡先を更新できます。
             </p>
 
-            <v-form @submit.prevent="saveProfile" max-width="500">
+            <v-form max-width="500" @submit.prevent="saveProfile">
               <v-text-field
                 v-model="profile.displayName"
                 label="表示名"
