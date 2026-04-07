@@ -16,7 +16,7 @@ async function globalSetup(config: FullConfig) {
     // If redirect doesn't happen, continue — login test itself will verify this
   })
 
-  await page.context().storageState({ path: 'e2e/.auth-state.json' })
+  await page.context().storageState({ path: '.auth-state.json' })
   await browser.close()
 }
 

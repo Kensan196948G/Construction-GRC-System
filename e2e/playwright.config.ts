@@ -10,7 +10,7 @@ export default defineConfig({
     headless: true,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
-    storageState: 'e2e/.auth-state.json',
+    storageState: '.auth-state.json',
   },
   projects: [
     {
