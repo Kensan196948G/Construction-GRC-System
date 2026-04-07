@@ -27,13 +27,14 @@
 | Phase 10A | 品質強化 — Docker統合テスト + Playwright E2E + カバレッジゲート | ✅ 完了 (PR #44) |
 | Phase 10B | 機能拡張 — TOTP 2FA本格実装 + レポートスケジュール機能 | ✅ 完了 (PR #45) |
 | Phase 10C | インフラ — K8s設定スクリプト + パフォーマンスベンチマーク | ✅ 完了 (PR #46) |
+| Phase 11 | ScheduledReport Celery Beat + TOTP 2FA UI + モバイル対応 | ✅ 完了 (PR #48/#49) |
 
 | 指標 | 値 |
 |------|-----|
 | CI状態 | [![CI](https://github.com/Kensan196948G/Construction-GRC-System/actions/workflows/claudeos-ci.yml/badge.svg)](https://github.com/Kensan196948G/Construction-GRC-System/actions) |
-| バージョン | v1.1.0 (Phase 10 完了) |
-| STABLE マージ数 | 48 PRs |
-| テスト数 | 550+ ケース |
+| バージョン | v1.2.0 (Phase 11 完了) |
+| STABLE マージ数 | 50 PRs |
+| テスト数 | 660+ ケース |
 | 最終更新 | 2026-04-08 |
 
 ---
