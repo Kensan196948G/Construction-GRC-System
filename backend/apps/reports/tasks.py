@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import timedelta
+import logging
 
 from celery import shared_task
 
