@@ -53,3 +53,9 @@ export async function getComplianceRate(): Promise<ComplianceRateResponse> {
   )
   return response.data
 }
+
+export const exportComplianceCSV = () =>
+  apiClient.get('/api/v1/compliance/export/csv/', { responseType: 'blob' })
+
+export const exportComplianceExcel = () =>
+  apiClient.get('/api/v1/compliance/export/excel/', { responseType: 'blob' })

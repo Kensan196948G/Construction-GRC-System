@@ -3,6 +3,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useRisksStore } from '@/store/risks'
 import type { Risk } from '@/store/risks'
+import { exportRisksCSV, exportRisksExcel } from '@/api/risks'
+import { downloadBlob } from '@/utils/download'
 
 
 const risksStore = useRisksStore()
@@ -210,6 +212,29 @@ watch([categoryFilter, statusFilter], () => {
   page.value = 1
 })
 
+const exportingCSV = ref(false)
+const exportingExcel = ref(false)
+
+const handleExportCSV = async () => {
+  exportingCSV.value = true
+  try {
+    const response = await exportRisksCSV()
+    downloadBlob(response.data, 'risks.csv')
+  } finally {
+    exportingCSV.value = false
+  }
+}
+
+const handleExportExcel = async () => {
+  exportingExcel.value = true
+  try {
+    const response = await exportRisksExcel()
+    downloadBlob(response.data, 'risks.xlsx')
+  } finally {
+    exportingExcel.value = false
+  }
+}
+
 onMounted(() => {
   risksStore.fetchRisks()
 })
@@ -221,6 +246,24 @@ onMounted(() => {
     <div class="d-flex align-center mb-6">
       <h1 class="text-h4">リスク管理</h1>
       <v-spacer />
+      <v-btn
+        variant="outlined"
+        prepend-icon="mdi-file-delimited"
+        :loading="exportingCSV"
+        class="mr-2"
+        @click="handleExportCSV"
+      >
+        CSV
+      </v-btn>
+      <v-btn
+        variant="outlined"
+        prepend-icon="mdi-microsoft-excel"
+        :loading="exportingExcel"
+        class="mr-2"
+        @click="handleExportExcel"
+      >
+        Excel
+      </v-btn>
       <v-btn
         color="primary"
         prepend-icon="mdi-plus"
