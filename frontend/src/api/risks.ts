@@ -61,3 +61,9 @@ export async function getDashboard(): Promise<DashboardSummary> {
   )
   return response.data
 }
+
+export const exportRisksCSV = () =>
+  apiClient.get('/api/v1/risks/export/csv/', { responseType: 'blob' })
+
+export const exportRisksExcel = () =>
+  apiClient.get('/api/v1/risks/export/excel/', { responseType: 'blob' })

@@ -4,6 +4,8 @@ import { useDisplay } from 'vuetify'
 import { useComplianceStore } from '@/store/compliance'
 import type { ComplianceRequirement, ComplianceStatus } from '@/types'
 import ComplianceGauge from '@/components/ComplianceGauge.vue'
+import { exportComplianceCSV, exportComplianceExcel } from '@/api/compliance'
+import { downloadBlob } from '@/utils/download'
 
 const complianceStore = useComplianceStore()
 const { smAndDown } = useDisplay()
@@ -262,6 +264,29 @@ const summaryCards = computed(() => {
   ]
 })
 
+const exportingCSV = ref(false)
+const exportingExcel = ref(false)
+
+const handleExportCSV = async () => {
+  exportingCSV.value = true
+  try {
+    const response = await exportComplianceCSV()
+    downloadBlob(response.data, 'compliance.csv')
+  } finally {
+    exportingCSV.value = false
+  }
+}
+
+const handleExportExcel = async () => {
+  exportingExcel.value = true
+  try {
+    const response = await exportComplianceExcel()
+    downloadBlob(response.data, 'compliance.xlsx')
+  } finally {
+    exportingExcel.value = false
+  }
+}
+
 // ---------- フィルタ変更時リセット ----------
 watch([activeTab, statusFilter], () => {
   page.value = 1
@@ -286,6 +311,24 @@ onMounted(async () => {
     <div class="d-flex align-center mb-6">
       <h1 class="text-h4">コンプライアンス管理</h1>
       <v-spacer />
+      <v-btn
+        variant="outlined"
+        prepend-icon="mdi-file-delimited"
+        :loading="exportingCSV"
+        class="mr-2"
+        @click="handleExportCSV"
+      >
+        CSV
+      </v-btn>
+      <v-btn
+        variant="outlined"
+        prepend-icon="mdi-microsoft-excel"
+        :loading="exportingExcel"
+        class="mr-2"
+        @click="handleExportExcel"
+      >
+        Excel
+      </v-btn>
       <v-chip color="primary" variant="tonal" class="mr-2">
         {{ requirements.length }} 要件
       </v-chip>
