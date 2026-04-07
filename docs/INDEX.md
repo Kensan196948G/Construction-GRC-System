@@ -1,6 +1,6 @@
 # 📚 Construction-GRC-System ドキュメントインデックス
 
-> 建設業 統合リスク＆コンプライアンス管理システム — 全57ドキュメント
+> 建設業 統合リスク＆コンプライアンス管理システム — 全60ドキュメント
 
 ---
 
@@ -71,6 +71,7 @@
 | 3 | [障害対応手順書](06_運用・保守（Operations）/03_障害対応手順書（Incident-Response）.md) | OPS-INC-001 |
 | 4 | [バックアップ・リストア手順](06_運用・保守（Operations）/04_バックアップ・リストア手順（Backup-Restore）.md) | OPS-BKP-001 |
 | 5 | [保守計画](06_運用・保守（Operations）/05_保守計画（Maintenance-Plan）.md) | OPS-MNT-001 |
+| 6 | [運用マニュアル（簡易版）](06_運用・保守（Operations）/operations-manual.md) | OPS-QCK-001 |
 
 ## 📁 07_リリース管理（Release-Management）
 
@@ -81,6 +82,7 @@
 | 3 | [デプロイ手順書](07_リリース管理（Release-Management）/03_デプロイ手順書（Deployment-Guide）.md) | REL-DEP-001 |
 | 4 | [ロールバック手順書](07_リリース管理（Release-Management）/04_ロールバック手順書（Rollback-Guide）.md) | REL-RBK-001 |
 | 5 | [変更管理手順](07_リリース管理（Release-Management）/05_変更管理手順（Change-Management）.md) | REL-CHG-001 |
+| 6 | [デプロイガイド（簡易版）](07_リリース管理（Release-Management）/deploy-guide.md) | REL-QCK-001 |
 
 ## 📁 08_GRC固有（GRC-Specific）
 
@@ -110,7 +112,8 @@
 | 2 | [アクセス制御設計](10_セキュリティ（Security）/02_アクセス制御設計（Access-Control-Design）.md) | SEC-AC-001 |
 | 3 | [脆弱性管理計画](10_セキュリティ（Security）/03_脆弱性管理計画（Vulnerability-Management）.md) | SEC-VUL-001 |
 | 4 | [インシデント対応計画](10_セキュリティ（Security）/04_インシデント対応計画（Incident-Response-Plan）.md) | SEC-IRP-001 |
+| 5 | [OWASPチェックリスト](10_セキュリティ（Security）/owasp-checklist.md) | SEC-OWA-001 |
 
 ---
 
-*合計: 10カテゴリ × 57ドキュメント*
+*合計: 10カテゴリ × 60ドキュメント*
