@@ -6,7 +6,7 @@ test.describe('GRC Dashboard', () => {
   })
 
   test('should display dashboard', async ({ page }) => {
-    await expect(page.locator('h1, .text-h4')).toContainText(/ダッシュボード/)
+    await expect(page.locator('h1, .text-h4').first()).toContainText(/ダッシュボード/)
   })
 
   test('should show summary cards', async ({ page }) => {

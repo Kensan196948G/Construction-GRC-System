@@ -17,15 +17,15 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value)
 
   async function login(username: string, password: string) {
-    const response = await apiClient.post('/api/v1/auth/login', {
+    const response = await apiClient.post('/api/v1/auth/token/', {
       username,
       password,
     })
-    token.value = response.data.access_token
-    refreshTokenValue.value = response.data.refresh_token
+    token.value = response.data.access
+    refreshTokenValue.value = response.data.refresh
     user.value = response.data.user
-    localStorage.setItem('access_token', response.data.access_token)
-    localStorage.setItem('refresh_token', response.data.refresh_token)
+    localStorage.setItem('access_token', response.data.access)
+    localStorage.setItem('refresh_token', response.data.refresh)
   }
 
   function logout() {
@@ -38,11 +38,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function refreshToken() {
     try {
-      const response = await apiClient.post('/api/v1/auth/refresh', {
-        refresh_token: refreshTokenValue.value,
+      const response = await apiClient.post('/api/v1/auth/token/refresh/', {
+        refresh: refreshTokenValue.value,
       })
-      token.value = response.data.access_token
-      localStorage.setItem('access_token', response.data.access_token)
+      token.value = response.data.access
+      localStorage.setItem('access_token', response.data.access)
     } catch {
       logout()
     }
@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function fetchUser() {
     try {
-      const response = await apiClient.get('/api/v1/auth/me')
+      const response = await apiClient.get('/api/v1/auth/profile/')
       user.value = response.data
     } catch {
       logout()

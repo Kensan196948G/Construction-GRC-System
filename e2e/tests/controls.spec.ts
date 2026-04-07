@@ -6,7 +6,7 @@ test.describe('ISO27001 Controls', () => {
   })
 
   test('should display controls page', async ({ page }) => {
-    await expect(page.locator('h1, .text-h4')).toContainText(/管理策/)
+    await expect(page.locator('h1, .text-h4').first()).toContainText(/管理策/)
   })
 
   test('should show domain tabs', async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('ISO27001 Controls', () => {
   })
 
   test('should show controls table with 93 items or pagination', async ({ page }) => {
-    await expect(page.locator('table, .v-data-table')).toBeVisible()
+    await expect(page.locator('table, .v-data-table').first()).toBeVisible()
   })
 
   test('should show compliance rate summary', async ({ page }) => {

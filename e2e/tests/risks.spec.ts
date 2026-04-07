@@ -7,11 +7,11 @@ test.describe('Risk Management', () => {
   })
 
   test('should display risk management page', async ({ page }) => {
-    await expect(page.locator('h1, .text-h4')).toContainText(/リスク/)
+    await expect(page.locator('h1, .text-h4').first()).toContainText(/リスク/)
   })
 
   test('should show risk table', async ({ page }) => {
-    await expect(page.locator('table, .v-data-table')).toBeVisible()
+    await expect(page.locator('table, .v-data-table').first()).toBeVisible()
   })
 
   test('should have filter controls', async ({ page }) => {
