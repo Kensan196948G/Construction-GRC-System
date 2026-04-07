@@ -62,6 +62,11 @@ class ComplianceRequirement(models.Model):
         ordering = ["framework", "req_id"]
         verbose_name = "法令要件"
         verbose_name_plural = "法令要件"
+        indexes = [
+            models.Index(fields=["compliance_status"], name="compliance_status_idx"),
+            models.Index(fields=["framework"], name="compliance_framework_idx"),
+            models.Index(fields=["framework", "compliance_status"], name="compliance_framework_status_idx"),
+        ]
 
     def __str__(self):
         return f"{self.req_id}: {self.title}"

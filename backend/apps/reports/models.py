@@ -65,6 +65,9 @@ class ScheduledReport(models.Model):
         ordering = ["-created_at"]
         verbose_name = "レポートスケジュール"
         verbose_name_plural = "レポートスケジュール"
+        indexes = [
+            models.Index(fields=["is_active", "next_run"], name="scheduled_report_active_next_run_idx"),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.frequency})"

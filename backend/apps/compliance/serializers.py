@@ -4,6 +4,9 @@ from .models import ComplianceRequirement
 
 
 class ComplianceRequirementSerializer(serializers.ModelSerializer):
+    # ArrayField(UUIDField) は DRF が内部フィールドの .model を参照してエラーになるため明示宣言
+    evidence_ids = serializers.ListField(child=serializers.UUIDField(), required=False)
+
     class Meta:
         model = ComplianceRequirement
         fields = "__all__"
