@@ -68,7 +68,7 @@ class PDFReportGenerator:
 <html lang="ja">
 <head><meta charset="utf-8"><title>GRC ダッシュボードレポート</title>
 <style>
-body {{ font-family: 'Noto Sans JP', sans-serif; margin: 40px; color: #333; }}
+body {{ font-family: sans-serif; margin: 40px; color: #333; }}
 h1 {{ color: #1565C0; border-bottom: 3px solid #1565C0; padding-bottom: 10px; }}
 h2 {{ color: #424242; margin-top: 30px; }}
 table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
@@ -79,16 +79,16 @@ th {{ background-color: #1565C0; color: white; }}
 .footer {{ margin-top: 40px; font-size: 0.9em; color: #888; border-top: 1px solid #ddd; padding-top: 10px; }}
 </style></head>
 <body>
-<h1>🏗 建設業GRC 統合ダッシュボードレポート</h1>
+<h1>建設業GRC 統合ダッシュボードレポート</h1>
 <p>生成日時: {now}</p>
 
-<h2>📊 リスク管理</h2>
+<h2>リスク管理</h2>
 <div class="card"><div class="metric">{risks.get("total", 0)}</div>リスク総数</div>
 <table><tr><th>レベル</th><th>件数</th></tr>
 {"".join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k, v in risks.get("by_level", {}).items())}
 </table>
 
-<h2>✅ コンプライアンス</h2>
+<h2>コンプライアンス</h2>
 <div class="card"><div class="metric">{compliance.get("rate", 0)}%</div>準拠率</div>
 <table><tr><th>項目</th><th>件数</th></tr>
 <tr><td>準拠</td><td>{compliance.get("compliant", 0)}</td></tr>
@@ -96,7 +96,7 @@ th {{ background-color: #1565C0; color: white; }}
 <tr><td>部分準拠</td><td>{compliance.get("partial", 0)}</td></tr>
 </table>
 
-<h2>🛡 ISO27001 管理策</h2>
+<h2>ISO27001 管理策</h2>
 <div class="card"><div class="metric">{controls.get("rate", 0)}%</div>実施率</div>
 <table><tr><th>ステータス</th><th>件数</th></tr>
 <tr><td>実施済み</td><td>{controls.get("implemented", 0)}</td></tr>
@@ -104,7 +104,7 @@ th {{ background-color: #1565C0; color: white; }}
 <tr><td>未着手</td><td>{controls.get("not_started", 0)}</td></tr>
 </table>
 
-<h2>🔍 内部監査</h2>
+<h2>内部監査</h2>
 <table><tr><th>項目</th><th>件数</th></tr>
 <tr><td>監査総数</td><td>{audits.get("total_audits", 0)}</td></tr>
 <tr><td>完了</td><td>{audits.get("completed", 0)}</td></tr>
