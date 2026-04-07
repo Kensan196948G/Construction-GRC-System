@@ -20,6 +20,41 @@ const errorMessage = ref<string | null>(null)
 const lastUpdated = ref<string>('')
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 
+// ---------- Heatmap Drill-down ----------
+const heatmapDialog = ref(false)
+const selectedCell = ref<{ likelihood: number; impact: number } | null>(null)
+
+const onHeatmapCellClick = ({ likelihood, impact }: { likelihood: number; impact: number }) => {
+  selectedCell.value = { likelihood, impact }
+  heatmapDialog.value = true
+}
+
+const drilldownRisks = computed(() => {
+  if (!selectedCell.value) return []
+  const { likelihood, impact } = selectedCell.value
+  const source = risksStore.risks
+  return source.filter((r) => r.likelihood === likelihood && r.impact === impact)
+})
+
+const drilldownTitle = computed(() => {
+  if (!selectedCell.value) return ''
+  return `発生可能性 ${selectedCell.value.likelihood} × 影響度 ${selectedCell.value.impact} のリスク`
+})
+
+const drilldownLevelColor = (level: string): string => {
+  const colors: Record<string, string> = {
+    CRITICAL: 'red', HIGH: 'orange', MEDIUM: 'yellow-darken-2', LOW: 'green',
+  }
+  return colors[level] || 'grey'
+}
+
+const drilldownStatusLabel = (status: string): string => {
+  const labels: Record<string, string> = {
+    open: '未対応', in_progress: '対応中', closed: '完了', accepted: '受容',
+  }
+  return labels[status] || status
+}
+
 // ---------- Dashboard Data ----------
 const dashboardData = ref<GRCDashboardData | null>(null)
 
@@ -463,7 +498,10 @@ onUnmounted(() => {
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-4">
-            <RiskHeatmap :heatmap-data="risksStore.heatmap" />
+            <RiskHeatmap
+              :heatmap-data="risksStore.heatmap"
+              @cell-click="onHeatmapCellClick"
+            />
           </v-card-text>
         </v-card>
       </v-col>
@@ -753,6 +791,54 @@ onUnmounted(() => {
         </v-col>
       </v-row>
     </div>
+
+    <!-- ヒートマップドリルダウンダイアログ -->
+    <v-dialog v-model="heatmapDialog" max-width="720">
+      <v-card>
+        <v-card-title class="d-flex align-center pa-4">
+          <v-icon class="mr-2" color="red-darken-1">mdi-grid</v-icon>
+          {{ drilldownTitle }}
+          <v-spacer />
+          <v-btn icon="mdi-close" variant="text" @click="heatmapDialog = false" />
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pa-4">
+          <div v-if="drilldownRisks.length === 0" class="text-center py-6 text-medium-emphasis">
+            このセルに該当するリスクはありません
+          </div>
+          <v-list v-else density="compact">
+            <v-list-item
+              v-for="risk in drilldownRisks"
+              :key="risk.risk_id"
+              class="px-0 mb-2"
+            >
+              <template #prepend>
+                <v-chip
+                  :color="drilldownLevelColor(risk.risk_level)"
+                  size="x-small"
+                  label
+                  class="mr-2"
+                >
+                  {{ risk.risk_level }}
+                </v-chip>
+              </template>
+              <v-list-item-title class="text-body-2 font-weight-medium">
+                {{ risk.risk_id }}: {{ risk.title }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="d-flex ga-2 mt-1">
+                <v-chip size="x-small" variant="outlined">{{ risk.category }}</v-chip>
+                <v-chip size="x-small" variant="tonal">{{ drilldownStatusLabel(risk.status) }}</v-chip>
+                <span class="text-caption text-medium-emphasis">{{ risk.owner }}</span>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="text" @click="heatmapDialog = false">閉じる</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 

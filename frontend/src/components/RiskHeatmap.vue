@@ -10,6 +10,15 @@ const props = withDefaults(defineProps<Props>(), {
   heatmapData: () => [],
 })
 
+const emit = defineEmits<{
+  cellClick: [{ likelihood: number; impact: number; count: number }]
+}>()
+
+const onCellClick = (likelihood: number, impact: number) => {
+  const count = getCellCount(likelihood, impact)
+  emit('cellClick', { likelihood, impact, count })
+}
+
 const likelihoodLabels = ['5 - ほぼ確実', '4 - 可能性高', '3 - 可能性中', '2 - 可能性低', '1 - まれ']
 const impactLabels = ['1 - 軽微', '2 - 小', '3 - 中', '4 - 大', '5 - 甚大']
 
@@ -71,6 +80,7 @@ const getCellCount = (likelihood: number, impact: number): number => {
               backgroundColor: getCellColor(5 - rowIdx, impactIdx),
               color: getCellLevel(5 - rowIdx, impactIdx) === 'MEDIUM' ? '#333' : '#fff',
             }"
+            @click="onCellClick(5 - rowIdx, impactIdx)"
           >
             <span class="cell-count">{{ getCellCount(5 - rowIdx, impactIdx) }}</span>
           </td>
@@ -135,7 +145,7 @@ const getCellCount = (likelihood: number, impact: number): number => {
 }
 
 .heatmap-cell {
-  cursor: default;
+  cursor: pointer;
   min-width: 60px;
   height: 60px;
   font-weight: bold;
