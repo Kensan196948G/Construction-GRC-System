@@ -263,3 +263,160 @@ class TestSendReportEmail(TestCase):
         assert "添付テスト" in mail.outbox[0].subject
         assert len(mail.outbox[0].attachments) == 1
         assert mail.outbox[0].attachments[0][2] == "application/pdf"
+
+
+@pytest.mark.django_db
+class TestSendDailyDigestTask(TestCase):
+    """send_daily_digest Celeryタスクテスト."""
+
+    @patch("apps.reports.notification_service.NotificationService.notify_daily_digest")
+    def test_returns_summary_with_no_data(self, mock_notify):
+        """データなし時もsummaryキーが返る。"""
+        from apps.reports.tasks import send_daily_digest
+
+        mock_notify.return_value = {"slack": False}
+
+        result = send_daily_digest()
+
+        assert "summary" in result
+        assert "notification_results" in result
+        assert result["summary"]["risks"] == 0
+        assert result["summary"]["critical_risks"] == 0
+        assert result["summary"]["compliance_rate"] == 0
+        assert result["summary"]["open_findings"] == 0
+
+    @patch("apps.reports.notification_service.NotificationService.notify_daily_digest")
+    def test_counts_risks_and_compliance(self, mock_notify):
+        """リスク・コンプライアンス・所見を正しく集計する。"""
+        from apps.audits.models import AuditFinding
+        from apps.compliance.models import ComplianceRequirement
+        from apps.reports.tasks import send_daily_digest
+        from apps.risks.models import Risk
+
+        mock_notify.return_value = {"slack": True}
+
+        Risk.objects.create(
+            risk_id="RISK-DD-001",
+            title="高リスク",
+            category="IT",
+            likelihood_inherent=5,
+            impact_inherent=5,
+            status="open",
+        )
+        Risk.objects.create(
+            risk_id="RISK-DD-002",
+            title="低リスク",
+            category="IT",
+            likelihood_inherent=1,
+            impact_inherent=2,
+            status="open",
+        )
+        ComplianceRequirement.objects.create(
+            req_id="REQ-DD-001",
+            framework="iso27001",
+            title="準拠要件",
+            compliance_status="compliant",
+        )
+        ComplianceRequirement.objects.create(
+            req_id="REQ-DD-002",
+            framework="iso27001",
+            title="非準拠要件",
+            compliance_status="non_compliant",
+        )
+        from datetime import UTC, datetime
+
+        from apps.audits.models import Audit
+
+        today = datetime.now(tz=UTC).date()
+        audit = Audit.objects.create(
+            audit_id="AUD-DD-001",
+            title="ダイジェストテスト監査",
+            audit_type="ISO27001",
+            target_department="IT部門",
+            planned_start=today,
+            planned_end=today,
+        )
+        AuditFinding.objects.create(
+            audit=audit,
+            finding_id="FIND-DD-001",
+            title="未解決所見",
+            finding_type="major_nc",
+            description="テスト所見",
+            cap_status="open",
+        )
+
+        result = send_daily_digest()
+
+        assert result["summary"]["risks"] == 2
+        assert result["summary"]["critical_risks"] == 1  # 5*5=25 >= 15
+        assert result["summary"]["compliance_rate"] == 50.0
+        assert result["summary"]["open_findings"] == 1
+        mock_notify.assert_called_once_with(result["summary"])
+
+    @patch("apps.reports.notification_service.NotificationService.notify_daily_digest")
+    def test_compliance_rate_zero_when_no_requirements(self, mock_notify):
+        """要件ゼロ時はゼロ除算なしで rate=0。"""
+        from apps.reports.tasks import send_daily_digest
+
+        mock_notify.return_value = {}
+
+        result = send_daily_digest()
+        assert result["summary"]["compliance_rate"] == 0
+
+
+class TestGeneratePdfForType:
+    """_generate_pdf_for_type ユニットテスト（DB不要）."""
+
+    @patch("apps.reports.pdf_generator.PDFReportGenerator.generate_grc_dashboard_pdf")
+    def test_grc_dashboard_type(self, mock_method):
+        from unittest.mock import MagicMock
+
+        from apps.reports.tasks import _generate_pdf_for_type
+
+        mock_method.return_value = b"pdf1"
+        mock_service = MagicMock()
+        mock_service.get_dashboard_data.return_value = {}
+
+        result = _generate_pdf_for_type("grc_dashboard", mock_service)
+        assert result == b"pdf1"
+        mock_method.assert_called_once()
+
+    @patch("apps.reports.pdf_generator.PDFReportGenerator.generate_compliance_report_pdf")
+    def test_compliance_status_type(self, mock_method):
+        from unittest.mock import MagicMock
+
+        from apps.reports.tasks import _generate_pdf_for_type
+
+        mock_method.return_value = b"pdf2"
+        mock_service = MagicMock()
+        mock_service.get_compliance_data.return_value = []
+
+        result = _generate_pdf_for_type("compliance_status", mock_service)
+        assert result == b"pdf2"
+
+    @patch("apps.reports.pdf_generator.PDFReportGenerator.generate_risk_report_pdf")
+    def test_risk_trend_type(self, mock_method):
+        from unittest.mock import MagicMock
+
+        from apps.reports.tasks import _generate_pdf_for_type
+
+        mock_method.return_value = b"pdf3"
+        mock_service = MagicMock()
+        mock_service.get_risk_data.return_value = []
+
+        result = _generate_pdf_for_type("risk_trend", mock_service)
+        assert result == b"pdf3"
+
+    @patch("apps.reports.pdf_generator.PDFReportGenerator.generate_grc_dashboard_pdf")
+    def test_unknown_type_falls_back_to_dashboard(self, mock_method):
+        from unittest.mock import MagicMock
+
+        from apps.reports.tasks import _generate_pdf_for_type
+
+        mock_method.return_value = b"fallback"
+        mock_service = MagicMock()
+        mock_service.get_dashboard_data.return_value = {}
+
+        result = _generate_pdf_for_type("unknown_type", mock_service)
+        assert result == b"fallback"
+        mock_method.assert_called_once()
