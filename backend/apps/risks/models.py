@@ -72,6 +72,11 @@ class Risk(models.Model):
         ordering = ["-created_at"]
         verbose_name = "リスク"
         verbose_name_plural = "リスク"
+        indexes = [
+            models.Index(fields=["status"], name="risk_status_idx"),
+            models.Index(fields=["created_at"], name="risk_created_at_idx"),
+            models.Index(fields=["likelihood_inherent", "impact_inherent"], name="risk_score_inherent_idx"),
+        ]
 
     def __str__(self):
         return f"{self.risk_id}: {self.title}"

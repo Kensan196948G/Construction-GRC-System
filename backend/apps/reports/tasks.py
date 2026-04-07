@@ -112,13 +112,20 @@ def _send_report_email(schedule, pdf_bytes: bytes) -> None:
 @shared_task(name="reports.send_daily_digest")
 def send_daily_digest():
     """日次GRCダイジェスト送信（毎日18:00実行）"""
+    from django.db.models import F
+
     from apps.audits.models import AuditFinding
     from apps.compliance.models import ComplianceRequirement
     from apps.reports.notification_service import NotificationService
     from apps.risks.models import Risk
 
     total_risks = Risk.objects.count()
-    critical = sum(1 for r in Risk.objects.all() if r.risk_level == "CRITICAL")
+    # annotate でDB側集計 (N+1回避: 全件Python展開→COUNT(WHERE)1クエリ)
+    critical = (
+        Risk.objects.annotate(risk_score=F("likelihood_inherent") * F("impact_inherent"))
+        .filter(risk_score__gte=15)
+        .count()
+    )
 
     total_compliance = ComplianceRequirement.objects.count()
     compliant = ComplianceRequirement.objects.filter(compliance_status="compliant").count()
