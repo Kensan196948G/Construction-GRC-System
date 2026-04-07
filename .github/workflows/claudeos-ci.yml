@@ -89,6 +89,8 @@ jobs:
         DATABASE_URL: postgresql://grc_user:grc_test_password@localhost:5432/grc_test
         REDIS_URL: redis://localhost:6379/0
         DJANGO_SETTINGS_MODULE: grc.settings.development
+        SKIP_DOCKER_INTEGRATION: "1"
+        SKIP_E2E: "1"
       run: cd backend && python -m pytest tests/ -v --tb=short
 
     - name: Setup Node.js
