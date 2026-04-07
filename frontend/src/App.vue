@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/store/auth'
 import { useThemeToggle } from '@/composables/useTheme'
+import { ROLES, type UserRole } from '@/router'
 import SkipLink from '@/components/SkipLink.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
@@ -16,15 +17,38 @@ const { smAndDown } = useDisplay()
 
 const isLoginPage = computed(() => route.path === '/login')
 
-const menuItems = [
-  { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/' },
-  { title: 'リスク管理', icon: 'mdi-alert-circle', to: '/risks' },
-  { title: 'コンプライアンス', icon: 'mdi-check-circle', to: '/compliance' },
-  { title: '管理策(ISO27001)', icon: 'mdi-shield-check', to: '/controls' },
-  { title: '内部監査', icon: 'mdi-clipboard-text', to: '/audits' },
-  { title: 'レポート', icon: 'mdi-chart-bar', to: '/reports' },
-  { title: '設定', icon: 'mdi-cog', to: '/settings' },
+const ALL_ROLES: UserRole[] = Object.values(ROLES)
+
+const allMenuItems = [
+  { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/', roles: ALL_ROLES },
+  { title: 'リスク管理', icon: 'mdi-alert-circle', to: '/risks', roles: [ROLES.GRC_ADMIN, ROLES.RISK_OWNER, ROLES.AUDITOR, ROLES.EXECUTIVE, ROLES.GENERAL] },
+  { title: 'コンプライアンス', icon: 'mdi-check-circle', to: '/compliance', roles: ALL_ROLES },
+  { title: '管理策(ISO27001)', icon: 'mdi-shield-check', to: '/controls', roles: [ROLES.GRC_ADMIN, ROLES.COMPLIANCE_OFFICER, ROLES.AUDITOR, ROLES.EXECUTIVE] },
+  { title: '内部監査', icon: 'mdi-clipboard-text', to: '/audits', roles: [ROLES.GRC_ADMIN, ROLES.AUDITOR, ROLES.EXECUTIVE] },
+  { title: 'レポート', icon: 'mdi-chart-bar', to: '/reports', roles: [ROLES.GRC_ADMIN, ROLES.RISK_OWNER, ROLES.COMPLIANCE_OFFICER, ROLES.AUDITOR, ROLES.EXECUTIVE] },
+  { title: '変更履歴', icon: 'mdi-history', to: '/activity-log', roles: [ROLES.GRC_ADMIN, ROLES.AUDITOR] },
+  { title: '設定', icon: 'mdi-cog', to: '/settings', roles: [ROLES.GRC_ADMIN, ROLES.RISK_OWNER, ROLES.COMPLIANCE_OFFICER, ROLES.AUDITOR, ROLES.GENERAL] },
 ]
+
+const ROLE_LABELS: Record<string, string> = {
+  [ROLES.GRC_ADMIN]: 'GRC管理者',
+  [ROLES.RISK_OWNER]: 'リスクオーナー',
+  [ROLES.COMPLIANCE_OFFICER]: 'コンプライアンス担当',
+  [ROLES.AUDITOR]: '内部監査員',
+  [ROLES.EXECUTIVE]: '経営層',
+  [ROLES.GENERAL]: '一般部門担当',
+}
+
+const menuItems = computed(() => {
+  const userRole = authStore.user?.role as UserRole | undefined
+  if (!userRole) return allMenuItems
+  return allMenuItems.filter(item => item.roles.includes(userRole))
+})
+
+const userRoleLabel = computed(() => {
+  const role = authStore.user?.role
+  return role ? ROLE_LABELS[role] ?? role : ''
+})
 
 const handleLogout = async () => {
   authStore.logout()
@@ -61,6 +85,9 @@ const handleLogout = async () => {
         <v-spacer />
         <span v-if="authStore.user" class="mr-4 text-body-2">
           {{ authStore.user.username }}
+          <v-chip v-if="userRoleLabel" size="x-small" variant="outlined" class="ml-1">
+            {{ userRoleLabel }}
+          </v-chip>
         </span>
         <LanguageSwitcher />
         <v-btn
