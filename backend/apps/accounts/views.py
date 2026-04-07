@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
-from rest_framework import generics
+import base64
+import io
+
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.accounts.models import GRCUser
@@ -13,6 +18,7 @@ from apps.accounts.serializers import (
     GRCUserSerializer,
     UserProfileSerializer,
 )
+from apps.accounts.totp import generate_totp_secret, get_provisioning_uri, verify_totp
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -48,3 +54,68 @@ class UserListView(generics.ListCreateAPIView):
     filterset_fields: list[str] = ["role", "department", "is_active"]
     search_fields: list[str] = ["username", "email", "display_name", "department"]
     ordering_fields: list[str] = ["username", "date_joined", "role"]
+
+
+class TOTPSetupView(APIView):
+    """2FA設定開始: 秘密鍵生成 + QRコード URI 返却."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not user.totp_secret:
+            user.totp_secret = generate_totp_secret()
+            user.save(update_fields=["totp_secret"])
+        uri = get_provisioning_uri(user.totp_secret, user.username)
+        try:
+            import qrcode
+
+            img = qrcode.make(uri)
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            qr_base64 = base64.b64encode(buf.getvalue()).decode()
+        except ImportError:
+            qr_base64 = ""
+        return Response(
+            {
+                "secret": user.totp_secret,
+                "provisioning_uri": uri,
+                "qr_code_base64": qr_base64,
+            }
+        )
+
+
+class TOTPVerifyView(APIView):
+    """2FA 検証: トークン確認 → 有効化."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        token = request.data.get("token", "")
+        user = request.user
+        if not user.totp_secret:
+            return Response(
+                {"error": "2FAが設定されていません"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if verify_totp(user.totp_secret, str(token)):
+            user.totp_enabled = True
+            user.save(update_fields=["totp_enabled"])
+            return Response({"message": "2FAを有効化しました"})
+        return Response(
+            {"error": "無効なトークンです"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class TOTPDisableView(APIView):
+    """2FA 無効化."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        user.totp_enabled = False
+        user.totp_secret = ""
+        user.save(update_fields=["totp_enabled", "totp_secret"])
+        return Response({"message": "2FAを無効化しました"})

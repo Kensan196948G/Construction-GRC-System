@@ -38,6 +38,16 @@ class GRCUser(AbstractUser):
         blank=True,
         verbose_name="電話番号",
     )
+    totp_secret: models.CharField = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        verbose_name="TOTP秘密鍵",
+    )
+    totp_enabled: models.BooleanField = models.BooleanField(
+        default=False,
+        verbose_name="2FA有効",
+    )
 
     class Meta:
         verbose_name = "GRCユーザー"
