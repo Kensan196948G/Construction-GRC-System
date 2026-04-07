@@ -155,6 +155,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "reports.send_daily_digest",
         "schedule": crontab(hour=18, minute=0),
     },
+    "run-scheduled-reports": {
+        "task": "reports.run_scheduled_reports",
+        "schedule": crontab(minute=0),  # 毎時0分
+    },
 }
 
 # Cache
