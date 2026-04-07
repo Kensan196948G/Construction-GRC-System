@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useThemeToggle, type ThemeMode } from '@/composables/useTheme'
 import { useI18n } from '@/i18n/plugin'
 import type { Locale } from '@/i18n/index'
@@ -164,7 +164,8 @@ const systemInfo = {
 const twoFAEnabled = ref(false)
 const twoFALoading = ref(false)
 const twoFAError = ref('')
-const twoFASuccess = ref('')
+const twoFASuccessMsg = ref('')
+const twoFASuccess = computed(() => twoFASuccessMsg.value !== '')
 
 // セットアップダイアログ
 const setupDialog = ref(false)
@@ -217,8 +218,8 @@ async function confirmSetup(): Promise<void> {
     await verify2FA(setupTokenInput.value)
     twoFAEnabled.value = true
     setupDialog.value = false
-    twoFASuccess.value = '2FAを有効化しました'
-    setTimeout(() => { twoFASuccess.value = '' }, 3000)
+    twoFASuccessMsg.value = '2FAを有効化しました'
+    setTimeout(() => { twoFASuccessMsg.value = '' }, 3000)
   } catch (err: unknown) {
     const axiosError = err as { response?: { data?: { error?: string } } }
     setupError.value = axiosError.response?.data?.error ?? '認証コードが正しくありません。再度お試しください。'
@@ -234,8 +235,8 @@ async function confirmDisable(): Promise<void> {
     await disable2FA()
     twoFAEnabled.value = false
     disableDialog.value = false
-    twoFASuccess.value = '2FAを無効化しました'
-    setTimeout(() => { twoFASuccess.value = '' }, 3000)
+    twoFASuccessMsg.value = '2FAを無効化しました'
+    setTimeout(() => { twoFASuccessMsg.value = '' }, 3000)
   } catch {
     disableError.value = '2FAの無効化に失敗しました。再度お試しください。'
   } finally {
@@ -554,7 +555,7 @@ const tabs = [
               location="bottom"
             >
               <v-icon start>mdi-check-circle</v-icon>
-              {{ twoFASuccess }}
+              {{ twoFASuccessMsg }}
             </v-snackbar>
           </v-card-text>
         </v-tabs-window-item>
