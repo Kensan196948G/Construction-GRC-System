@@ -373,6 +373,12 @@ onMounted(async () => {
           </v-chip>
         </template>
 
+        <template #item.description="{ item }">
+          <span v-if="!smAndDown" class="text-body-2 text-medium-emphasis">
+            {{ item.description ? item.description.substring(0, 80) + (item.description.length > 80 ? '...' : '') : '-' }}
+          </span>
+        </template>
+
         <template #item.is_applicable="{ item }">
           <v-icon
             :color="item.is_applicable ? 'green' : 'grey'"
