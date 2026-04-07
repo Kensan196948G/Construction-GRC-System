@@ -170,3 +170,42 @@ jobs:
     - name: Frontend Security (npm audit)
       run: |
         cd frontend && npm install && npm audit --audit-level=high || true
+
+  performance-benchmark:
+    name: Performance Benchmark (locust)
+    runs-on: ubuntu-latest
+    needs: build
+    # Skip by default in CI to keep pipeline fast.
+    # Set SKIP_PERF='' (empty string) in your workflow or repository variables
+    # to enable the full benchmark run.
+    env:
+      SKIP_PERF: '1'
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+
+    - name: Install locust
+      run: pip install -r requirements-perf.txt
+
+    - name: Validate locustfile syntax
+      run: |
+        python3 -c "import ast, sys; ast.parse(open('tests/performance/locustfile.py').read()); print('locustfile.py syntax OK')"
+
+    - name: Performance benchmark
+      # Full benchmark is skipped when SKIP_PERF=1 (default).
+      # To run manually against a live server:
+      #   export TEST_USER=admin TEST_PASSWORD=<pass>
+      #   locust -f tests/performance/locustfile.py --config tests/performance/locust.conf
+      run: |
+        if [ "${SKIP_PERF}" = "1" ]; then
+          echo "SKIP_PERF=1 — skipping full benchmark. Syntax check already passed."
+        else
+          locust -f tests/performance/locustfile.py \
+            --config tests/performance/locust.conf \
+            --host "${LOCUST_HOST:-http://localhost:8000}"
+        fi
