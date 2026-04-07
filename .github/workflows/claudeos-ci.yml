@@ -186,11 +186,22 @@ jobs:
 
       - name: Start services
         run: |
-          docker compose up -d --build
-          # Wait for backend
-          timeout 60 bash -c 'until curl -sf http://localhost:8000/api/health/; do sleep 2; done'
-          # Wait for frontend
-          timeout 60 bash -c 'until curl -sf http://localhost:3000/; do sleep 2; done'
+          # Start only required services (skip celery/celery_beat for E2E)
+          docker compose up -d --build backend frontend db redis
+          # Wait for backend (up to 3 minutes — CI builds from scratch with no cache)
+          echo "Waiting for backend..."
+          timeout 180 bash -c 'until curl -sf http://localhost:8000/api/health/; do sleep 3; done' \
+            || { echo "Backend failed to start"; docker compose logs backend; exit 1; }
+          echo "Backend ready"
+          # Wait for frontend Vite dev server (up to 3 minutes)
+          echo "Waiting for frontend..."
+          timeout 180 bash -c 'until curl -sf http://localhost:3000/; do sleep 3; done' \
+            || { echo "Frontend failed to start"; docker compose logs frontend; exit 1; }
+          echo "Frontend ready"
+          # Create test admin user for E2E tests
+          docker compose exec -T backend python manage.py shell -c \
+            "from django.contrib.auth import get_user_model; U=get_user_model(); U.objects.filter(username='admin').exists() or U.objects.create_superuser('admin','admin@example.com','admin123')" \
+            || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -205,7 +216,7 @@ jobs:
 
       - name: Run E2E tests
         working-directory: e2e
-        run: npx playwright test --reporter=list
+        run: npx playwright test
         env:
           BASE_URL: http://localhost:3000
 

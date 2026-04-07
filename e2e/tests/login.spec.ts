@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test'
 
+// Login tests run without pre-authenticated state
+test.use({ storageState: { cookies: [], origins: [] } })
+
 test.describe('Login Page', () => {
   test('should display login form', async ({ page }) => {
     await page.goto('/login')
