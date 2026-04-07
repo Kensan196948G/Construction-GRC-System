@@ -23,14 +23,18 @@
 | Phase 6 | Redis + N+1最適化 + 監査自動化 + K8s + Slack + OWASP + i18n | 完了 |
 | Phase 7 | 本番品質仕上げ (Dashboard統合 + Settings + テスト改善) | 完了 |
 | Phase 8 | CSVエクスポート + ファイルアップロード + アクティビティログ + Releases自動化 | 完了 |
-| Phase 9 | 最終仕上げ | 進行中 |
+| Phase 9 | 最終仕上げ (v1.0.0 リリース) | ✅ 完了 |
+| Phase 10A | 品質強化 — Docker統合テスト + Playwright E2E + カバレッジゲート | 🔄 PR #44 |
+| Phase 10B | 機能拡張 — TOTP 2FA本格実装 + レポートスケジュール機能 | 🔄 PR #45 |
+| Phase 10C | インフラ — K8s設定スクリプト + パフォーマンスベンチマーク | 🔄 実装中 |
 
 | 指標 | 値 |
 |------|-----|
 | CI状態 | [![CI](https://github.com/Kensan196948G/Construction-GRC-System/actions/workflows/claudeos-ci.yml/badge.svg)](https://github.com/Kensan196948G/Construction-GRC-System/actions) |
-| STABLE マージ数 | 21 PRs |
-| テスト数 | 517+ ケース |
-| 最終更新 | 2026-04-01 |
+| バージョン | v1.0.0 (stable) → v1.1.0 (Phase 10 dev) |
+| STABLE マージ数 | 45 PRs |
+| テスト数 | 517+ ケース (Phase 10 追加予定) |
+| 最終更新 | 2026-04-08 |
 
 ---
 
@@ -139,11 +143,12 @@ graph LR
 | Container | Docker / Docker Compose | 24+ / 2.20+ |
 | Orchestration | Kubernetes (HPA / PDB / Ingress) | 1.28+ |
 | CI/CD | GitHub Actions | - |
-| 認証 | djangorestframework-simplejwt | JWT |
+| 認証 | djangorestframework-simplejwt + pyotp | JWT + TOTP 2FA |
 | レポート | openpyxl / WeasyPrint | Excel / PDF |
 | チャート | Chart.js / ECharts | - |
 | API Docs | drf-spectacular | OpenAPI 3.0 |
 | E2E テスト | Playwright | - |
+| パフォーマンス | locust | 負荷テスト |
 
 ---
 
@@ -173,6 +178,10 @@ graph LR
 | 📎 ファイルアップロード | ISO27001 証跡管理（エビデンスファイル添付） |
 | 📜 アクティビティログ | 変更履歴の記録・表示 |
 | 🏷 GitHub Releases自動化 | タグプッシュ時の自動リリース作成 |
+| 🔐 TOTP 2FA | TOTP準拠の二要素認証 (QRコード設定 / ワンタイムパスワード検証) |
+| 📅 レポートスケジュール | 定期レポート自動生成 (日次/週次/月次, 複数宛先メール配信) |
+| 🐳 Docker統合テスト | `SKIP_DOCKER_INTEGRATION=1` でCI環境スキップ可能な統合テストスイート |
+| 📊 パフォーマンスベンチマーク | locust によるAPI負荷テスト (10ユーザー / 60秒 / ヘッドレス実行) |
 
 ---
 
@@ -312,6 +321,9 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 | POST | `/api/v1/auth/token/refresh/` | トークンリフレッシュ |
 | GET | `/api/v1/auth/profile/` | ユーザープロフィール |
 | GET | `/api/v1/auth/users/` | ユーザー一覧 |
+| POST | `/api/v1/auth/2fa/setup/` | 🔐 TOTP 2FA設定 (QRコード + シークレット発行) |
+| POST | `/api/v1/auth/2fa/verify/` | 🔐 TOTP 2FA有効化 (初回ワンタイムパスワード検証) |
+| POST | `/api/v1/auth/2fa/disable/` | 🔐 TOTP 2FA無効化 |
 
 ### 統合ダッシュボード (`/api/v1/dashboard/`)
 
@@ -378,6 +390,8 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 | POST | `/api/v1/reports/generate/compliance/` | コンプライアンスレポートPDF生成 |
 | POST | `/api/v1/reports/generate/audit/` | 監査レポートPDF生成 |
 | POST | `/api/v1/reports/generate/iso27001/` | ISO27001年次レポートPDF生成 |
+| GET/POST | `/api/v1/reports/scheduled/` | 📅 定期レポートスケジュール一覧 / 作成 |
+| GET/PUT/DELETE | `/api/v1/reports/scheduled/{id}/` | 📅 スケジュール詳細 / 更新 / 削除 |
 
 ### フレームワーク (`/api/v1/frameworks/`)
 
@@ -401,6 +415,9 @@ kubectl apply -k k8s/   # Kustomize で全リソース適用
 
 | PR | 内容 | 主要変更 |
 |----|------|----------|
+| #44 | 🔄 Phase 10A — 品質強化 | Docker統合テスト, Playwright E2E, Vitestカバレッジゲート60% |
+| #45 | 🔄 Phase 10B — 機能拡張 | TOTP 2FA (pyotp), ScheduledReport (日次/週次/月次) |
+| #40 | Phase 9 — v1.0.0 リリース (最終仕上げ) | README/CHANGELOG最終版, STABLE 2/2 |
 | #38 | Phase 8 — CSVエクスポート + 証跡アップロード + アクティビティログ + Releases自動化 | CSV/Excel全モデル対応, 証跡ファイル管理, 変更履歴UI, GitHub Releases |
 | #33 | Phase 7完結 — Dashboard統合 + Settings + テスト大幅改善 | 統合ダッシュボード, 設定画面, テスト517+ケース |
 | #32 | Phase 6完結 — K8s + Slack通知 + OWASP監査 + 多言語対応 | K8sマニフェスト14ファイル, Slack Webhook, OWASP対策, i18n |
