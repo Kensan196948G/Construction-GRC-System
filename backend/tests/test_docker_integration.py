@@ -2,8 +2,11 @@
 実行前提: docker compose up -d でサービスが起動済みであること。
 SKIP_DOCKER_INTEGRATION=1 でスキップ。
 """
+
 from __future__ import annotations
+
 import os
+
 import pytest
 import requests
 
