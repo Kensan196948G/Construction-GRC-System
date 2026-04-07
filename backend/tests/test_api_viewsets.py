@@ -467,3 +467,47 @@ class TestNistCSFCategoryViewSet:
         if resp.status_code == 404:
             pytest.skip("NIST CSF endpoint not at expected URL")
         assert resp.status_code == 200
+
+
+
+# ---------------------------------------------------------------------------
+# ReportViewSet PDF エンドポイントテスト
+# ---------------------------------------------------------------------------
+@pytest.mark.django_db
+@pytest.mark.integration
+class TestReportViewSetPDFEndpoints:
+    """レポートPDF生成エンドポイントのテスト（WeasyPrintはモック）."""
+
+    def test_generate_dashboard_pdf(self, api_client: APIClient) -> None:
+        from unittest.mock import patch
+
+        with patch("apps.reports.pdf_generator.PDFReportGenerator.generate_grc_dashboard_pdf") as mock_pdf:
+            mock_pdf.return_value = b"%PDF-1.4 fake dashboard"
+            resp = api_client.get("/api/v1/reports/generate/dashboard-pdf/")
+
+        assert resp.status_code == 200
+        assert resp["Content-Type"] == "application/pdf"
+        assert "attachment" in resp["Content-Disposition"]
+        assert resp.content == b"%PDF-1.4 fake dashboard"
+
+    def test_generate_compliance_pdf(self, api_client: APIClient) -> None:
+        from unittest.mock import patch
+
+        with patch("apps.reports.pdf_generator.PDFReportGenerator.generate_compliance_report_pdf") as mock_pdf:
+            mock_pdf.return_value = b"%PDF-1.4 fake compliance"
+            resp = api_client.get("/api/v1/reports/generate/compliance-pdf/")
+
+        assert resp.status_code == 200
+        assert resp["Content-Type"] == "application/pdf"
+        assert resp.content == b"%PDF-1.4 fake compliance"
+
+    def test_generate_risk_pdf(self, api_client: APIClient) -> None:
+        from unittest.mock import patch
+
+        with patch("apps.reports.pdf_generator.PDFReportGenerator.generate_risk_report_pdf") as mock_pdf:
+            mock_pdf.return_value = b"%PDF-1.4 fake risk"
+            resp = api_client.get("/api/v1/reports/generate/risk-pdf/")
+
+        assert resp.status_code == 200
+        assert resp["Content-Type"] == "application/pdf"
+        assert resp.content == b"%PDF-1.4 fake risk"
